@@ -1,0 +1,64 @@
+{"data":[{
+    "city":"Holon",
+    "parkingName":"Hit", 
+    "spot":"1",
+    "status":"occupied",
+    "reserved":"dean"
+    },
+    {
+    "city":"Holon",
+    "parkingName":"Hit", 
+    "spot":"2",
+    "status":"free",
+    "reserved":"Handicapped"
+    },
+    {
+    "city":"Holon",
+    "parkingName":"Hit", 
+    "spot":"3",
+    "status":"occupied",
+    "reserved":"Handicapped"
+    },
+    {
+    "city":"Holon",
+    "parkingName":"Hit", 
+    "spot":"4",
+    "status":"occupied",
+    "reserved":"not reserved"
+    },
+    {
+    "city":"Holon",
+    "parkingName":"Hit", 
+    "spot":"5",
+    "status":"free",
+    "reserved":"not reserved"
+    },
+    {
+    "city":"Holon",
+    "parkingName":"Hit", 
+    "spot":"6",
+    "status":"occupied",
+    "reserved":"not reserved"
+    },
+    {
+    "city":"Holon",
+    "parkingName":"Hit", 
+    "spot":"7",
+    "status":"free",
+    "reserved":"not reserved"
+    },
+    {
+    "city":"Holon",
+    "parkingName":"Hit", 
+    "spot":"8",
+    "status":"free",
+    "reserved":"not reserved"
+    },
+    {
+    "city":"Holon",
+    "parkingName":"Hit", 
+    "spot":"9",
+    "status":"occupied",
+    "reserved":"not reserved"
+    }
+    ]}

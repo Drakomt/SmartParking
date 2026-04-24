@@ -1,6 +1,8 @@
-function getCity(req,res){
+const parkingData=require('../example.json');
+function getParkingsByCity(req,res){
     const city= req.query.city;
-    parkingArr=[{parkingName:"aaa", spot:"1",status:"occupied"},{parkingName:"aaa", spot:"2",status:"free"}]
+    parkingArr=parkingData.data;
+    parkingArr.filter(i => {i.city==city});
     res.json(parkingArr)
 }
-exports.getCity=getCity;
+exports.getParkingsByCity = getParkingsByCity;
