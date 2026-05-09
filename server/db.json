@@ -4,51 +4,61 @@
         "name": "חניון HIT ראשי",
         "city": "חולון",
         "address": "גולומב 52, חולון",
+        "amountOfLevels":"1",
         "spots": [
             {
                 "id": "A1",
                 "type": "regular",
-                "isAvailable": false
+                "isAvailable": false,
+                "level":"1"
             },
             {
                 "id": "A2",
                 "type": "regular",
-                "isAvailable": true
+                "isAvailable": true,
+                "level":"1"
             },
             {
                 "id": "A3",
                 "type": "disabled",
-                "isAvailable": false
+                "isAvailable": false,
+                "level":"1"
             },
             {
                 "id": "A4",
                 "type": "regular",
-                "isAvailable": true
+                "isAvailable": true,
+                "level":"1"
             },
             {
                 "id": "A5",
                 "type": "regular",
-                "isAvailable": false
+                "isAvailable": false,
+                "level":"1"
             },
             {
                 "id": "A6",
                 "type": "disabled",
-                "isAvailable": true
+                "isAvailable": true,
+                "level":"1"
             },
             {
                 "id": "A7",
                 "type": "regular",
-                "isAvailable": true
+                "isAvailable": true,
+                "level":"1"
             },
             {
                 "id": "A8",
                 "type": "dean",
-                "isAvailable": false
+                "isAvailable": false,
+                "level":"1"
             },
             {
                 "id": "A9",
                 "type": "disabled",
-                "isAvailable": true
+                "isAvailable": true,
+                "level":"1"
             }
         ]
     },
@@ -57,51 +67,61 @@
         "name": "חניון עזריאלי חולון",
         "city": "חולון",
         "address": "הרוקמים 26, חולון",
+        "amountOfLevels":"2",
         "spots": [
             {
                 "id": "A1",
                 "type": "regular",
-                "isAvailable": false
+                "isAvailable": false,
+                "level":"1"
             },
             {
                 "id": "A2",
                 "type": "regular",
-                "isAvailable": true
+                "isAvailable": true,
+                "level":"1"
             },
             {
                 "id": "A3",
                 "type": "disabled",
-                "isAvailable": false
+                "isAvailable": false,
+                "level":"1"
             },
             {
                 "id": "A4",
                 "type": "regular",
-                "isAvailable": true
+                "isAvailable": true,
+                "level":"1"
             },
             {
                 "id": "A5",
                 "type": "regular",
-                "isAvailable": false
+                "isAvailable": false,
+                "level":"2"
             },
             {
                 "id": "A6",
                 "type": "disabled",
-                "isAvailable": true
+                "isAvailable": true,
+                "level":"2"
             },
             {
                 "id": "A7",
                 "type": "regular",
-                "isAvailable": true
+                "isAvailable": true,
+                "level":"2"
             },
             {
                 "id": "A8",
                 "type": "dean",
-                "isAvailable": false
+                "isAvailable": false,
+                "level":"2"
             },
             {
                 "id": "A9",
                 "type": "disabled",
-                "isAvailable": true
+                "isAvailable": true,
+                "level":"2"
             }
         ]
     },
@@ -110,6 +130,7 @@
         "name": "חניון שרונה מרקט",
         "city": "תל אביב",
         "address": "אלוף קלמן מגן 3, תל אביב",
+        "amountOfLevels":"1",
         "spots": []
     }
 ]
