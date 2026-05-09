@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import axios from "axios"; // היה חסר
+import axios from "axios";
 import ParkingButton from "../components/ParkingButton";
 import ParkingLotView from "../components/ParkingLotView";
+import SearchInput from "../components/searchInput";
 
 export default function ParkinLotPage() {
   const [data, setData] = useState(null);
@@ -17,19 +18,19 @@ export default function ParkinLotPage() {
     setParkings(spotsToLoad);
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/api/parkings/city");
-        setData(response.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   // const fetchData = async () => {
+  //   //   try {
+  //   //     const response = await axios.get("http://localhost:3000/api/parkings/city");
+  //   //     setData(response.data);
+  //   //   } catch (error) {
+  //   //     console.error("Error fetching data:", error);
+  //   //   } finally {
+  //   //     setIsLoading(false);
+  //   //   }
+  //   // };
+  //   fetchData();
+  // }, []);
 
   let HITParkings = [
     { id: "A1", type: "regular", isAvilable: false },
@@ -56,7 +57,7 @@ export default function ParkinLotPage() {
 
   let map = { HIT: HITParkings, טהרן: teheranParkings };
 
-  if (isLoading) return <div>loading...</div>;
+  // if (isLoading) return <div>loading...</div>;
 
   return (
     <div
@@ -70,15 +71,15 @@ export default function ParkinLotPage() {
           <p className="text-lg text-slate-300 mb-8 font-medium">
             ברוכים הבאים למערכת ניהול החנייה החכמה. <br />
             אנא בחרו חניון רצוי:
-          </p>
-
-          <div className="grid grid-cols-2 gap-4">
-            {data.filter((lot) => lot.city === selectedCity).map((lot) => (
-                <ParkingButton key={lot.lotId} onClick={() => handleUpdateLocation(map[lot.lotId] || lot.spots)}>
-                  {lot.lotId}
-                </ParkingButton>
-              ))}
-          </div>
+            </p>
+            <SearchInput/>
+            <div className="grid grid-cols-2 gap-4">
+              {/* {data.filter((lot) => lot.city === selectedCity).map((lot) => (
+                  <ParkingButton key={lot.lotId} onClick={() => handleUpdateLocation(map[lot.lotId] || lot.spots)}>
+                    {lot.lotId}
+                  </ParkingButton>
+                ))} */}
+            </div>
         </div>
       )}
     </div>
