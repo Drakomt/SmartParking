@@ -1,0 +1,115 @@
+[
+    {
+        "lotId": "HIT-MAIN",
+        "name": "חניון HIT ראשי",
+        "city": "חולון",
+        "address": "גולומב 52, חולון",
+        "spots": [
+            {
+                "id": "A1",
+                "type": "regular",
+                "isAvailable": false
+            },
+            {
+                "id": "A2",
+                "type": "regular",
+                "isAvailable": true
+            },
+            {
+                "id": "A3",
+                "type": "disabled",
+                "isAvailable": false
+            },
+            {
+                "id": "A4",
+                "type": "regular",
+                "isAvailable": true
+            },
+            {
+                "id": "A5",
+                "type": "regular",
+                "isAvailable": false
+            },
+            {
+                "id": "A6",
+                "type": "disabled",
+                "isAvailable": true
+            },
+            {
+                "id": "A7",
+                "type": "regular",
+                "isAvailable": true
+            },
+            {
+                "id": "A8",
+                "type": "dean",
+                "isAvailable": false
+            },
+            {
+                "id": "A9",
+                "type": "disabled",
+                "isAvailable": true
+            }
+        ]
+    },
+    {
+        "lotId": "AZRIELI-HOLON",
+        "name": "חניון עזריאלי חולון",
+        "city": "חולון",
+        "address": "הרוקמים 26, חולון",
+        "spots": [
+            {
+                "id": "A1",
+                "type": "regular",
+                "isAvailable": false
+            },
+            {
+                "id": "A2",
+                "type": "regular",
+                "isAvailable": true
+            },
+            {
+                "id": "A3",
+                "type": "disabled",
+                "isAvailable": false
+            },
+            {
+                "id": "A4",
+                "type": "regular",
+                "isAvailable": true
+            },
+            {
+                "id": "A5",
+                "type": "regular",
+                "isAvailable": false
+            },
+            {
+                "id": "A6",
+                "type": "disabled",
+                "isAvailable": true
+            },
+            {
+                "id": "A7",
+                "type": "regular",
+                "isAvailable": true
+            },
+            {
+                "id": "A8",
+                "type": "dean",
+                "isAvailable": false
+            },
+            {
+                "id": "A9",
+                "type": "disabled",
+                "isAvailable": true
+            }
+        ]
+    },
+    {
+        "lotId": "SARONA-MARKET",
+        "name": "חניון שרונה מרקט",
+        "city": "תל אביב",
+        "address": "אלוף קלמן מגן 3, תל אביב",
+        "spots": []
+    }
+]
