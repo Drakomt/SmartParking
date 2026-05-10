@@ -7,7 +7,7 @@ export default function ParkinLotPage() {
   const [parkings, setParkings] = useState(null);
   const [selectedCity, setSelectedCity] = useState("");
 
-  const { parkingLotsCity, loading, error } = useParkingLots();
+  const { parkingLotsCity, loading, error } = useParkingLots(selectedCity);
 
   const onBack = () => {
     setParkings(null);
@@ -17,11 +17,10 @@ export default function ParkinLotPage() {
     setParkings(spotsToLoad);
   };
 
-  const filteredLots =
-    parkingLotsCity?.filter((lot) => lot.city === selectedCity) || [];
-
   if (loading) return <div>loading...</div>;
   if (error) return <div> Erorr: {error}</div>;
+
+  console.log("Data in parkingLotsCity:", parkingLotsCity);
 
   return (
     <div
@@ -41,19 +40,17 @@ export default function ParkinLotPage() {
 
           {selectedCity && (
             <div className="w-full">
-              {filteredLots.length > 0 ? (
+              {Array.isArray(parkingLotsCity) && parkingLotsCity.length > 0 ? (
                 <div className="grid grid-cols-3 gap-4">
-                  {filteredLots
-                    .filter((lot) => lot.city === selectedCity)
-                    .map((lot) => (
-                      <button
-                        key={lot.lotId}
-                        onClick={() => handleUpdateLocation(lot.spots)}
-                        className="bg-slate-700 hover:bg-slate-600 transition-colors p-4 rounded-xl border border-slate-600 font-medium"
-                      >
-                        {lot.lotId}
-                      </button>
-                    ))}
+                  {parkingLotsCity.map((lot) => (
+                    <button
+                      key={lot.lotId}
+                      onClick={() => handleUpdateLocation(lot.spots)}
+                      className="bg-slate-700 hover:bg-slate-600 transition-colors p-4 rounded-xl border border-slate-600 font-medium"
+                    >
+                      {lot.lotId}
+                    </button>
+                  ))}
                 </div>
               ) : (
                 <div className="bg-slate-700/40 border border-slate-600  rounded-xl p-6 text-center shadow-inner mt-4">
