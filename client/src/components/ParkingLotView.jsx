@@ -1,9 +1,18 @@
+import LevelNavigation from "./LevelNavigation";
 import ParkingSlot from "./ParkingSlot";
 
 export default function ParkingLotView({ parkings, onBack }) {
   if (!parkings || parkings.length === 0) {
     return (
-      <div className="text-center text-slate-400 p-8">אין מידע על חניות</div>
+      <div className="bg-slate-800 p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-700 w-full max-w-2xl mx-auto mt-6 relative min-h-[200px] flex items-center justify-center">
+        <button
+          onClick={onBack}
+          className="absolute top-6 right-6 px-5 py-2 bg-transparent border border-slate-600 hover:border-sky-400 hover:bg-sky-400/10 text-slate-300 hover:text-sky-400 rounded-xl transition-all duration-300 font-medium"
+        >
+          חזור
+        </button>
+        <p className="text-center text-slate-400 text-lg">אין מידע על חניות</p>
+      </div>
     );
   }
 
@@ -27,19 +36,12 @@ export default function ParkingLotView({ parkings, onBack }) {
           <ParkingSlot
             id={slot.id}
             type={slot.type}
-            isAvilable={slot.isAvilable}
+            isAvilable={slot.isAvailable}
             key={slot.id}
           />
         ))}
       </div>
-      <div className="flex justify-between mt-8 mb-0">
-        <button className="px-5 py-2 bg-transparent border border-slate-600 hover:border-sky-400 hover:bg-sky-400/10 text-slate-300 hover:text-sky-400 rounded-xl transition-all duration-300 font-medium z-10">
-          המפלס הקודם
-        </button>
-        <button className="px-5 py-2 bg-transparent border border-slate-600 hover:border-sky-400 hover:bg-sky-400/10 text-slate-300 hover:text-sky-400 rounded-xl transition-all duration-300 font-medium z-10">
-          המפלס הבא
-        </button>
-      </div>
+      <LevelNavigation />
     </div>
   );
 }
