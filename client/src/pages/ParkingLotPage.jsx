@@ -20,8 +20,6 @@ export default function ParkinLotPage() {
   if (loading) return <div>loading...</div>;
   if (error) return <div> Erorr: {error}</div>;
 
-  console.log("Data in parkingLotsCity:", parkingLotsCity);
-
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center bg-slate-900 text-white p-4 font-sans"
@@ -30,7 +28,7 @@ export default function ParkinLotPage() {
       {parkings ? (
         <ParkingLotView parkings={parkings} onBack={onBack} />
       ) : (
-        <div className="text-center p-8 sm:p-10 bg-slate-800 rounded-3xl shadow-2xl border border-slate-700 w-full max-w-lg">
+        <div className="text-center p-8 sm:p-10 bg-slate-800 rounded-3xl shadow-2xl border border-slate-700 w-full max-w-lg min-h-[320px] flex flex-col">
           <p className="text-lg text-slate-300 mb-8 font-medium">
             ברוכים הבאים למערכת ניהול החנייה החכמה. <br />
             אנא בחרו חניון רצוי:
@@ -40,7 +38,7 @@ export default function ParkinLotPage() {
 
           {selectedCity && (
             <div className="w-full">
-              {Array.isArray(parkingLotsCity) && parkingLotsCity.length > 0 ? (
+              {parkingLotsCity && parkingLotsCity.length > 0 ? (
                 <div className="grid grid-cols-3 gap-4">
                   {parkingLotsCity.map((lot) => (
                     <button
@@ -48,7 +46,7 @@ export default function ParkinLotPage() {
                       onClick={() => handleUpdateLocation(lot.spots)}
                       className="bg-slate-700 hover:bg-slate-600 transition-colors p-4 rounded-xl border border-slate-600 font-medium"
                     >
-                      {lot.lotId}
+                      {lot.name}
                     </button>
                   ))}
                 </div>
