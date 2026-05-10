@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
-import axios from "axios"; // היה חסר
-import ParkingButton from "../components/ParkingButton";
+import { useState } from "react";
 import ParkingLotView from "../components/ParkingLotView";
+import useParkingLots from "../hooks/useParkingLots";
+import SearchInput from "../components/SearchInput";
 
 export default function ParkinLotPage() {
-  const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [parkings, setParkings] = useState(null);
-  const [selectedCity, setSelectedCity] = useState("חולון");
+  const [selectedCity, setSelectedCity] = useState("");
+
+  const { parkingLotsCity, loading, error } = useParkingLots(selectedCity);
 
   const onBack = () => {
     setParkings(null);
@@ -17,46 +17,10 @@ export default function ParkinLotPage() {
     setParkings(spotsToLoad);
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/api/parkings/city");
-        setData(response.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  if (loading) return <div>loading...</div>;
+  if (error) return <div> Erorr: {error}</div>;
 
-  let HITParkings = [
-    { id: "A1", type: "regular", isAvilable: false },
-    { id: "A2", type: "regular", isAvilable: true },
-    { id: "A3", type: "disabled", isAvilable: false },
-    { id: "A4", type: "regular", isAvilable: true },
-    { id: "A5", type: "regular", isAvilable: false },
-    { id: "A6", type: "disabled", isAvilable: true },
-    { id: "A7", type: "regular", isAvilable: true },
-    { id: "A8", type: "dean", isAvilable: false },
-    { id: "A9", type: "disabled", isAvilable: true },
-  ];
-  let teheranParkings = [
-    { id: "A1", type: "regular", isAvilable: false },
-    { id: "A2", type: "regular", isAvilable: false },
-    { id: "A3", type: "regular", isAvilable: false },
-    { id: "A4", type: "dean", isAvilable: true },
-    { id: "A5", type: "regular", isAvilable: false },
-    { id: "A6", type: "disabled", isAvilable: true },
-    { id: "A7", type: "regular", isAvilable: false },
-    { id: "A8", type: "dean", isAvilable: false },
-    { id: "A9", type: "disabled", isAvilable: true },
-  ];
-
-  let map = { HIT: HITParkings, טהרן: teheranParkings };
-
-  if (isLoading) return <div>loading...</div>;
+  console.log("Data in parkingLotsCity:", parkingLotsCity);
 
   return (
     <div
@@ -72,13 +36,31 @@ export default function ParkinLotPage() {
             אנא בחרו חניון רצוי:
           </p>
 
-          <div className="grid grid-cols-2 gap-4">
-            {data.filter((lot) => lot.city === selectedCity).map((lot) => (
-                <ParkingButton key={lot.lotId} onClick={() => handleUpdateLocation(map[lot.lotId] || lot.spots)}>
-                  {lot.lotId}
-                </ParkingButton>
-              ))}
-          </div>
+          <SearchInput onSearch={setSelectedCity} />
+
+          {selectedCity && (
+            <div className="w-full">
+              {Array.isArray(parkingLotsCity) && parkingLotsCity.length > 0 ? (
+                <div className="grid grid-cols-3 gap-4">
+                  {parkingLotsCity.map((lot) => (
+                    <button
+                      key={lot.lotId}
+                      onClick={() => handleUpdateLocation(lot.spots)}
+                      className="bg-slate-700 hover:bg-slate-600 transition-colors p-4 rounded-xl border border-slate-600 font-medium"
+                    >
+                      {lot.lotId}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-slate-700/40 border border-slate-600  rounded-xl p-6 text-center shadow-inner mt-4">
+                  <p className="text-white-400 text-lg font-small mb-2">
+                    העיר "{selectedCity}" לא נמצאה במאגר
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
