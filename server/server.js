@@ -14,18 +14,16 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-const parkingRouter = require("./routes/parking");
 const loraRouter = require("./routes/lora");
 const authRouter = require("./routes/auth");
-const parkingLotRouter = require("./routes/parkingLot");
+const parkingRouter = require("./routes/parking");
 
 app.get("/", (req, res) => {
   res.send("Hello Smart Parking");
 });
 
 app.use("/api/auth", authRouter);
-app.use("/api/parkinglots", parkingLotRouter);
-app.use("/parking", parkingRouter);
+app.use("/api/parking", parkingRouter);
 app.use("/lora", loraRouter);
 
 app.listen(port, () => {
