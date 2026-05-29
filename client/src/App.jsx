@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import ParkinLotPage from "./pages/ParkingLotPage";
 import HomePage from "./pages/HomePage";
 import NavBar from "./components/NavBar";
+import LoginForm from "./components/LoginForm";
 
 function App() {
   return (
@@ -11,7 +11,8 @@ function App() {
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/parking" element={<ParkinLotPage />} />
+            <Route path="/login" element={<LoginForm />} />
+
           </Routes>
         </main>
       </div>
