@@ -1,4 +1,4 @@
-const City = require('../models/City');
+import City from '../models/City.js';
 
 const findCityByName = async (name) => {
   return await City.findOne({ name });
@@ -8,7 +8,4 @@ const findAllCities = async () => {
   return await City.find({}, 'name'); // Return only the name field (along with _id by default)
 };
 
-module.exports = {
-  findCityByName,
-  findAllCities
-};
+export default { findCityByName, findAllCities };

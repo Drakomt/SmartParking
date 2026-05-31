@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const parkingLotSchema = new mongoose.Schema({
   name: {
@@ -27,4 +27,4 @@ const parkingLotSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('ParkingLot', parkingLotSchema);
+export default mongoose.model('ParkingLot', parkingLotSchema);

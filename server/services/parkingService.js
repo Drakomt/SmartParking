@@ -1,6 +1,18 @@
-const parkingLotRepo = require('../repositories/parkingLotRepo');
-const parkingSpotRepo = require('../repositories/parkingSpotRepo');
-const cityRepo = require('../repositories/cityRepo');
+import parkingLotRepo from '../repositories/parkingLotRepo.js';
+import parkingSpotRepo from '../repositories/parkingSpotRepo.js';
+import cityRepo from '../repositories/cityRepo.js';
+
+// ==========================================
+//               CITY SERVICES
+// ==========================================
+
+const fetchAllCities = async () => {
+  return await cityRepo.findAllCities();
+};
+
+// ==========================================
+//           PARKING LOT SERVICES
+// ==========================================
 
 const fetchParkingLots = async (user) => {
   let query = {};
@@ -16,10 +28,6 @@ const fetchLotsByCity = async (cityName) => {
     throw new Error('City not found');
   }
   return await parkingLotRepo.findAllLots({ city: city._id });
-};
-
-const fetchAllCities = async () => {
-  return await cityRepo.findAllCities();
 };
 
 const fetchParkingLotById = async (id) => {
@@ -63,6 +71,10 @@ const removeParkingLot = async (id, user) => {
   return await parkingLotRepo.deleteLot(id);
 };
 
+// ==========================================
+//          PARKING SPOT SERVICES
+// ==========================================
+
 const fetchSpotsByLotAndLevel = async (lotId, level, includeLot = false) => {
   const spots = await parkingSpotRepo.findSpotsByLotAndLevel(lotId, level);
   if (includeLot) {
@@ -95,17 +107,4 @@ const removeSpot = async (id, user) => {
   return await parkingSpotRepo.deleteSpot(id);
 };
 
-module.exports = {
-  fetchParkingLots,
-  fetchLotsByCity,
-  fetchParkingLotById,
-  fetchAllCities,
-  addParkingLot,
-  editParkingLot,
-  removeParkingLot,
-  fetchSpotsByLotAndLevel,
-  fetchSpotsByLot,
-  addSpot,
-  editSpot,
-  removeSpot
-};
+export default { fetchAllCities, fetchParkingLots, fetchLotsByCity, fetchParkingLotById, addParkingLot, editParkingLot, removeParkingLot, fetchSpotsByLotAndLevel, fetchSpotsByLot, addSpot, editSpot, removeSpot };

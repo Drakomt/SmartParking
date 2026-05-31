@@ -1,5 +1,5 @@
-const userRepo = require('../repositories/userRepo');
-const jwt = require('jsonwebtoken');
+import userRepo from '../repositories/userRepo.js';
+import jwt from 'jsonwebtoken';
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -42,7 +42,4 @@ const registerUser = async (userData) => {
   };
 };
 
-module.exports = {
-  loginUser,
-  registerUser
-};
+export default { generateToken, loginUser, registerUser };

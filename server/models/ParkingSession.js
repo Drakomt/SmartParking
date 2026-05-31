@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const parkingSessionSchema = new mongoose.Schema({
   carLicensePlate: {
@@ -30,4 +30,4 @@ const parkingSessionSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('ParkingSession', parkingSessionSchema);
+export default mongoose.model('ParkingSession', parkingSessionSchema);

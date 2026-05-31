@@ -1,4 +1,4 @@
-const ParkingSpot = require('../models/ParkingSpot');
+import ParkingSpot from '../models/ParkingSpot.js';
 
 const findSpotsByLotAndLevel = async (parkingLotId, level) => {
   return await ParkingSpot.find({ parkingLot: parkingLotId, level });
@@ -21,10 +21,4 @@ const deleteSpot = async (id) => {
   return await ParkingSpot.findByIdAndDelete(id);
 };
 
-module.exports = {
-  findSpotsByLotAndLevel,
-  findSpotsByLot,
-  createSpot,
-  updateSpot,
-  deleteSpot
-};
+export default { findSpotsByLotAndLevel, findSpotsByLot, createSpot, updateSpot, deleteSpot };

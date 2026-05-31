@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const cameraSchema = new mongoose.Schema({
   parkingLot: {
@@ -17,4 +17,4 @@ const cameraSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Camera', cameraSchema);
+export default mongoose.model('Camera', cameraSchema);

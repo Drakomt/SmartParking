@@ -1,10 +1,10 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const serv= require('../services/loraServices')
+import loraService from '../services/loraServices.js';
 
 
-router.post('/status',(req,res)=>{
-    serv.getStatus(req,res);
-})
+router.post('/status', async (req, res) => {
+    return await loraService.getStatus(req, res);
+});
 
-module.exports=router;
+export default router;

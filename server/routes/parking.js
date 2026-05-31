@@ -1,7 +1,24 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const parkingService = require('../services/parkingService');
-const { protect } = require('../middleware/auth');
+import parkingService from '../services/parkingService.js';
+import { protect } from '../middleware/auth.js';
+
+// ==========================================
+//               CITY ROUTES
+// ==========================================
+
+router.get('/cities', async (req, res) => {
+  try {
+    const cities = await parkingService.fetchAllCities();
+    res.json(cities);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
+// ==========================================
+//           PARKING LOT ROUTES
+// ==========================================
 
 router.route('/')
   // Get all lots for current admin user
@@ -38,15 +55,6 @@ router.get('/lotsbycity', async (req, res) => {
     }
 });
 
-router.get('/cities', async (req, res) => {
-  try {
-    const cities = await parkingService.fetchAllCities();
-    res.json(cities);
-  } catch (error) {
-    res.status(500).json({ message: 'Server Error', error: error.message });
-  }
-});
-
 router.get('/parkinglotbyid', async (req, res) => {
     try {
       if (!req.query.id) {
@@ -79,6 +87,10 @@ router.route('/:id')
       res.status(statusCode).json({ message: error.message });
     }
   });
+
+// ==========================================
+//          PARKING SPOT ROUTES
+// ==========================================
 
 router.route('/:id/spots')
   .get(async (req, res) => {
@@ -128,4 +140,4 @@ router.route('/spots/:spotId')
     }
   });
 
-module.exports = router;
+export default router;

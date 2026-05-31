@@ -1,4 +1,4 @@
-const ParkingLot = require('../models/ParkingLot');
+import ParkingLot from '../models/ParkingLot.js';
 
 const findAllLots = async (query = {}) => {
   return await ParkingLot.find(query).populate('_id', 'name');
@@ -25,11 +25,4 @@ const deleteLot = async (id) => {
   return await ParkingLot.findByIdAndDelete(id);
 };
 
-module.exports = {
-  findAllLots,
-  findLotById,
-  findOneLot,
-  createLot,
-  updateLot,
-  deleteLot
-};
+export default { findAllLots, findLotById, findOneLot, createLot, updateLot, deleteLot };
