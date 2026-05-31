@@ -6,6 +6,11 @@ const parkingSpotSchema = new mongoose.Schema({
     ref: 'ParkingLot',
     required: true,
   },
+  level: {
+    type: Number,
+    required: true,
+    default: 1
+  },
   status: {
     type: String,
     enum: ['free', 'occupied'],

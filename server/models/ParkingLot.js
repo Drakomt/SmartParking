@@ -18,6 +18,12 @@ const parkingLotSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 0,
+  },
+  levels: {
+    type: Number,
+    required: true,
+    min: 1,
+    default: 1
   }
 }, { timestamps: true });
 

@@ -1,8 +1,7 @@
 const ParkingLot = require('../models/ParkingLot');
-const City = require('../models/City');
 
 const findAllLots = async (query = {}) => {
-  return await ParkingLot.find(query).populate('city', 'name');
+  return await ParkingLot.find(query).populate('_id', 'name');
 };
 
 const findLotById = async (id) => {
@@ -11,10 +10,6 @@ const findLotById = async (id) => {
 
 const findOneLot = async (query = {}) => {
   return await ParkingLot.findOne(query).populate('city', 'name');
-};
-
-const findCityByName = async (name) => {
-  return await City.findOne({ name });
 };
 
 const createLot = async (lotData) => {
@@ -34,7 +29,6 @@ module.exports = {
   findAllLots,
   findLotById,
   findOneLot,
-  findCityByName,
   createLot,
   updateLot,
   deleteLot

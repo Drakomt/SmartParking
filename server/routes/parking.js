@@ -20,7 +20,8 @@ router.route('/')
         name: req.body.name,
         city: req.body.city,
         address: req.body.address,
-        totalSpots: req.body.totalSpots
+        totalSpots: req.body.totalSpots,
+        levels: req.body.levels
       });
       res.status(201).json(parkingLot);
     } catch (error) {
@@ -37,12 +38,21 @@ router.get('/lotsbycity', async (req, res) => {
     }
 });
 
-router.get('/parkingsbyname', async (req, res) => {
+router.get('/cities', async (req, res) => {
+  try {
+    const cities = await parkingService.fetchAllCities();
+    res.json(cities);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
+router.get('/parkinglotbyid', async (req, res) => {
     try {
-      if (!req.query.name) {
-          return res.status(400).json({ message: 'City name not provided' });
+      if (!req.query.id) {
+          return res.status(400).json({ message: 'Parking lot id not provided' });
       }
-      const lot = await parkingService.fetchParkingByName(req.query.name);
+      const lot = await parkingService.fetchParkingLotById(req.query.id);
       res.json(lot);
     } catch (error) {
       res.status(404).json({ message: error.message });
@@ -52,7 +62,8 @@ router.get('/parkingsbyname', async (req, res) => {
 router.route('/:id')
   .put(protect, async (req, res) => {
     try {
-      const updatedLot = await parkingService.editParkingLot(req.params.id, req.body, req.user);
+      const updateData = { ...req.body };
+      const updatedLot = await parkingService.editParkingLot(req.params.id, updateData, req.user);
       res.json(updatedLot);
     } catch (error) {
       const statusCode = error.message.includes('authorized') ? 403 : 404;
@@ -66,6 +77,54 @@ router.route('/:id')
     } catch (error) {
       const statusCode = error.message.includes('authorized') ? 403 : 404;
       res.status(statusCode).json({ message: error.message });
+    }
+  });
+
+router.route('/:id/spots')
+  .get(async (req, res) => {
+    try {
+      const level = req.query.level;
+      if (level) {
+        const includeLot = req.query.includeLot === 'true';
+        const spots = await parkingService.fetchSpotsByLotAndLevel(req.params.id, Number(level), includeLot);
+        return res.json(spots);
+      }
+      const spots = await parkingService.fetchSpotsByLot(req.params.id);
+      res.json(spots);
+    } catch (error) {
+      res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+  })
+  .post(protect, async (req, res) => {
+    try {
+      const spot = await parkingService.addSpot({
+        parkingLot: req.params.id,
+        level: req.body.level || 1,
+        status: req.body.status || 'free',
+        currentCarLicensePlate: req.body.currentCarLicensePlate || null
+      }, req.user);
+      res.status(201).json(spot);
+    } catch (error) {
+      const statusCode = error.message.includes('authorized') ? 403 : 500;
+      res.status(statusCode).json({ message: 'Server Error', error: error.message });
+    }
+  });
+
+router.route('/spots/:spotId')
+  .put(protect, async (req, res) => {
+    try {
+      const updatedSpot = await parkingService.editSpot(req.params.spotId, req.body, req.user);
+      res.json(updatedSpot);
+    } catch (error) {
+      res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+  })
+  .delete(protect, async (req, res) => {
+    try {
+      await parkingService.removeSpot(req.params.spotId, req.user);
+      res.json({ message: 'Parking Spot removed' });
+    } catch (error) {
+      res.status(500).json({ message: 'Server Error', error: error.message });
     }
   });
 
