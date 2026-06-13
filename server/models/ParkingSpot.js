@@ -11,6 +11,10 @@ const parkingSpotSchema = new mongoose.Schema({
     required: true,
     default: 1
   },
+  spotNumber: {
+    type: String,
+    default: null,
+  },
   status: {
     type: String,
     enum: ['free', 'occupied'],

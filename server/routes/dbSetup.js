@@ -106,6 +106,7 @@ router.post('/seed', async (req, res) => {
       spotsToInsert.push({
         parkingLot: lot1._id,
         level: i <= 5 ? 1 : 2, // First 5 on level 1, next 5 on level 2
+        spotNumber: `A-${i}`, // e.g., A-1, A-2
         status: isOccupied ? 'occupied' : 'free', 
         type: spotType,
         currentCarLicensePlate: isOccupied ? `123-45-${i}` : null
@@ -124,6 +125,7 @@ router.post('/seed', async (req, res) => {
         azrieliSpots.push({
             parkingLot: lot2._id,
             level: 1,
+            spotNumber: `B-${i}`,
             status: isOccupied ? 'occupied' : 'free',
             type: spotType,
             currentCarLicensePlate: isOccupied ? `987-65-${i}` : null
