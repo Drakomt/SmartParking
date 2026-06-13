@@ -1,8 +1,8 @@
-function getStatus(req,res){
-    const {data}= req.body
+const getStatus = async (req, res) => {
+    const {data} = req.body;
     //enter to database
     console.log(data);
-    res.status(200).json({"messege":"HELLO"})
-}
+    res.status(200).json({"message": "HELLO"});
+};
 
-exports.getStatus=getStatus;
+export default { getStatus };
