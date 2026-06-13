@@ -113,6 +113,7 @@ router.route('/:id/spots')
         parkingLot: req.params.id,
         level: req.body.level || 1,
         status: req.body.status || 'free',
+        type: req.body.type || 'regular',
         currentCarLicensePlate: req.body.currentCarLicensePlate || null
       }, req.user);
       res.status(201).json(spot);

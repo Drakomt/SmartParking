@@ -97,10 +97,17 @@ router.post('/seed', async (req, res) => {
     const spotsToInsert = [];
     for (let i = 1; i <= lot1.totalSpots; i++) {
       const isOccupied = i % 3 === 0; // Make every 3rd spot occupied
+      
+      let spotType = 'regular';
+      if (i === 1) spotType = 'disabled';
+      if (i === 2) spotType = 'dean';
+      if (i === 3) spotType = 'vip';
+
       spotsToInsert.push({
         parkingLot: lot1._id,
         level: i <= 5 ? 1 : 2, // First 5 on level 1, next 5 on level 2
         status: isOccupied ? 'occupied' : 'free', 
+        type: spotType,
         currentCarLicensePlate: isOccupied ? `123-45-${i}` : null
       });
     }
@@ -110,10 +117,15 @@ router.post('/seed', async (req, res) => {
     const azrieliSpots = [];
     for (let i = 1; i <= lot2.totalSpots; i++) {
         const isOccupied = i % 2 === 0; // Make every 2nd spot occupied
+        
+        let spotType = 'regular';
+        if (i <= 2) spotType = 'disabled';
+
         azrieliSpots.push({
             parkingLot: lot2._id,
             level: 1,
             status: isOccupied ? 'occupied' : 'free',
+            type: spotType,
             currentCarLicensePlate: isOccupied ? `987-65-${i}` : null
         });
     }
