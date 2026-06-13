@@ -1,7 +1,7 @@
 import ParkingLot from '../models/ParkingLot.js';
 
 const findAllLots = async (query = {}) => {
-  return await ParkingLot.find(query).populate('_id', 'name');
+  return await ParkingLot.find(query);
 };
 
 const findLotById = async (id) => {
