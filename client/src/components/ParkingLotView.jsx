@@ -1,7 +1,11 @@
 import LevelNavigation from "./LevelNavigation";
 import ParkingSlot from "./ParkingSlot";
 
-export default function ParkingLotView({ parkings, onBack }) {
+export default function ParkingLotView({ 
+  parkings, 
+  onBack,
+ 
+}) {
   if (!parkings || parkings.length === 0) {
     return (
       <div className="bg-slate-800 p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-700 w-full max-w-2xl mx-auto mt-6 relative min-h-[200px] flex items-center justify-center">
@@ -41,7 +45,14 @@ export default function ParkingLotView({ parkings, onBack }) {
           />
         ))}
       </div>
-      <LevelNavigation />
+
+      {/* הוספנו עטיפה למרכוז הניווט וריווח מלמעלה */}
+      <div className="mt-8 flex justify-center w-full border-t border-slate-700 pt-6" dir="rtl">
+        <LevelNavigation 
+          currentLevel={1}
+          totalLevels={5}
+        />
+      </div>
     </div>
   );
 }

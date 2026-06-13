@@ -11,8 +11,9 @@ export default function HomePage() {
 
   const { parkingLotsCity, loading, error } = useParkingLots(submittedCity);
 
-// useCities()
-  const citiesInDatabase =["חולון","חיפה"];
+  // ["חולון","חיפה"]
+
+  const citiesInDatabase =useCities();
 
   const onBack = () => {
     setParkings(null);
