@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:3000/parking";
+const API_URL = "http://localhost:3000/api/parking";
 
 const useParkingLots = (cityName) => {
   const [parkingLotsCity, setParkingLotsCity] = useState([]);

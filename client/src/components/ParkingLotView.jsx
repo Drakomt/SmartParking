@@ -4,7 +4,9 @@ import ParkingSlot from "./ParkingSlot";
 export default function ParkingLotView({ 
   parkings, 
   onBack,
- 
+  currentLevel,
+  totalLevels,
+  onLevelChange
 }) {
   if (!parkings || parkings.length === 0) {
     return (
@@ -38,19 +40,19 @@ export default function ParkingLotView({
       <div className="grid grid-cols-3 gap-4 sm:gap-6" dir="ltr">
         {parkings.map((slot) => (
           <ParkingSlot
-            id={slot.id}
+            id={slot.spotNumber}
             type={slot.type}
-            isAvilable={slot.isAvailable}
-            key={slot.id}
+            isAvilable={slot.status === 'free'}
+            key={slot._id}
           />
         ))}
       </div>
 
-      {/* הוספנו עטיפה למרכוז הניווט וריווח מלמעלה */}
       <div className="mt-8 flex justify-center w-full border-t border-slate-700 pt-6" dir="rtl">
         <LevelNavigation 
-          currentLevel={1}
-          totalLevels={5}
+          currentLevel={currentLevel}
+          totalLevels={totalLevels}
+          onLevelChange={onLevelChange}
         />
       </div>
     </div>

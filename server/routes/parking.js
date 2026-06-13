@@ -97,9 +97,12 @@ router.route('/:id/spots')
     try {
       const level = req.query.level;
       if (level) {
-        const includeLot = req.query.includeLot === 'true';
-        const spots = await parkingService.fetchSpotsByLotAndLevel(req.params.id, Number(level), includeLot);
-        return res.json(spots);
+        // Always include the lot metadata to return totalLevels for the frontend pagination
+        const spotsData = await parkingService.fetchSpotsByLotAndLevel(req.params.id, Number(level), true);
+        return res.json({
+          slots: spotsData.spots,
+          totalLevels: spotsData.parkingLot.levels
+        });
       }
       const spots = await parkingService.fetchSpotsByLot(req.params.id);
       res.json(spots);
