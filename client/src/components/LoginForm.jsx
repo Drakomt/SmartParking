@@ -114,7 +114,6 @@ return (
                   ${isLoading ? "bg-blue-800 cursor-not-allowed opacity-70" : "bg-blue-600 hover:bg-blue-500"}`}
               >
                 {isLoading ? (
-                  // הספינר שהבאת (מותאם בגודל כדי להתאים לתוך הכפתור)
                   <div className="w-5 h-5 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   "התחבר"
