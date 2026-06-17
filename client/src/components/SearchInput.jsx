@@ -13,7 +13,6 @@ export default function SearchInput({ onSearch, availableCities = [] }) {
     setActiveIndex(-1);
 
     if (value.trim() !== "") {
-      // תיקון: גישה נכונה למאפיין name באובייקט
       const filtered = availableCities.filter((city) =>
         city.name.startsWith(value)
       );
@@ -25,13 +24,10 @@ export default function SearchInput({ onSearch, availableCities = [] }) {
   };
 
   const handleSuggestionClick = (city) => {
-    // תיקון: השמת השם של העיר בלבד בתוך האינפוט
     setInputValue(city.name);
     setIsOpen(false);
     setActiveIndex(-1);
     
-    // בדרך כלל נרצה להעביר למעלה את העיר עצמה (כדי שיהיה לנו את ה-ID),
-    // אבל אם הקומפוננטה שאומרת onSearch מצפה לטקסט, אפשר להעביר city.name
     onSearch(city.name); 
   };
 
@@ -89,14 +85,12 @@ export default function SearchInput({ onSearch, availableCities = [] }) {
 
               return (
                 <li
-                  // תיקון: מומלץ להשתמש ב-ID האמיתי בתור Key אם הוא קיים
                   key={city._id || index}
                   onClick={() => handleSuggestionClick(city)}
                   className={`cursor-pointer px-5 py-3 transition-colors border-b border-slate-700/50 last:border-none font-medium
                     ${isActive ? "bg-slate-600 text-white" : "text-slate-200 hover:bg-slate-600 hover:text-white"}
                   `}
                 >
-                  {/* תיקון: רינדור שם העיר ולא האובייקט כולו */}
                   {city.name}
                 </li>
               );

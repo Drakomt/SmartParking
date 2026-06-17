@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 
-// ההוק מקבל את מזהה החניון ואת המפלס הנוכחי שצריך להציג
 const useParkingData = (parkingLotId, currentLevel) => {
   const [parkings, setParkings] = useState([]);
   const [totalLevels, setTotalLevels] = useState(1);
