@@ -1,7 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { createServer } from 'http';
 import connectDB from './config/db.js';
+import { initializeSocketServer } from './services/socketService.js';
 
 dotenv.config();
 
@@ -28,7 +30,10 @@ app.use("/api/parking", parkingRouter);
 app.use("/api/db", dbSetupRouter);
 app.use("/lora", loraRouter);
 
-app.listen(port, () => {
+const server = createServer(app);
+initializeSocketServer(server);
+
+server.listen(port, () => {
   console.log("Server listening to port: " + port);
 });
 

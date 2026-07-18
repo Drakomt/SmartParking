@@ -1,12 +1,15 @@
 {
   "type": "module",
   "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
     "lora-simulator": "node scripts/loraSimulator.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.6.2"
+    "mongoose": "^9.6.2",
+    "socket.io": "^4.8.1"
   }
 }
