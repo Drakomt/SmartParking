@@ -1,5 +1,8 @@
 {
   "type": "module",
+  "scripts": {
+    "lora-simulator": "node scripts/loraSimulator.js"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",

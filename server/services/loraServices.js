@@ -12,14 +12,14 @@ const updateParkingSpot = async (spotData) => {
         throw new Error('Invalid parking spot status');
     }
 
+    const existingSpot = await parkingSpotRepo.findSpotById(spotId);
+    if (!existingSpot) {
+        throw new Error('Parking spot not found');
+    }
 
     const updatedSpot = await parkingSpotRepo.updateSpot(spotId, {
         status,
     });
-
-    if (!updatedSpot) {
-        throw new Error('Parking spot not found');
-    }
 
     return updatedSpot;
 };
