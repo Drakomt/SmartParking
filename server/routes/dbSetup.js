@@ -9,6 +9,202 @@ import Camera from '../models/Camera.js';
 
 const router = express.Router();
 
+const seedCities = [
+  {
+    name: 'חולון',
+    lots: [
+      {
+        name: 'חניון המדיטק',
+        address: 'גולדה מאיר 6, חולון',
+        totalSpots: 50,
+        levels: 10,
+        prefix: 'H-M',
+      },
+      {
+        name: 'חניון העירייה',
+        address: 'ויצמן 58, חולון',
+        totalSpots: 18,
+        levels: 2,
+        prefix: 'H-C',
+      },
+      {
+        name: 'חניון קניון חולון',
+        address: 'שדרות ירושלים 62, חולון',
+        totalSpots: 30,
+        levels: 3,
+        prefix: 'H-MALL',
+      },
+      {
+        name: 'חניון וולפסון',
+        address: 'הלוחמים 62, חולון',
+        totalSpots: 22,
+        levels: 2,
+        prefix: 'H-W',
+      },
+    ],
+  },
+  {
+    name: 'תל אביב',
+    lots: [
+      {
+        name: 'חניון עזריאלי',
+        address: 'דרך מנחם בגין 132, תל אביב',
+        totalSpots: 40,
+        levels: 4,
+        prefix: 'TA-AZ',
+      },
+      {
+        name: 'חניון רוטשילד',
+        address: 'שדרות רוטשילד 1, תל אביב',
+        totalSpots: 22,
+        levels: 2,
+        prefix: 'TA-R',
+      },
+      {
+        name: 'חניון דיזנגוף סנטר',
+        address: 'דיזנגוף 50, תל אביב',
+        totalSpots: 28,
+        levels: 3,
+        prefix: 'TA-D',
+      },
+    ],
+  },
+  {
+    name: 'ראשון לציון',
+    lots: [
+      {
+        name: 'חניון ראשונים',
+        address: 'החלמונית 2, ראשון לציון',
+        totalSpots: 20,
+        levels: 2,
+        prefix: 'RZ-1',
+      },
+      {
+        name: 'חניון קניון הזהב',
+        address: 'דרך המכבים 58, ראשון לציון',
+        totalSpots: 32,
+        levels: 3,
+        prefix: 'RZ-GOLD',
+      },
+    ],
+  },
+  {
+    name: 'רמת גן',
+    lots: [
+      {
+        name: 'חניון הבורסה',
+        address: 'תובל 11, רמת גן',
+        totalSpots: 26,
+        levels: 2,
+        prefix: 'RG-B',
+      },
+      {
+        name: 'חניון אצטדיון',
+        address: 'זאב ז׳בוטינסקי 126, רמת גן',
+        totalSpots: 34,
+        levels: 4,
+        prefix: 'RG-S',
+      },
+    ],
+  },
+  {
+    name: 'בת ים',
+    lots: [
+      {
+        name: 'חניון הטיילת',
+        address: 'דרך בן גוריון 125, בת ים',
+        totalSpots: 16,
+        levels: 2,
+        prefix: 'BY-T',
+      },
+      {
+        name: 'חניון העירייה בת ים',
+        address: 'ניסנבאום 25, בת ים',
+        totalSpots: 18,
+        levels: 2,
+        prefix: 'BY-C',
+      },
+    ],
+  },
+  {
+    name: 'גבעתיים',
+    lots: [
+      {
+        name: 'חניון גבעתיים סנטר',
+        address: 'כצנלסון 113, גבעתיים',
+        totalSpots: 14,
+        levels: 2,
+        prefix: 'GV-C',
+      },
+      {
+        name: 'חניון גבעתיים מערב',
+        address: 'ויצמן 12, גבעתיים',
+        totalSpots: 20,
+        levels: 2,
+        prefix: 'GV-W',
+      },
+    ],
+  },
+  {
+    name: 'חיפה',
+    lots: [
+      {
+        name: 'חניון מרכז הכרמל',
+        address: 'שדרות הנשיא 124, חיפה',
+        totalSpots: 24,
+        levels: 3,
+        prefix: 'HF-CN',
+      },
+      {
+        name: 'חניון הנמל',
+        address: 'שדרות פל-ים 8, חיפה',
+        totalSpots: 36,
+        levels: 4,
+        prefix: 'HF-HR',
+      },
+      {
+        name: 'חניון גרנד קניון',
+        address: 'יפה נוף 111, חיפה',
+        totalSpots: 30,
+        levels: 3,
+        prefix: 'HF-GR',
+      },
+      {
+        name: 'חניון בת גלים',
+        address: 'שדרות בת גלים 10, חיפה',
+        totalSpots: 18,
+        levels: 2,
+        prefix: 'HF-BG',
+      },
+    ],
+  },
+];
+
+const createParkingSpots = (parkingLotId, totalSpots, levels, prefix) => {
+  const spots = [];
+
+  for (let i = 1; i <= totalSpots; i++) {
+    const level = Math.min(levels, Math.floor((i - 1) / Math.ceil(totalSpots / levels)) + 1);
+    const status = i % 4 === 0 ? 'occupied' : 'free';
+
+    let type = 'regular';
+    if (i % 11 === 0) type = 'vip';
+    else if (i % 7 === 0) type = 'dean';
+    else if (i % 5 === 0) type = 'disabled';
+
+    spots.push({
+      parkingLot: parkingLotId,
+      level,
+      spotNumber: `${prefix}-${String(i).padStart(2, '0')}`,
+      status,
+      type,
+      currentCarLicensePlate: status === 'occupied' ? `${prefix.replace(/[^A-Z0-9]/gi, '')}-${100 + i}` : null,
+    });
+  }
+
+  return spots;
+};
+
 // ==========================================
 // 1. INITIALIZE DB (Clear data & create collections)
 // ==========================================
@@ -56,90 +252,60 @@ router.post('/seed', async (req, res) => {
     ]);
 
     // 1. Mock Cities
-    const holon = await City.create({ name: 'חולון' });
-    const telAviv = await City.create({ name: 'תל אביב' });
+    const createdCities = {};
+
+    for (const citySeed of seedCities) {
+      createdCities[citySeed.name] = await City.create({ name: citySeed.name });
+    }
 
     // 2. Mock Admin User
     const adminUser = await User.create({
-      fullName: 'Admin Holon',
-      email: 'admin@holon.com',
+      fullName: 'Admin Smart Parking',
+      email: 'admin@smartparking.com',
       password: 'password123',
-      authorizedCity: holon._id
+      authorizedCity: createdCities['תל אביב']._id
     });
 
-    holon.authorizedUsers.push(adminUser._id);
-    await holon.save();
+    createdCities['תל אביב'].authorizedUsers.push(adminUser._id);
+    await createdCities['תל אביב'].save();
 
-    // 3. Mock Parking Lots
-    const lot1 = await ParkingLot.create({
-      name: 'חניון המדיטק',
-      city: holon._id,
-      address: 'גולדה מאיר 6, חולון',
-      totalSpots: 10,  // keeping mock data small for testing
-      levels: 2
-    });
+    // 3. Mock Parking Lots and Spots
+    const activeSessions = [];
 
-    const lot2 = await ParkingLot.create({
-      name: 'חניון עזריאלי',
-      city: telAviv._id,
-      address: 'דרך מנחם בגין 132, תל אביב',
-      totalSpots: 15,
-      levels: 1
-    });
+    for (const citySeed of seedCities) {
+      const cityDoc = createdCities[citySeed.name];
 
-    holon.parkingLots.push(lot1._id);
-    await holon.save();
-
-    telAviv.parkingLots.push(lot2._id);
-    await telAviv.save();
-
-    // 4. Mock Parking Spots for Lot 1 (Mediatheque Holon)
-    const spotsToInsert = [];
-    for (let i = 1; i <= lot1.totalSpots; i++) {
-      const isOccupied = i % 3 === 0; // Make every 3rd spot occupied
-      
-      let spotType = 'regular';
-      if (i === 1) spotType = 'disabled';
-      if (i === 2) spotType = 'dean';
-      if (i === 3) spotType = 'vip';
-
-      spotsToInsert.push({
-        parkingLot: lot1._id,
-        level: i <= 5 ? 1 : 2, // First 5 on level 1, next 5 on level 2
-        spotNumber: `A-${i}`, // e.g., A-1, A-2
-        status: isOccupied ? 'occupied' : 'free', 
-        type: spotType,
-        currentCarLicensePlate: isOccupied ? `123-45-${i}` : null
-      });
-    }
-    await ParkingSpot.insertMany(spotsToInsert);
-
-    // 5. Mock Parking Spots for Lot 2 (Azrieli Tel Aviv)
-    const azrieliSpots = [];
-    for (let i = 1; i <= lot2.totalSpots; i++) {
-        const isOccupied = i % 2 === 0; // Make every 2nd spot occupied
-        
-        let spotType = 'regular';
-        if (i <= 2) spotType = 'disabled';
-
-        azrieliSpots.push({
-            parkingLot: lot2._id,
-            level: 1,
-            spotNumber: `B-${i}`,
-            status: isOccupied ? 'occupied' : 'free',
-            type: spotType,
-            currentCarLicensePlate: isOccupied ? `987-65-${i}` : null
+      for (const lotSeed of citySeed.lots) {
+        const lot = await ParkingLot.create({
+          name: lotSeed.name,
+          city: cityDoc._id,
+          address: lotSeed.address,
+          totalSpots: lotSeed.totalSpots,
+          levels: lotSeed.levels,
         });
-    }
-    await ParkingSpot.insertMany(azrieliSpots);
 
-    // 6. Mock Parking Sessions (Optional)
-    // We'll create one active session just so you have something to fetch if needed
-    await ParkingSession.create({
-      carLicensePlate: '123-45-3', // Matches one of the occupied spots
-      parkingLot: lot1._id,
-      status: 'active'
-    });
+        cityDoc.parkingLots.push(lot._id);
+
+        const spots = createParkingSpots(lot._id, lotSeed.totalSpots, lotSeed.levels, lotSeed.prefix);
+        await ParkingSpot.insertMany(spots);
+
+        const firstOccupiedSpot = spots.find((spot) => spot.status === 'occupied');
+        if (firstOccupiedSpot) {
+          activeSessions.push({
+            carLicensePlate: firstOccupiedSpot.currentCarLicensePlate,
+            parkingLot: lot._id,
+            status: 'active',
+          });
+        }
+      }
+
+      await cityDoc.save();
+    }
+
+    // 4. Mock Parking Sessions
+    if (activeSessions.length > 0) {
+      await ParkingSession.insertMany(activeSessions.slice(0, 6));
+    }
 
     res.json({ message: 'Database successfully seeded with mock data!' });
   } catch (error) {
