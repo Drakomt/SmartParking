@@ -31,9 +31,9 @@ export default function LevelNavigation({ currentLevel, totalLevels, onLevelChan
         onClick={() => onLevelChange(currentLevel - 1)}
         disabled={currentLevel === 1}
         aria-label="מפלס קודם"
-        className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium
-                   border border-transparent text-slate-300
-                   hover:bg-slate-700 hover:text-white
+        className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-bold
+                   border border-transparent text-on-surface-variant
+                   hover:bg-primary/10 hover:text-primary
                    disabled:opacity-40 disabled:cursor-not-allowed
                    transition-colors"
       >
@@ -45,7 +45,7 @@ export default function LevelNavigation({ currentLevel, totalLevels, onLevelChan
         {pages.map((page, i) =>
           typeof page === "string" ? (
             <li key={`ellipsis-${i}`}>
-              <span className="flex items-center justify-center w-9 h-9 text-slate-500">
+              <span className="flex items-center justify-center w-9 h-9 text-on-surface-variant opacity-70">
                 <MoreHorizontalIcon />
               </span>
             </li>
@@ -54,10 +54,10 @@ export default function LevelNavigation({ currentLevel, totalLevels, onLevelChan
               <button
                 onClick={() => onLevelChange(page)}
                 aria-current={page === currentLevel ? "page" : undefined}
-                className={`min-w-9 h-9 px-1.5 rounded-md text-sm font-medium border transition-colors
+                className={`min-w-9 h-9 px-1.5 rounded-md text-sm font-bold border transition-colors
                   ${page === currentLevel
-                    ? "bg-sky-500 text-slate-900 border-transparent shadow-sm" 
-                    : "text-slate-300 border-transparent hover:bg-slate-700 hover:text-white"
+                    ? "bg-primary text-on-primary border-transparent shadow-md" 
+                    : "text-on-surface border-transparent hover:bg-primary/10 hover:text-primary"
                   }`}
               >
                 {page}
@@ -71,9 +71,9 @@ export default function LevelNavigation({ currentLevel, totalLevels, onLevelChan
         onClick={() => onLevelChange(currentLevel + 1)}
         disabled={currentLevel === totalLevels}
         aria-label="מפלס הבא"
-        className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium
-                   border border-transparent text-slate-300
-                   hover:bg-slate-700 hover:text-white
+        className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-bold
+                   border border-transparent text-on-surface-variant
+                   hover:bg-primary/10 hover:text-primary
                    disabled:opacity-40 disabled:cursor-not-allowed
                    transition-colors"
       >

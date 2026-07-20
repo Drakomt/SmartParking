@@ -57,51 +57,73 @@ export default function SearchInput({ onSearch, availableCities = [] }) {
     }
   };
 
+  const renderHighlightedText = (text, highlight) => {
+    if (!highlight.trim()) return text;
+    const regex = new RegExp(`^(${highlight})`, 'i');
+    const parts = text.split(regex);
+    return (
+      <span className="font-body-md text-on-surface">
+        {parts.map((part, i) => 
+          regex.test(part) ? <span key={i} className="font-bold">{part}</span> : part
+        )}
+      </span>
+    );
+  };
+
   return (
     <form onSubmit={handleSubmit} className="relative w-full mb-6">
-      <div className="flex gap-3 w-full">
-        <input
-          type="text"
-          placeholder="חפש עיר (לדוגמה: חולון)..."
-          value={inputValue}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          className="w-full bg-slate-700/50 text-white placeholder-slate-400 px-5 py-3 rounded-xl border border-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all duration-300"
-        />
+      <div className="bg-white/80 backdrop-blur-2xl rounded-2xl p-2 shadow-[0_20px_40px_-10px_rgba(30,41,59,0.15)] flex items-center gap-2 max-w-3xl border border-white/50 mr-0">
+        
+        <div className="flex-grow relative">
+          <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+          <input
+            type="text"
+            placeholder="הזן שם עיר (לדוגמה: חולון)"
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            className="w-full bg-transparent border-none focus:ring-0 text-right pr-12 pl-4 py-4 font-body-lg text-body-lg text-on-surface placeholder-outline-variant outline-none"
+          />
+
+          {isOpen && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-surface-container-lowest rounded-xl shadow-[0_20px_40px_-10px_rgba(30,41,59,0.15)] border border-outline-variant/20 overflow-hidden z-50">
+              <ul className="flex flex-col m-0 p-0">
+                {filteredCities.length > 0 ? (
+                  filteredCities.map((city, index) => {
+                    const isActive = index === activeIndex;
+
+                    return (
+                      <li
+                        key={city._id || index}
+                        onClick={() => handleSuggestionClick(city)}
+                        className={`px-4 py-3 cursor-pointer transition-colors border-b border-outline-variant/10 last:border-none
+                          ${isActive ? "bg-surface-container-low" : "hover:bg-surface-container-low"}
+                        `}
+                      >
+                        <div className="flex items-center gap-2 text-right w-full">
+                          <span className="material-symbols-outlined text-outline text-sm">location_on</span>
+                          {renderHighlightedText(city.name, inputValue)}
+                        </div>
+                      </li>
+                    );
+                  })
+                ) : (
+                  <li className="px-5 py-4 text-on-surface-variant text-center">
+                    לא נמצאו ערים במאגר
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
+        </div>
 
         <button
           type="submit"
-          className="cursor-pointer px-5 py-2 bg-transparent border border-slate-600 hover:border-sky-400 hover:bg-sky-400/10 text-slate-300 hover:text-sky-400 rounded-xl transition-all duration-300 font-medium z-10 shrink-0"
+          className="bg-primary text-on-primary rounded-xl px-6 py-4 font-headline-sm text-headline-sm font-bold hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-md shrink-0 cursor-pointer"
         >
           חפש
         </button>
       </div>
-
-      {isOpen && (
-        <ul className="absolute z-50 w-full mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto text-right pr-0">
-          {filteredCities.length > 0 ? (
-            filteredCities.map((city, index) => {
-              const isActive = index === activeIndex;
-
-              return (
-                <li
-                  key={city._id || index}
-                  onClick={() => handleSuggestionClick(city)}
-                  className={`cursor-pointer px-5 py-3 transition-colors border-b border-slate-700/50 last:border-none font-medium
-                    ${isActive ? "bg-slate-600 text-white" : "text-slate-200 hover:bg-slate-600 hover:text-white"}
-                  `}
-                >
-                  {city.name}
-                </li>
-              );
-            })
-          ) : (
-            <li className="px-5 py-4 text-slate-400 text-center">
-              לא נמצאו ערים במאגר
-            </li>
-          )}
-        </ul>
-      )}
     </form>
   );
 }

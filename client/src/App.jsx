@@ -4,7 +4,7 @@ import NavBar from "./components/NavBar";
 import LoginForm from "./components/LoginForm";
 
 const DashboardDummy = () => (
-  <div className="flex items-center justify-center min-h-[50vh] text-sky-400 text-3xl font-bold mt-10">
+  <div className="flex items-center justify-center min-h-[50vh] text-primary text-3xl font-bold mt-10">
   ! איזור למורשים בלבד
   </div>
 );
@@ -12,7 +12,7 @@ const DashboardDummy = () => (
 function App() {
   return (
     <BrowserRouter>
-      <div className="flex flex-col min-h-screen bg-slate-900">
+      <div className="flex flex-col min-h-screen">
         <NavBar />
         <main className="flex-grow">
           <Routes>
@@ -22,6 +22,7 @@ function App() {
             <Route path="/dashboard" element={<DashboardDummy />} />
           </Routes>
         </main>
+        
       </div>
     </BrowserRouter>
   );
