@@ -1,5 +1,13 @@
 import ParkingSpot from '../models/ParkingSpot.js';
 
+const findAllSpots = async () => {
+  return await ParkingSpot.find({});
+};
+
+const findSpotById = async (id) => {
+  return await ParkingSpot.findById(id);
+};
+
 const findSpotsByLotAndLevel = async (parkingLotId, level) => {
   return await ParkingSpot.find({ parkingLot: parkingLotId, level });
 };
@@ -21,4 +29,4 @@ const deleteSpot = async (id) => {
   return await ParkingSpot.findByIdAndDelete(id);
 };
 
-export default { findSpotsByLotAndLevel, findSpotsByLot, createSpot, updateSpot, deleteSpot };
+export default { findAllSpots, findSpotById, findSpotsByLotAndLevel, findSpotsByLot, createSpot, updateSpot, deleteSpot };

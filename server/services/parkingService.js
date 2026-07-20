@@ -27,7 +27,21 @@ const fetchLotsByCity = async (cityName) => {
   if (!city) {
     throw new Error('City not found');
   }
-  return await parkingLotRepo.findAllLots({ city: city._id });
+
+  const parkingLots = await parkingLotRepo.findAllLots({ city: city._id });
+
+  const lotsWithSpots = await Promise.all(
+    parkingLots.map(async (parkingLot) => {
+      const spots = await parkingSpotRepo.findSpotsByLot(parkingLot._id);
+
+      return {
+        ...parkingLot.toObject(),
+        spots: spots.map((spot) => spot.toObject()),
+      };
+    })
+  );
+
+  return lotsWithSpots;
 };
 
 const fetchParkingLotById = async (id) => {

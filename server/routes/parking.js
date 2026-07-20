@@ -115,7 +115,9 @@ router.route('/:id/spots')
       const spot = await parkingService.addSpot({
         parkingLot: req.params.id,
         level: req.body.level || 1,
+        spotNumber: req.body.spotNumber || null,
         status: req.body.status || 'free',
+        type: req.body.type || 'regular',
         currentCarLicensePlate: req.body.currentCarLicensePlate || null
       }, req.user);
       res.status(201).json(spot);

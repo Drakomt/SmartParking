@@ -11,10 +11,19 @@ const parkingSpotSchema = new mongoose.Schema({
     required: true,
     default: 1
   },
+  spotNumber: {
+    type: String,
+    default: null,
+  },
   status: {
     type: String,
     enum: ['free', 'occupied'],
     default: 'free',
+  },
+  type: {
+    type: String,
+    enum: ['regular', 'disabled', 'dean', 'vip'],
+    default: 'regular',
   },
   currentCarLicensePlate: {
     type: String,
