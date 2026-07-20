@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { io } from "socket.io-client";
 
-const useParkingData = (parkingLotId, currentLevel) => {
+const useParkingData = (parkingLotId, currentLevel, cityName) => {
   const [parkings, setParkings] = useState([]);
   const [totalLevels, setTotalLevels] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -14,15 +15,12 @@ const useParkingData = (parkingLotId, currentLevel) => {
       setError(null);
 
       try {
-        
         const response = await fetch(`http://localhost:3000/api/parking/${parkingLotId}/spots?level=${currentLevel}`);
         if (!response.ok) {
           throw new Error("שגיאה במשיכת נתוני החניון");
         }
 
         const data = await response.json();
-        console.log(data);
-        console.log(data);
         setParkings(data.slots || []);
         setTotalLevels(data.totalLevels || 1);
         
@@ -37,7 +35,36 @@ const useParkingData = (parkingLotId, currentLevel) => {
     fetchParkingData();
     
   }, [parkingLotId, currentLevel]); 
-  
+
+  useEffect(() => {
+    if (!cityName) return;
+
+    const socket = io("http://localhost:3000", {
+      query: { city: cityName }
+    });
+
+    socket.on("connect", () => {
+      console.log(`Connected to socket server for city: ${cityName}`);
+    });
+
+    socket.on("parking-spot-updated", (updatedSpot) => {
+      console.log("Real-time spot update received in ParkingLotView:", updatedSpot);
+      
+      setParkings((prevParkings) => {
+        const exists = prevParkings.find(s => s._id === updatedSpot.spot?.id);
+        if (!exists) return prevParkings; // If the spot is not on this level/lot, ignore it
+
+        return prevParkings.map((spot) => 
+          spot._id === updatedSpot.spot?.id ? { ...spot, status: updatedSpot.spot.status } : spot
+        );
+      });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [cityName]);
+
   return { parkings, totalLevels, isLoading, error };
 };
 

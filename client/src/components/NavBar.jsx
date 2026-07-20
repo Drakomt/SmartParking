@@ -5,7 +5,10 @@ export default function NavBar() {
   return (
     <nav className="fixed top-0 w-full z-50 bg-white/70 dark:bg-primary/70 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm flex flex-row-reverse justify-between items-center px-gutter h-16">
       <div className="flex items-center gap-4">
-        <NavLink to="/">
+        <NavLink 
+          to="/" 
+          onClick={() => window.dispatchEvent(new CustomEvent("reset-home"))}
+        >
           <span className="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">SMART PARKING</span>
         </NavLink>
       </div>

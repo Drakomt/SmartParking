@@ -49,23 +49,26 @@ export default function LoginForm() {
     }
   };
 
-return (
-    <div
-      className="min-h-screen flex items-center justify-center bg-slate-900 p-4 font-sans text-slate-200"
-      dir="rtl"
-    >
-      <div className="w-full max-w-md bg-slate-800 rounded-2xl shadow-xl border border-slate-700/60 overflow-hidden">
+  return (
+    <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-64px)] w-full overflow-hidden">
+      {/* Background Image (same as Hero) */}
+      <div className="absolute inset-0 w-full h-full -z-10">
+        <div className="bg-cover bg-center w-full h-full opacity-80" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuA64VTqgTggEVtFrsRgJck0iW18vOJttvc0fJ-PZDM9McmLGlqp2qKjlZBLTy4u5Vlv055HUKsgsJwYCU89Ng2HvTlFlsq8CLHZMdTcrt0dlelz3ltdBh0k_svvmmJtqS50PdgxXNDyZu50r7Ggm2-e4eV5Jg5Xh73QKGXZkjxi_IM57b3Qr7d09ifYTEamtTTD8Xjn9XUhNg4QXDpKMojtZxtbAl0LsAoWbtv_XLKB1XdYxZuc5P8Mw0TnKwxhUz2Hy--sEYsKeA")' }}></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background"></div>
+      </div>
+
+      <div className="w-full max-w-md bg-white/80 backdrop-blur-2xl rounded-3xl shadow-[0_20px_40px_-10px_rgba(30,41,59,0.15)] border border-white/50 overflow-hidden m-4 relative z-10">
         <div className="p-8 sm:p-10">
           <div className="mb-8 text-right">
-            <h2 className="text-2xl font-bold text-white mb-2">כניסה למערכת</h2>
-            <p className="text-sm text-slate-400">הכניסה למורשים בלבד!</p>
+            <h2 className="text-3xl font-headline-lg font-bold text-primary mb-2">כניסה למערכת</h2>
+            <p className="text-body-md text-on-surface-variant">הכניסה למורשים בלבד!</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="text-right">
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-slate-300 mb-2"
+                className="block text-label-md text-on-surface mb-2"
               >
                 אימייל
               </label>
@@ -75,7 +78,7 @@ return (
                 id="email"
                 value={fields.email}
                 onChange={handleInputChange}
-                className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full bg-surface-container-lowest/50 border border-outline-variant rounded-xl px-4 py-3 text-on-surface placeholder-outline focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
                 placeholder="הזן אימייל"
                 disabled={isLoading}
               />
@@ -84,7 +87,7 @@ return (
             <div className="text-right">
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-slate-300 mb-2"
+                className="block text-label-md text-on-surface mb-2"
               >
                 סיסמה
               </label>
@@ -94,27 +97,27 @@ return (
                 id="password"
                 value={fields.password}
                 onChange={handleInputChange}
-                className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full bg-surface-container-lowest/50 border border-outline-variant rounded-xl px-4 py-3 text-on-surface placeholder-outline focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
                 placeholder="הזן סיסמה"
                 disabled={isLoading}
               />
             </div>
             
             {error && (
-              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+              <div className="p-4 bg-error-container/80 border border-error/20 rounded-xl text-on-error-container text-body-md font-medium text-center">
                 {error}
               </div>
             )}
             
-            <div className="pt-2 flex justify-start">
+            <div className="pt-4 flex justify-start">
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`flex justify-center items-center text-white font-medium py-2.5 px-8 min-w-[120px] rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800
-                  ${isLoading ? "bg-blue-800 cursor-not-allowed opacity-70" : "bg-blue-600 hover:bg-blue-500"}`}
+                className={`flex justify-center items-center w-full sm:w-auto font-headline-sm font-bold py-3 px-8 rounded-xl transition-all duration-300 focus:outline-none shadow-md
+                  ${isLoading ? "bg-primary-container text-on-primary-container cursor-not-allowed opacity-70" : "bg-primary text-on-primary hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5"}`}
               >
                 {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-6 h-6 border-2 border-on-primary-container border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   "התחבר"
                 )}

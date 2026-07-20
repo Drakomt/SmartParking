@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ParkingLotView from "../components/ParkingLotView";
 import useParkingLots from "../hooks/useParkingLots";
 import SearchInput from "../components/SearchInput";
@@ -14,7 +14,6 @@ export default function HomePage() {
   const [currentLevel, setCurrentLevel] = useState(1);
   const [recentSearches, setRecentSearches] = useState([]);
 
-  // Load recent searches on mount
   useState(() => {
     const stored = localStorage.getItem("smartParking_recentSearches");
     if (stored) {
@@ -24,6 +23,21 @@ export default function HomePage() {
         console.error("Failed to parse recent searches", e);
       }
     }
+  }, []);
+
+  const onBack = () => {
+    setSelectedParkingLotId(null);
+    setCurrentLevel(1); 
+  };
+
+  // Listen for the custom 'reset-home' event dispatched by the NavBar logo
+  useEffect(() => {
+    const handleReset = () => {
+      setSelectedParkingLotId(null);
+      setCurrentLevel(1);
+    };
+    window.addEventListener("reset-home", handleReset);
+    return () => window.removeEventListener("reset-home", handleReset);
   }, []);
 
   const handleSearchSubmit = (city) => {
@@ -40,12 +54,9 @@ export default function HomePage() {
     totalLevels, 
     isLoading: isLoadingSlots, 
     error: slotsError 
-  } = useParkingData(selectedParkingLotId, currentLevel);
+  } = useParkingData(selectedParkingLotId, currentLevel, submittedCity);
 
-  const onBack = () => {
-    setSelectedParkingLotId(null);
-    setCurrentLevel(1); 
-  };
+  // Removed duplicate onBack
 
   const handleUpdateLocation = (lotId) => {
     setSelectedParkingLotId(lotId);
@@ -83,14 +94,13 @@ export default function HomePage() {
         </div>
       ) : (
         <>
-          {/* Hero Section */}
           <section className="relative w-full h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
             <div className="absolute inset-0 w-full h-full">
               <div className="bg-cover bg-center w-full h-full opacity-80" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuA64VTqgTggEVtFrsRgJck0iW18vOJttvc0fJ-PZDM9McmLGlqp2qKjlZBLTy4u5Vlv055HUKsgsJwYCU89Ng2HvTlFlsq8CLHZMdTcrt0dlelz3ltdBh0k_svvmmJtqS50PdgxXNDyZu50r7Ggm2-e4eV5Jg5Xh73QKGXZkjxi_IM57b3Qr7d09ifYTEamtTTD8Xjn9XUhNg4QXDpKMojtZxtbAl0LsAoWbtv_XLKB1XdYxZuc5P8Mw0TnKwxhUz2Hy--sEYsKeA")' }}></div>
               <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background"></div>
             </div>
             <div className="relative z-10 w-full max-w-4xl px-container-padding text-right">
-              <h1 className="font-headline-lg text-headline-lg md:font-headline-lg text-primary mb-6 drop-shadow-md">
+              <h1 className="text-4xl sm:text-5xl md:text-3xl font-black text-primary mb-6 drop-shadow-lg tracking-tight">
                   מצא את החניה המושלמת בעיר שלך
               </h1>
               <p className="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-2xl">
@@ -103,13 +113,10 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Dynamic Content Sections */}
           <div className="max-w-7xl mx-auto px-container-padding py-section-margin w-full flex flex-col gap-section-margin">
             
-            {/* Sections Container */}
             <div className="flex flex-col gap-section-margin w-full">
               
-              {/* Search Results */}
               <section className="flex flex-col w-full">
                 <h2 className="font-headline-md text-headline-md text-primary mb-4 flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary">local_parking</span>
@@ -146,11 +153,16 @@ export default function HomePage() {
                             </div>
                           </div>
                           
-                          <div className="w-full pt-3 mt-1 border-t border-outline-variant/20 flex justify-start items-center">
+                          <div className="w-full pt-3 mt-1 border-t border-outline-variant/20 flex justify-start items-center gap-2">
                              {lot.totalSpots && (
                                 <span className="bg-surface-container-high px-2 py-1 rounded-md text-label-sm text-on-surface font-bold group-hover:bg-primary group-hover:text-on-primary transition-colors">
-                                  {lot.totalSpots} מקומות
+                                  {lot.totalSpots} סה"כ מקומות
                                 </span>
+                             )}
+                             {lot.spots && (
+                               <span className={`px-2 py-1 rounded-md text-label-sm font-bold transition-colors ${lot.spots.filter(s => s.status === 'free').length > 0 ? 'bg-primary-container text-on-primary-container group-hover:bg-primary-fixed group-hover:text-on-primary-fixed' : 'bg-error-container text-on-error-container'}`}>
+                                 {lot.spots.filter(s => s.status === 'free').length} פנויים
+                               </span>
                              )}
                           </div>
                         </button>
@@ -174,7 +186,6 @@ export default function HomePage() {
                 </div>
               </section>
 
-              {/* Recent Searches */}
               {recentSearches.length > 0 && (
                 <section className="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] border border-outline-variant/20 flex flex-col w-full">
                   <h2 className="font-headline-md text-headline-md text-primary mb-4 flex items-center gap-2">
