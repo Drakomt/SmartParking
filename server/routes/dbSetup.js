@@ -182,23 +182,36 @@ const seedCities = [
 
 const createParkingSpots = (parkingLotId, totalSpots, levels, prefix) => {
   const spots = [];
+  const maxLevel = Math.min(16, Math.max(1, Math.min(levels, totalSpots)));
 
-  for (let i = 1; i <= totalSpots; i++) {
-    const level = Math.min(levels, Math.floor((i - 1) / Math.ceil(totalSpots / levels)) + 1);
-    const status = i % 4 === 0 ? 'occupied' : 'free';
+  const levelPlan = [];
+  for (let level = 1; level <= maxLevel; level += 1) {
+    levelPlan.push(level);
+  }
+
+  for (let extra = maxLevel; extra < totalSpots; extra += 1) {
+    levelPlan.push(Math.floor(Math.random() * maxLevel) + 1);
+  }
+
+  while (levelPlan.length > 0) {
+    const randomIndex = Math.floor(Math.random() * levelPlan.length);
+    const [selectedLevel] = levelPlan.splice(randomIndex, 1);
+    const spotIndex = totalSpots - levelPlan.length;
+
+    const status = spotIndex % 4 === 0 ? 'occupied' : 'free';
 
     let type = 'regular';
-    if (i % 11 === 0) type = 'vip';
-    else if (i % 7 === 0) type = 'dean';
-    else if (i % 5 === 0) type = 'disabled';
+    if (spotIndex % 11 === 0) type = 'vip';
+    else if (spotIndex % 7 === 0) type = 'dean';
+    else if (spotIndex % 5 === 0) type = 'disabled';
 
     spots.push({
       parkingLot: parkingLotId,
-      level,
-      spotNumber: `${prefix}-${String(i).padStart(2, '0')}`,
+      level: selectedLevel,
+      spotNumber: `${prefix}-${String(spotIndex).padStart(2, '0')}`,
       status,
       type,
-      currentCarLicensePlate: status === 'occupied' ? `${prefix.replace(/[^A-Z0-9]/gi, '')}-${100 + i}` : null,
+      currentCarLicensePlate: status === 'occupied' ? `${prefix.replace(/[^A-Z0-9]/gi, '')}-${100 + spotIndex}` : null,
     });
   }
 
