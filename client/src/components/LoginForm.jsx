@@ -50,7 +50,7 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-64px)] w-full overflow-hidden">
+    <div className="relative flex flex-col items-center justify-center min-h-screen pt-16 w-full overflow-hidden">
       {/* Background Image (same as Hero) */}
       <div className="absolute inset-0 w-full h-full -z-10">
         <div className="bg-cover bg-center w-full h-full opacity-80" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuA64VTqgTggEVtFrsRgJck0iW18vOJttvc0fJ-PZDM9McmLGlqp2qKjlZBLTy4u5Vlv055HUKsgsJwYCU89Ng2HvTlFlsq8CLHZMdTcrt0dlelz3ltdBh0k_svvmmJtqS50PdgxXNDyZu50r7Ggm2-e4eV5Jg5Xh73QKGXZkjxi_IM57b3Qr7d09ifYTEamtTTD8Xjn9XUhNg4QXDpKMojtZxtbAl0LsAoWbtv_XLKB1XdYxZuc5P8Mw0TnKwxhUz2Hy--sEYsKeA")' }}></div>
@@ -58,8 +58,8 @@ export default function LoginForm() {
       </div>
 
       <div className="w-full max-w-md bg-white/80 backdrop-blur-2xl rounded-3xl shadow-[0_20px_40px_-10px_rgba(30,41,59,0.15)] border border-white/50 overflow-hidden m-4 relative z-10">
-        <div className="p-8 sm:p-10">
-          <div className="mb-8 text-right">
+        <div className="p-6 sm:p-8">
+          <div className="mb-6 text-right">
             <h2 className="text-3xl font-headline-lg font-bold text-primary mb-2">כניסה למערכת</h2>
             <p className="text-body-md text-on-surface-variant">הכניסה למורשים בלבד!</p>
           </div>

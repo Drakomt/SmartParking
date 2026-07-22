@@ -9,12 +9,18 @@ export default function NavBar() {
           to="/" 
           onClick={() => window.dispatchEvent(new CustomEvent("reset-home"))}
         >
-          <span className="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">SMART PARKING</span>
+          <span className="text-2xl sm:text-3xl font-black tracking-tight text-primary dark:text-primary-fixed">SMART PARKING</span>
         </NavLink>
       </div>
-      <div className="flex flex-row-reverse items-center gap-6">
-        
-        <button onClick={() => { navigate("/login") }} className="cursor-pointer text-secondary dark:text-secondary-fixed-dim hover:bg-secondary-container/10 transition-colors font-headline-sm text-headline-sm border border-secondary/30 rounded-lg px-4 py-2 flex items-center justify-center">
+      <div className="flex flex-row-reverse items-center gap-4 sm:gap-6">
+        <button 
+          onClick={() => window.dispatchEvent(new CustomEvent("show-favorites"))} 
+          className="cursor-pointer text-black hover:bg-yellow-500/10 transition-colors font-headline-sm text-headline-sm rounded-lg px-3 sm:px-4 py-2 flex items-center justify-center gap-1 sm:gap-2"
+          title="חניונים שמורים"
+        >
+          <span className="hidden sm:inline">חניונים שמורים</span>
+        </button>
+        <button onClick={() => { navigate("/login") }} className="cursor-pointer text-secondary dark:text-secondary-fixed-dim hover:bg-secondary-container/10 transition-colors font-headline-sm text-headline-sm border border-secondary/30 rounded-lg px-3 sm:px-4 py-2 flex items-center justify-center">
           כניסה למורשים
         </button>
       </div>

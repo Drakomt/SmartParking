@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 
@@ -8,19 +9,18 @@ const useParkingData = (parkingLotId, currentLevel, cityName) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!parkingLotId) return;
+    if (!parkingLotId || parkingLotId === "undefined") return;
 
     const fetchParkingData = async () => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await fetch(`http://localhost:3000/api/parking/${parkingLotId}/spots?level=${currentLevel}`);
-        if (!response.ok) {
-          throw new Error("שגיאה במשיכת נתוני החניון");
-        }
-
-        const data = await response.json();
+        const response = await axios.get(`http://localhost:3000/api/parking/${parkingLotId}/spots`, {
+          params: { level: currentLevel }
+        });
+        const data = response.data;
+        console.log("JSON received from Backend for this level:", data);
         setParkings(data.slots || []);
         setTotalLevels(data.totalLevels || 1);
         

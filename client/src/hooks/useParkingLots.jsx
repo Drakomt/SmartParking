@@ -27,6 +27,7 @@ const useParkingLots = (cityName) => {
         });
 
         if (isMounted) {
+          console.log("JSON received from Backend for lotsbycity:", response.data);
           setParkingLotsCity(response.data);
         }
       } catch (fetchError) {
