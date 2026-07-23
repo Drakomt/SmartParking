@@ -16,6 +16,15 @@ export default function HomePage() {
   const [recentSearches, setRecentSearches] = useState([]);
   const [favoriteLots, setFavoriteLots] = useState([]);
   const [showFavorites, setShowFavorites] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state?.showFavorites) {
+      setShowFavorites(true);
+      navigate(".", { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   const location = useLocation();
   const navigate = useNavigate();

@@ -1,14 +1,14 @@
 import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function LoginForm() {
   const [fields, setFields] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  
-  const navigate = useNavigate(); 
+
+  const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleInputChange = (e) => {
@@ -18,7 +18,7 @@ export default function LoginForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!fields.email || !fields.password) {
       setError("אנא הזן אימייל וסיסמה.");
       return;
@@ -28,18 +28,20 @@ export default function LoginForm() {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:3000/api/auth/login", {
-        email: fields.email,
-        password: fields.password
-      });
+      const response = await axios.post(
+        "http://localhost:3000/api/auth/login",
+        {
+          email: fields.email,
+          password: fields.password,
+        },
+      );
 
       console.log("התחברות בהצלחה:", response.data);
-      
+
       login(response.data);
       setFields({ email: "", password: "" });
-      
+
       navigate("/dashboard");
-      
     } catch (err) {
       console.error("שגיאת התחברות:", err);
       if (err.response && err.response.data && err.response.data.message) {
@@ -56,15 +58,25 @@ export default function LoginForm() {
     <div className="relative flex flex-col items-center justify-center min-h-screen pt-16 w-full overflow-hidden">
       {/* Background Image (same as Hero) */}
       <div className="absolute inset-0 w-full h-full -z-10">
-        <div className="bg-cover bg-center w-full h-full opacity-80" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuA64VTqgTggEVtFrsRgJck0iW18vOJttvc0fJ-PZDM9McmLGlqp2qKjlZBLTy4u5Vlv055HUKsgsJwYCU89Ng2HvTlFlsq8CLHZMdTcrt0dlelz3ltdBh0k_svvmmJtqS50PdgxXNDyZu50r7Ggm2-e4eV5Jg5Xh73QKGXZkjxi_IM57b3Qr7d09ifYTEamtTTD8Xjn9XUhNg4QXDpKMojtZxtbAl0LsAoWbtv_XLKB1XdYxZuc5P8Mw0TnKwxhUz2Hy--sEYsKeA")' }}></div>
+        <div
+          className="bg-cover bg-center w-full h-full opacity-80"
+          style={{
+            backgroundImage:
+              'url("https://lh3.googleusercontent.com/aida-public/AB6AXuA64VTqgTggEVtFrsRgJck0iW18vOJttvc0fJ-PZDM9McmLGlqp2qKjlZBLTy4u5Vlv055HUKsgsJwYCU89Ng2HvTlFlsq8CLHZMdTcrt0dlelz3ltdBh0k_svvmmJtqS50PdgxXNDyZu50r7Ggm2-e4eV5Jg5Xh73QKGXZkjxi_IM57b3Qr7d09ifYTEamtTTD8Xjn9XUhNg4QXDpKMojtZxtbAl0LsAoWbtv_XLKB1XdYxZuc5P8Mw0TnKwxhUz2Hy--sEYsKeA")',
+          }}
+        ></div>
         <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background"></div>
       </div>
 
       <div className="w-full max-w-md bg-white/80 backdrop-blur-2xl rounded-3xl shadow-[0_20px_40px_-10px_rgba(30,41,59,0.15)] border border-white/50 overflow-hidden m-4 relative z-10">
         <div className="p-6 sm:p-8">
           <div className="mb-6 text-right">
-            <h2 className="text-3xl font-headline-lg font-bold text-primary mb-2">כניסה למערכת</h2>
-            <p className="text-body-md text-on-surface-variant">הכניסה למורשים בלבד!</p>
+            <h2 className="text-3xl font-headline-lg font-bold text-primary mb-2">
+              כניסה למערכת
+            </h2>
+            <p className="text-body-md text-on-surface-variant">
+              הכניסה למורשים בלבד!
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -105,13 +117,13 @@ export default function LoginForm() {
                 disabled={isLoading}
               />
             </div>
-            
+
             {error && (
               <div className="p-4 bg-error-container/80 border border-error/20 rounded-xl text-on-error-container text-body-md font-medium text-center">
                 {error}
               </div>
             )}
-            
+
             <div className="pt-4 flex justify-start">
               <button
                 type="submit"
