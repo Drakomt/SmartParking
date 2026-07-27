@@ -17,11 +17,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  authorizedCity: {
+  authorizedCities: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'City',
-    // nullable initially or if admin
-  }
+  }]
 }, { timestamps: true });
 
 // Hash password before saving

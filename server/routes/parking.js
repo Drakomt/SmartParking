@@ -39,7 +39,7 @@ router.route('/')
         address: req.body.address,
         totalSpots: req.body.totalSpots,
         levels: req.body.levels
-      });
+      }, req.user);
       res.status(201).json(parkingLot);
     } catch (error) {
       res.status(500).json({ message: 'Server Error', error: error.message });
@@ -65,6 +65,36 @@ router.get('/parkinglotbyid', async (req, res) => {
     } catch (error) {
       res.status(404).json({ message: error.message });
     }
+});
+
+router.get('/authorized/cities', protect, async (req, res) => {
+  try {
+    const cities = await parkingService.fetchAuthorizedCities(req.user);
+    res.json(cities);
+  } catch (error) {
+    const statusCode = error.message.includes('authorized') ? 401 : 500;
+    res.status(statusCode).json({ message: error.message });
+  }
+});
+
+router.get('/authorized/lots', protect, async (req, res) => {
+  try {
+    const lots = await parkingService.fetchParkingLots(req.user);
+    res.json(lots);
+  } catch (error) {
+    const statusCode = error.message.includes('authorized') ? 401 : 500;
+    res.status(statusCode).json({ message: error.message });
+  }
+});
+
+router.get('/authorized/cities/:cityId', protect, async (req, res) => {
+  try {
+    const cityDetails = await parkingService.fetchAuthorizedLotsByCity(req.params.cityId, req.user);
+    res.json(cityDetails);
+  } catch (error) {
+    const statusCode = error.message.includes('authorized') ? 403 : error.message.includes('not found') ? 404 : 500;
+    res.status(statusCode).json({ message: error.message });
+  }
 });
 
 router.route('/:id')

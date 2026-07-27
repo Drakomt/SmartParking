@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import connectDB from '../config/db.js';
 import parkingSpotRepo from '../repositories/parkingSpotRepo.js';
+import parkingSessionRepo from '../repositories/parkingSessionRepo.js';
 
 dotenv.config();
 
@@ -23,24 +24,62 @@ const getRandomStatus = (currentStatus) => {
   return Math.random() < 0.5 ? 'free' : 'occupied';
 };
 
-const sendSpotUpdate = async () => {
+const sendSpotAndSessionUpdate = async () => {
   const spots = await parkingSpotRepo.findAllSpots();
-
   if (!spots.length) {
     console.log('[lora-simulator] No parking spots found. Waiting for data...');
     return;
   }
 
-  const spot = pickRandomSpot(spots);
-  const status = getRandomStatus(spot.status);
+  const freeSpots = spots.filter((s) => s.status === 'free');
+  const occupiedSpots = spots.filter((s) => s.status === 'occupied');
+  let action = !freeSpots.length
+    ? 'remove'
+    : !occupiedSpots.length
+    ? 'create'
+    : Math.random() < 0.5
+    ? 'create'
+    : 'remove';
 
-  const payload = {
-    data: {
-      id: spot._id.toString(),
-      parkingLotId: spot.parkingLot.toString(),
-      status,
+  let spot;
+  if (action === 'create') {
+    spot = pickRandomSpot(freeSpots);
+  } else {
+    const session = await parkingSessionRepo.findRandomSession();
+    if (!session) {
+      action = 'create';
+      spot = pickRandomSpot(freeSpots);
+    } else {
+      const lotId = session.parkingLot.toString();
+      const lotOccupiedSpots = occupiedSpots.filter((s) => s.parkingLot.toString() === lotId);
+      spot = lotOccupiedSpots.length ? pickRandomSpot(lotOccupiedSpots) : pickRandomSpot(occupiedSpots);
+    }
+  }
+
+  const status = action === 'create' ? 'occupied' : 'free';
+
+  const messages = [
+    {
+      type: 'session',
+      data: {
+        action,
+        parkingLotId: spot.parkingLot.toString(),
+        parkingSpotId: spot._id.toString(),
+      },
     },
-  };
+    {
+      type: 'spot',
+      data: {
+        id: spot._id.toString(),
+        parkingLotId: spot.parkingLot.toString(),
+        status,
+      },
+    },
+  ];
+
+  const payload = { messages };
+
+  console.log('[lora-simulator] Sending update messages:', messages);
 
   const response = await fetch(LORA_ENDPOINT, {
     method: 'POST',
@@ -51,15 +90,15 @@ const sendSpotUpdate = async () => {
   });
 
   const responseBody = await response.json().catch(() => null);
-
   if (!response.ok) {
     throw new Error(responseBody?.message || `Request failed with status ${response.status}`);
   }
 
-  console.log('[lora-simulator] Sent update:', {
+  console.log('[lora-simulator] Sent related update payload:', {
     spotId: spot._id.toString(),
     parkingLotId: spot.parkingLot.toString(),
     status,
+    sessionAction: action,
   });
 };
 
@@ -68,7 +107,7 @@ const startSimulator = async () => {
 
   const runCycle = async () => {
     try {
-      await sendSpotUpdate();
+      await sendSpotAndSessionUpdate();
     } catch (error) {
       console.error('[lora-simulator] Error sending update:', error.message);
     }
@@ -82,3 +121,4 @@ startSimulator().catch((error) => {
   console.error('[lora-simulator] Fatal error:', error.message);
   process.exit(1);
 });
+

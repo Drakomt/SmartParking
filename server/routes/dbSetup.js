@@ -193,25 +193,34 @@ const createParkingSpots = (parkingLotId, totalSpots, levels, prefix) => {
     levelPlan.push(Math.floor(Math.random() * maxLevel) + 1);
   }
 
+  const levelCounters = {};
+
   while (levelPlan.length > 0) {
     const randomIndex = Math.floor(Math.random() * levelPlan.length);
     const [selectedLevel] = levelPlan.splice(randomIndex, 1);
-    const spotIndex = totalSpots - levelPlan.length;
 
-    const status = spotIndex % 4 === 0 ? 'occupied' : 'free';
+    // increment per-level counter to get the spot's index within its level
+    const currentCount = (levelCounters[selectedLevel] || 0) + 1;
+    levelCounters[selectedLevel] = currentCount;
+
+    const status = currentCount % 4 === 0 ? 'occupied' : 'free';
 
     let type = 'regular';
-    if (spotIndex % 11 === 0) type = 'vip';
-    else if (spotIndex % 7 === 0) type = 'dean';
-    else if (spotIndex % 5 === 0) type = 'disabled';
+    if (currentCount % 11 === 0) type = 'vip';
+    else if (currentCount % 7 === 0) type = 'dean';
+    else if (currentCount % 5 === 0) type = 'disabled';
+
+    // spot name: level + spotIndexInLevel (padded to 2 digits), e.g. level 3 spot 4 -> "304", level 10 spot 12 -> "1012"
+    const spotNumber = `${selectedLevel}${String(currentCount).padStart(2, '0')}`;
 
     spots.push({
       parkingLot: parkingLotId,
       level: selectedLevel,
-      spotNumber: `${prefix}-${String(spotIndex).padStart(2, '0')}`,
+      spotNumber,
       status,
       type,
-      currentCarLicensePlate: status === 'occupied' ? `${prefix.replace(/[^A-Z0-9]/gi, '')}-${100 + spotIndex}` : null,
+      // keep spot's currentCarLicensePlate null as requested
+      currentCarLicensePlate: null,
     });
   }
 
@@ -276,14 +285,16 @@ router.post('/seed', async (req, res) => {
       fullName: 'Admin Smart Parking',
       email: 'admin@smartparking.com',
       password: 'password123',
-      authorizedCity: createdCities['תל אביב']._id
+      authorizedCities: [createdCities['תל אביב']._id]
     });
 
     createdCities['תל אביב'].authorizedUsers.push(adminUser._id);
     await createdCities['תל אביב'].save();
 
     // 3. Mock Parking Lots and Spots
-    const activeSessions = [];
+    // We'll create parking sessions equal to the number of occupied spots per lot.
+    let plateCounter = 10000000; // start to generate 8-digit numeric plates
+    const sessionsToInsert = [];
 
     for (const citySeed of seedCities) {
       const cityDoc = createdCities[citySeed.name];
@@ -302,12 +313,15 @@ router.post('/seed', async (req, res) => {
         const spots = createParkingSpots(lot._id, lotSeed.totalSpots, lotSeed.levels, lotSeed.prefix);
         await ParkingSpot.insertMany(spots);
 
-        const firstOccupiedSpot = spots.find((spot) => spot.status === 'occupied');
-        if (firstOccupiedSpot) {
-          activeSessions.push({
-            carLicensePlate: firstOccupiedSpot.currentCarLicensePlate,
+        // count occupied spots in this lot and create that many active sessions
+        const occupiedCount = spots.filter((s) => s.status === 'occupied').length;
+        for (let k = 0; k < occupiedCount; k += 1) {
+          const plate = String(plateCounter).padStart(8, '0');
+          plateCounter += 1;
+          sessionsToInsert.push({
+            carLicensePlate: plate,
             parkingLot: lot._id,
-            status: 'active',
+            parkingSpot: null,
           });
         }
       }
@@ -315,9 +329,9 @@ router.post('/seed', async (req, res) => {
       await cityDoc.save();
     }
 
-    // 4. Mock Parking Sessions
-    if (activeSessions.length > 0) {
-      await ParkingSession.insertMany(activeSessions.slice(0, 6));
+    // 4. Mock Parking Sessions: insert all generated active sessions
+    if (sessionsToInsert.length > 0) {
+      await ParkingSession.insertMany(sessionsToInsert);
     }
 
     res.json({ message: 'Database successfully seeded with mock data!' });

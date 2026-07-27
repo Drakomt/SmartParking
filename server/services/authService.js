@@ -16,7 +16,8 @@ const loginUser = async (email, password) => {
       _id: user._id,
       fullName: user.fullName,
       email: user.email,
-      authorizedCity: user.authorizedCity,
+      authorizedCities: user.authorizedCities || (user.authorizedCity ? [user.authorizedCity] : []),
+      authorizedCity: user.authorizedCities?.[0] || user.authorizedCity || null,
       token: generateToken(user._id),
     };
   } else {
@@ -31,13 +32,18 @@ const registerUser = async (userData) => {
     throw new Error('User already exists');
   }
 
+  if (userData.authorizedCity && !userData.authorizedCities) {
+    userData.authorizedCities = [userData.authorizedCity];
+  }
+
   const user = await userRepo.createUser(userData);
 
   return {
     _id: user._id,
     fullName: user.fullName,
     email: user.email,
-    authorizedCity: user.authorizedCity,
+    authorizedCities: user.authorizedCities || (user.authorizedCity ? [user.authorizedCity] : []),
+    authorizedCity: user.authorizedCities?.[0] || user.authorizedCity || null,
     token: generateToken(user._id),
   };
 };
