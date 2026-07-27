@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import ParkingLotView from "../components/ParkingLotView";
 import useParkingLots from "../hooks/useParkingLots";
 import SearchInput from "../components/SearchInput";
@@ -15,6 +16,19 @@ export default function HomePage() {
   const [recentSearches, setRecentSearches] = useState([]);
   const [favoriteLots, setFavoriteLots] = useState([]);
   const [showFavorites, setShowFavorites] = useState(false);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state?.showFavorites) {
+      setShowFavorites(true);
+      navigate(".", { replace: true, state: {} });
+    } else if (location.state?.selectedAdminLot) {
+      setSelectedParkingLotId(location.state.selectedAdminLot);
+      // We don't clear the state here because we need adminMode to persist while they are in the lot
+    }
+  }, [location.state, navigate]);
 
   useEffect(() => {
     const storedSearches = localStorage.getItem("smartParking_recentSearches");
@@ -54,8 +68,12 @@ export default function HomePage() {
   };
 
   const onBack = () => {
-    setSelectedParkingLotId(null);
-    setCurrentLevel(1); 
+    if (location.state?.adminMode) {
+      navigate('/dashboard', { state: { selectedCityId: location.state.selectedCityId } });
+    } else {
+      setSelectedParkingLotId(null);
+      setCurrentLevel(1); 
+    }
   };
 
   // Listen for custom navigation events
@@ -132,6 +150,8 @@ export default function HomePage() {
               totalLevels={totalLevels}
               onLevelChange={setCurrentLevel}
               lotName={selectedLotName}
+              isAdmin={location.state?.adminMode || false}
+              lotId={selectedParkingLotId}
             />
           )}
         </div>

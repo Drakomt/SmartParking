@@ -1,6 +1,7 @@
 import LevelNavigation from "./LevelNavigation";
 import ParkingSlot from "./ParkingSlot";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import SpotManagementModal from "./SpotManagementModal";
 
 export default function ParkingLotView({ 
   parkings, 
@@ -8,8 +9,12 @@ export default function ParkingLotView({
   currentLevel,
   totalLevels,
   onLevelChange,
-  lotName
+  lotName,
+  isAdmin,
+  lotId
 }) {
+  const [selectedSpot, setSelectedSpot] = useState(null);
+
   // Generate a stable array of random car image indexes (1-8) once per component mount
   const randomCarIndexes = useMemo(() => {
     return Array.from({ length: 16 }).map(() => Math.floor(Math.random() * 8) + 1);
@@ -17,6 +22,11 @@ export default function ParkingLotView({
 
   // Check if it's the Mediatheque lot
   const isMediatheque = lotName && (lotName.includes("מדיטק") || lotName.toLowerCase().includes("mediatheque"));
+
+  const handleSpotClick = (spot) => {
+    if (!isAdmin || spot.isDummy) return;
+    setSelectedSpot(spot);
+  };
 
   return (
     <div className={`bg-surface-container-lowest p-6 sm:p-8 rounded-3xl shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] border border-outline-variant/20 w-full mx-auto mt-6 ${isMediatheque ? 'max-w-5xl' : 'max-w-2xl'}`}>
@@ -49,7 +59,7 @@ export default function ParkingLotView({
                  
                  // Icons for special spots (large, centered, no colors for the spot itself)
                  let typeIcon = null;
-                 const isOccupied = slot.status !== 'free';
+                 const isOccupied = slot.status !== 'free' && slot.status !== 'blocked';
                  const svgClass = isOccupied 
                    ? "w-6 h-6 sm:w-8 sm:h-8 opacity-90 drop-shadow-md" 
                    : "w-10 h-10 sm:w-14 sm:h-14 opacity-40";
@@ -71,9 +81,13 @@ export default function ParkingLotView({
                  }
 
                  return (
-                   <div key={slot._id} className="relative w-full h-full flex flex-col items-center justify-center p-1 sm:p-2">
+                   <div 
+                    key={slot._id} 
+                    onClick={() => handleSpotClick(slot)}
+                    className={`relative w-full h-full flex flex-col items-center justify-center p-1 sm:p-2 ${isAdmin && !slot.isDummy ? 'cursor-pointer hover:bg-slate-700/40 hover:ring-2 hover:ring-primary rounded-xl z-10 transition-all' : ''}`}
+                   >
                      {/* Dynamic background/floating icon for all special spots */}
-                     {typeIcon && (
+                     {typeIcon && slot.status !== 'blocked' && (
                        <div 
                          className={`absolute pointer-events-none z-20 flex justify-center transition-all duration-300
                            ${isOccupied ? "top-0 sm:top-1 items-start" : "inset-0 items-center"}
@@ -84,7 +98,16 @@ export default function ParkingLotView({
                        </div>
                      )}
 
-                     {slot.status === 'free' ? (
+                     {slot.status === 'blocked' ? (
+                       <>
+                         <span className="absolute inset-0 flex items-center justify-center text-red-500 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] z-20 pointer-events-none">
+                           <span className="material-symbols-outlined" style={{ fontSize: '48px' }}>block</span>
+                         </span>
+                         <span className="absolute bottom-5 sm:bottom-7 text-sm sm:text-lg font-extrabold text-orange-500 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] z-10">
+                           חסום
+                         </span>
+                       </>
+                     ) : slot.status === 'free' ? (
                        <span className="absolute bottom-5 sm:bottom-7 text-sm sm:text-lg font-extrabold text-green-600 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] z-10">
                          פנוי
                        </span>
@@ -100,7 +123,7 @@ export default function ParkingLotView({
                      {/* Spot number always at the bottom, hidden for dummy spots */}
                      {!slot.isDummy && (
                        <span className="absolute bottom-1 sm:bottom-2 text-xs sm:text-sm font-bold text-slate-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] z-10">
-                         {spotNum}
+                         {slot.spotNumber}
                        </span>
                      )}
                    </div>
@@ -115,8 +138,11 @@ export default function ParkingLotView({
             <ParkingSlot
               id={slot.spotNumber}
               type={slot.type}
+              status={slot.status}
               isAvilable={slot.status === 'free'}
               key={slot._id}
+              isAdmin={isAdmin}
+              onClick={() => handleSpotClick(slot)}
             />
           ))}
         </div>
@@ -129,6 +155,14 @@ export default function ParkingLotView({
           onLevelChange={onLevelChange}
         />
       </div>
+
+      {selectedSpot && (
+        <SpotManagementModal 
+          spot={selectedSpot} 
+          onClose={() => setSelectedSpot(null)}
+          onUpdate={() => {}} 
+        />
+      )}
     </div>
   );
 }

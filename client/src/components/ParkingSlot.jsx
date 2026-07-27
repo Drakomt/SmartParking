@@ -22,25 +22,39 @@ const roadMarkings = {
   ),
 };
 
-export default function ParkingSlot({ id, type = "regular", isAvilable }) {
+export default function ParkingSlot({ id, type = "regular", status, isAvilable, isAdmin, onClick }) {
   let paintedLines = "border-white/60";
   if (type === "disabled") paintedLines = "border-blue-400";
   if (type === "dean") paintedLines = "border-black";
 
   return (
     <div
+      onClick={isAdmin ? onClick : undefined}
       className={`
             relative h-32 sm:h-40 bg-slate-800/40 
             border-x-4 border-t-4 border-b-0 ${paintedLines} 
             flex flex-col items-center justify-start pt-2
             transition-all duration-300
+            ${isAdmin ? 'cursor-pointer hover:bg-slate-700/50 hover:ring-2 hover:ring-primary z-10' : ''}
         `}
     >
       <span className="text-slate-400 font-bold text-lg">{id}</span>
 
-      <span className="mt-2">{roadMarkings[type]}</span>
+      {status !== 'blocked' && <span className="mt-2">{roadMarkings[type]}</span>}
 
-      {!isAvilable ? (
+      {status === 'blocked' ? (
+        <>
+          <span className="absolute inset-0 flex items-center justify-center text-red-500 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] z-20 pointer-events-none">
+            <span className="material-symbols-outlined" style={{ fontSize: '48px' }}>block</span>
+          </span>
+          <div className="absolute bottom-4 flex items-center gap-2 px-3 py-1 bg-orange-500/10 border border-orange-500/30 rounded-full transition-all duration-500 z-10">
+            <div className="w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_8px_#f97316]"></div>
+            <span className="text-orange-500 text-xs font-bold tracking-wider">
+              חסום
+            </span>
+          </div>
+        </>
+      ) : !isAvilable ? (
         <div className="absolute bottom-4 flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/30 rounded-full transition-all duration-500">
           <div className="w-2 h-2 bg-red-500 rounded-full shadow-[0_0_8px_#ef4444]"></div>
           <span className="text-red-500 text-xs font-bold tracking-wider">
