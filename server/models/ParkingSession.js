@@ -18,15 +18,6 @@ const parkingSessionSchema = new mongoose.Schema({
   entryTime: {
     type: Date,
     default: Date.now,
-  },
-  exitTime: {
-    type: Date,
-    default: null,
-  },
-  status: {
-    type: String,
-    enum: ['active', 'completed'],
-    default: 'active',
   }
 }, { timestamps: true });
 
