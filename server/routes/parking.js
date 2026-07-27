@@ -79,7 +79,7 @@ router.get('/authorized/cities', protect, async (req, res) => {
 
 router.get('/authorized/lots', protect, async (req, res) => {
   try {
-    const lots = await parkingService.fetchParkingLots(req.user);
+    const lots = await parkingService.fetchAuthorizedLotsWithDetails(req.user);
     res.json(lots);
   } catch (error) {
     const statusCode = error.message.includes('authorized') ? 401 : 500;

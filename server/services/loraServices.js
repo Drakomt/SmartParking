@@ -71,7 +71,7 @@ const updateParkingSpot = async (spotData) => {
         throw new Error('id and status are required');
     }
 
-    if (!['free', 'occupied'].includes(status)) {
+    if (!['free', 'occupied', 'block'].includes(status)) {
         throw new Error('Invalid parking spot status');
     }
 
