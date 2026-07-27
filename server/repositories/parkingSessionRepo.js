@@ -35,4 +35,4 @@ const deleteSession = async (sessionId) => {
   return await ParkingSession.findByIdAndDelete(sessionId);
 };
 
-export default { createSession, findByLicensePlate, findRandomSession, findRandomSessionByLot, deleteSession };
+export default { findSessionsByLot,createSession, findByLicensePlate, findRandomSession, findRandomSessionByLot, deleteSession };

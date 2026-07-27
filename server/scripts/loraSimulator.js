@@ -21,6 +21,10 @@ const getRandomStatus = (currentStatus) => {
     return 'free';
   }
 
+  if (currentStatus === 'block') {
+    return 'block';
+  }
+
   return Math.random() < 0.5 ? 'free' : 'occupied';
 };
 
@@ -31,8 +35,14 @@ const sendSpotAndSessionUpdate = async () => {
     return;
   }
 
-  const freeSpots = spots.filter((s) => s.status === 'free');
-  const occupiedSpots = spots.filter((s) => s.status === 'occupied');
+  const actionableSpots = spots.filter((s) => s.status === 'free' || s.status === 'occupied');
+  if (!actionableSpots.length) {
+    console.log('[lora-simulator] No actionable spots found; blocked spots are being skipped.');
+    return;
+  }
+
+  const freeSpots = actionableSpots.filter((s) => s.status === 'free');
+  const occupiedSpots = actionableSpots.filter((s) => s.status === 'occupied');
   let action = !freeSpots.length
     ? 'remove'
     : !occupiedSpots.length

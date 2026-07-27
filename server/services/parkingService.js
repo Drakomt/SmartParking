@@ -37,6 +37,32 @@ const fetchParkingLots = async (user) => {
   return await parkingLotRepo.findAllLots(query);
 };
 
+const fetchAuthorizedLotsWithDetails = async (user) => {
+  if (!user) {
+    throw new Error('Not authorized');
+  }
+
+  const authorizedCities = user.authorizedCities || [];
+  if (!authorizedCities.length) {
+    return [];
+  }
+
+  const parkingLots = await parkingLotRepo.findAllLots({ city: { $in: authorizedCities } });
+
+  return await Promise.all(
+    parkingLots.map(async (parkingLot) => {
+      const spots = await parkingSpotRepo.findSpotsByLot(parkingLot._id);
+      const sessions = await parkingSessionRepo.findSessionsByLot(parkingLot._id);
+
+      return {
+        ...parkingLot.toObject(),
+        spots: spots.map((spot) => spot.toObject()),
+        sessions: sessions.map((session) => session.toObject()),
+      };
+    })
+  );
+};
+
 const fetchLotsByCity = async (cityName) => {
   const city = await cityRepo.findCityByName(cityName);
   if (!city) {
@@ -213,4 +239,20 @@ const removeSpot = async (id, user) => {
   return await parkingSpotRepo.deleteSpot(id);
 };
 
-export default { fetchAllCities, fetchParkingLots, fetchLotsByCity, fetchParkingLotById, addParkingLot, editParkingLot, removeParkingLot, fetchSpotsByLotAndLevel, fetchSpotsByLot, addSpot, editSpot, removeSpot };
+export default {
+  fetchAllCities,
+  fetchAuthorizedCities,
+  fetchParkingLots,
+  fetchAuthorizedLotsWithDetails,
+  fetchAuthorizedLotsByCity,
+  fetchLotsByCity,
+  fetchParkingLotById,
+  addParkingLot,
+  editParkingLot,
+  removeParkingLot,
+  fetchSpotsByLotAndLevel,
+  fetchSpotsByLot,
+  addSpot,
+  editSpot,
+  removeSpot,
+};

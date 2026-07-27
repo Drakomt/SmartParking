@@ -280,16 +280,58 @@ router.post('/seed', async (req, res) => {
       createdCities[citySeed.name] = await City.create({ name: citySeed.name });
     }
 
-    // 2. Mock Admin User
-    const adminUser = await User.create({
-      fullName: 'Admin Smart Parking',
-      email: 'admin@smartparking.com',
-      password: 'password123',
-      authorizedCities: [createdCities['תל אביב']._id]
-    });
+    // 2. Mock Users
+    const usersToCreate = [
+      {
+        fullName: 'central',
+        email: 'central@smartparking.com',
+        password: 'central',
+        authorizedCities: [
+          createdCities['תל אביב']._id,
+          createdCities['חולון']._id,
+          createdCities['רמת גן']._id,
+          createdCities['ראשון לציון']._id,
+          createdCities['גבעתיים']._id,
+          createdCities['בת ים']._id,
+        ],
+      },
+      {
+        fullName: 'sharon',
+        email: 'sharon@smartparking.com',
+        password: 'sharon',
+        authorizedCities: [createdCities['חולון']._id],
+      },
+      {
+        fullName: 'south',
+        email: 'south@smartparking.com',
+        password: 'south',
+        authorizedCities: [createdCities['תל אביב']._id],
+      },
+      {
+        fullName: 'north',
+        email: 'north@smartparking.com',
+        password: 'north',
+        authorizedCities: [createdCities['חיפה']._id],
+      },
+    ];
 
-    createdCities['תל אביב'].authorizedUsers.push(adminUser._id);
-    await createdCities['תל אביב'].save();
+    const createdUsers = [];
+    for (const userData of usersToCreate) {
+      const user = await User.create(userData);
+      createdUsers.push(user);
+    }
+
+    const cityById = new Map(Object.values(createdCities).map((cityDoc) => [cityDoc._id.toString(), cityDoc]));
+
+    for (const user of createdUsers) {
+      for (const cityId of user.authorizedCities || []) {
+        const cityDoc = cityById.get(cityId.toString());
+        if (cityDoc && !cityDoc.authorizedUsers.some((authorizedUserId) => authorizedUserId.toString() === user._id.toString())) {
+          cityDoc.authorizedUsers.push(user._id);
+          await cityDoc.save();
+        }
+      }
+    }
 
     // 3. Mock Parking Lots and Spots
     // We'll create parking sessions equal to the number of occupied spots per lot.
