@@ -2,19 +2,17 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
-import useCities from "../hooks/useCities";
+import { io } from "socket.io-client";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
-  const [parkingLots, setParkingLots] = useState([]); // All lots for basic display
+  const [parkingLots, setParkingLots] = useState([]); // All lots with details (spots, sessions)
+  const [cities, setCities] = useState([]); // Authorized cities
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // All cities from DB
-  const citiesInDatabase = useCities();
 
   // Edit Lot Modal State
   const [editingLot, setEditingLot] = useState(null);
@@ -25,7 +23,6 @@ export default function Dashboard() {
   const [showCars, setShowCars] = useState(false);
   const [parkedCars, setParkedCars] = useState([]);
   const [selectedLotNameForCars, setSelectedLotNameForCars] = useState("");
-  const [carsLoading, setCarsLoading] = useState(false);
 
   // City filtering
   const [selectedCityId, setSelectedCityId] = useState(location.state?.selectedCityId || null);
@@ -36,23 +33,89 @@ export default function Dashboard() {
       return;
     }
 
-    const fetchLots = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:3000/api/parking", {
-          headers: { Authorization: `Bearer ${user.token}` }
-        });
-        setParkingLots(response.data);
+        const [citiesRes, lotsRes] = await Promise.all([
+          axios.get("http://localhost:3000/api/parking/authorized/cities", {
+            headers: { Authorization: `Bearer ${user.token}` }
+          }),
+          axios.get("http://localhost:3000/api/parking/authorized/lots", {
+            headers: { Authorization: `Bearer ${user.token}` }
+          })
+        ]);
+        setCities(citiesRes.data);
+        setParkingLots(lotsRes.data);
       } catch (err) {
-        console.error("Failed to fetch admin lots", err);
+        console.error("Failed to fetch admin data", err);
         setError("שגיאה בטעינת הנתונים.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLots();
+    fetchData();
   }, [user, navigate]);
+
+  // Handle live socket updates
+  useEffect(() => {
+    if (!user) return;
+
+    const socket = io("http://localhost:3000", {
+      auth: { token: user.token }
+    });
+
+    socket.on("connect", () => {
+      console.log("Admin connected to personal socket room");
+    });
+
+    socket.on("parking-spot-updated", (updatedSpot) => {
+      setParkingLots(prevLots => prevLots.map(lot => {
+        if (lot._id !== updatedSpot.parkingLot) return lot;
+        return {
+          ...lot,
+          spots: lot.spots.map(spot => spot._id === updatedSpot._id ? updatedSpot : spot)
+        };
+      }));
+    });
+
+    socket.on("parking-session-updated", (updatedSession) => {
+      setParkingLots(prevLots => prevLots.map(lot => {
+        if (lot._id !== updatedSession.parkingLot) return lot;
+        
+        let sessions = lot.sessions || [];
+        const sessionExists = sessions.some(s => s._id === updatedSession._id);
+        
+        if (sessionExists) {
+          sessions = sessions.map(s => s._id === updatedSession._id ? updatedSession : s);
+        } else {
+          sessions = [...sessions, updatedSession];
+        }
+        
+        return { ...lot, sessions };
+      }));
+    });
+
+    return () => socket.disconnect();
+  }, [user]);
+
+  useEffect(() => {
+    // If cars modal is open, we should update the parkedCars list when parkingLots changes
+    if (showCars && selectedLotNameForCars) {
+      const currentLot = parkingLots.find(l => l.name === selectedLotNameForCars);
+      if (currentLot && currentLot.sessions) {
+        const allCars = currentLot.sessions.map(session => ({
+          lotName: currentLot.name,
+          licensePlate: session.carLicensePlate || 'לא הוזן',
+          entryTime: new Date(session.entryTime).toLocaleString('he-IL', {
+            dateStyle: 'short',
+            timeStyle: 'short'
+          })
+        }));
+        setParkedCars(allCars);
+      }
+    }
+  }, [parkingLots, showCars, selectedLotNameForCars]);
 
   const handleEditClick = (lot) => {
     setEditingLot(lot);
@@ -76,58 +139,35 @@ export default function Dashboard() {
     }
   };
 
-  const loadCarsForLot = async (lot) => {
-    setShowCars(true);
-    setCarsLoading(true);
-    setSelectedLotNameForCars(lot.name);
-    
-    try {
-      let allCars = [];
-      const res = await axios.get(`http://localhost:3000/api/parking/${lot._id}/spots?level=1`, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      
-      const totalLevels = res.data.totalLevels || lot.levels;
-      for(let level = 1; level <= totalLevels; level++) {
-         const levelRes = level === 1 ? res : await axios.get(`http://localhost:3000/api/parking/${lot._id}/spots?level=${level}`, {
-             headers: { Authorization: `Bearer ${user.token}` }
-         });
-         const spots = levelRes.data.slots || [];
-         
-         spots.forEach(spot => {
-            if (spot.status !== 'free' && spot.status !== 'blocked') {
-                allCars.push({
-                    lotName: lot.name,
-                    level,
-                    spotNumber: spot.spotNumber,
-                    licensePlate: spot.currentCarLicensePlate || 'לא הוזן',
-                    status: spot.status,
-                    type: spot.type
-                });
-            }
-         });
-      }
-      setParkedCars(allCars);
-    } catch(err) {
-      console.error("Failed to load cars for lot", err);
-      alert("שגיאה בטעינת נתוני הרכבים לחניון זה.");
-    } finally {
-      setCarsLoading(false);
+  const loadCarsForLot = (lot) => {
+    if (!lot.sessions) {
+      alert("הנתונים המלאים של החניון טרם נטענו מהשרת, או שקיימת שגיאה. אנא ודא שהשרת התרפרש ושאין בו שגיאות.");
+      return;
     }
+
+    const allCars = lot.sessions.map(session => ({
+      lotName: lot.name,
+      licensePlate: session.carLicensePlate || 'לא הוזן',
+      entryTime: new Date(session.entryTime).toLocaleString('he-IL', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+      })
+    }));
+
+    setParkedCars(allCars);
+    setSelectedLotNameForCars(lot.name);
+    setShowCars(true);
   };
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen pt-16">טוען נתונים...</div>;
   }
 
-  // Get city object from ID
   const getCityName = (cityId) => {
-    const city = citiesInDatabase.find(c => c._id === cityId);
+    const city = cities.find(c => c._id === cityId);
     return city ? city.name : cityId; 
   };
 
-  const myCityIds = user?.authorizedCities || [];
-  
   const lotsToDisplay = selectedCityId 
     ? parkingLots.filter(lot => lot.city === selectedCityId)
     : [];
@@ -141,29 +181,29 @@ export default function Dashboard() {
       </div>
 
       <div className="mb-8 p-6 bg-surface-container-lowest rounded-2xl border border-outline-variant/30 shadow-sm">
-        <h2 className="text-xl font-bold mb-2">שלום </h2>
-        <p className="text-on-surface-variant">הערים שבאחריותך: {myCityIds.map(id => getCityName(id)).join(", ") || 'אין ערים מוגדרות'}</p>
+        <h2 className="text-xl font-bold mb-2">שלום</h2>
+        <p className="text-on-surface-variant">הערים שבאחריותך: {cities.map(c => c.name).join(", ") || 'אין ערים מוגדרות'}</p>
       </div>
 
       {!selectedCityId ? (
         <>
           <h3 className="text-2xl font-bold mb-4">בחר עיר לניהול</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {myCityIds.map(cityId => {
-              const cityLotsCount = parkingLots.filter(lot => lot.city === cityId).length;
+            {cities.map(city => {
+              const cityLotsCount = parkingLots.filter(lot => lot.city === city._id).length;
               return (
                 <div 
-                  key={cityId} 
-                  onClick={() => setSelectedCityId(cityId)}
+                  key={city._id} 
+                  onClick={() => setSelectedCityId(city._id)}
                   className="bg-white/80 p-8 rounded-2xl shadow border border-outline-variant/30 hover:border-primary hover:shadow-md cursor-pointer transition-all flex flex-col items-center justify-center gap-2"
                 >
                   <span className="material-symbols-outlined text-4xl text-primary">location_city</span>
-                  <h4 className="text-2xl font-bold text-on-surface">{getCityName(cityId)}</h4>
+                  <h4 className="text-2xl font-bold text-on-surface">{city.name}</h4>
                   <p className="text-on-surface-variant">{cityLotsCount} חניונים</p>
                 </div>
               );
             })}
-            {myCityIds.length === 0 && <p className="text-on-surface-variant">לא נמצאו ערים באחריותך.</p>}
+            {cities.length === 0 && <p className="text-on-surface-variant">לא נמצאו ערים באחריותך.</p>}
           </div>
         </>
       ) : (
@@ -179,17 +219,19 @@ export default function Dashboard() {
             <h3 className="text-2xl font-bold">ניהול חניונים - {selectedCityName}</h3>
           </div>
           
+          {error && <p className="text-error">{error}</p>}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {lotsToDisplay.map(lot => (
-              <div key={lot._id} className="bg-white/80 p-6 rounded-2xl shadow border border-outline-variant/30 hover:border-primary transition-all relative flex flex-col h-full">
-                <button 
-                  onClick={() => handleEditClick(lot)}
-                  className="absolute top-4 left-4 text-on-surface-variant hover:text-primary transition-colors"
-                  title="ערוך חניון"
-                >
-                  <span className="material-symbols-outlined">edit</span>
-                </button>
-                <h4 className="text-xl font-bold text-primary mb-1">{lot.name}</h4>
+              {lotsToDisplay.map(lot => (
+                <div key={lot._id} className="bg-white/80 p-6 rounded-2xl shadow border border-outline-variant/30 hover:border-primary transition-all relative flex flex-col h-full">
+                  <button 
+                    onClick={() => handleEditClick(lot)}
+                    className="absolute top-4 left-4 text-on-surface-variant hover:text-primary transition-colors"
+                    title="ערוך חניון"
+                  >
+                    <span className="material-symbols-outlined">edit</span>
+                  </button>
+                  <h4 className="text-xl font-bold text-primary mb-1">{lot.name}</h4>
                 <p className="text-on-surface-variant mb-4">{lot.address}</p>
                 <div className="flex justify-between text-sm text-on-surface-variant mb-6">
                   <span>סך הכל חניות: {lot.totalSpots}</span>
@@ -270,21 +312,13 @@ export default function Dashboard() {
                 <thead className="bg-surface-container-highest text-on-surface font-bold sticky top-0 z-10 shadow-sm">
                   <tr>
                     <th className="py-3 px-4 rounded-tr-xl">לוחית רישוי</th>
-                    <th className="py-3 px-4">חניה</th>
-                    <th className="py-3 px-4 rounded-tl-xl">מפלס</th>
+                    <th className="py-3 px-4 rounded-tl-xl">זמן כניסה</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/30">
-                  {carsLoading ? (
+                  {parkedCars.length === 0 ? (
                     <tr>
-                      <td colSpan="3" className="text-center py-12">
-                        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-                        <p className="mt-4 text-on-surface-variant font-medium">טוען רכבים...</p>
-                      </td>
-                    </tr>
-                  ) : parkedCars.length === 0 ? (
-                    <tr>
-                      <td colSpan="3" className="text-center py-8 text-on-surface-variant">אין רכבים חונים בחניון זה כרגע.</td>
+                      <td colSpan="2" className="text-center py-8 text-on-surface-variant">אין רכבים חונים בחניון זה כרגע.</td>
                     </tr>
                   ) : (
                     parkedCars.map((car, idx) => (
@@ -293,20 +327,10 @@ export default function Dashboard() {
                            {car.licensePlate === 'לא הוזן' ? (
                              <span className="text-on-surface-variant italic opacity-70">לא הוזן</span>
                            ) : (
-                             <div className="inline-flex items-center gap-2 bg-yellow-400 text-black px-4 py-1.5 rounded-md font-mono text-xl font-bold border-2 border-black/20 shadow-sm">
-                               <div className="w-3 h-3 bg-blue-700 rounded-sm flex items-center justify-center">
-                                 <span className="text-[6px] text-white font-sans">IL</span>
-                               </div>
-                               {car.licensePlate}
-                             </div>
+                             <span className="font-mono font-bold text-lg text-primary">{car.licensePlate}</span>
                            )}
                         </td>
-                        <td className="py-4 px-4 text-primary font-bold">
-                           {car.spotNumber}
-                           {car.type === 'disabled' && <span className="inline-block bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded text-xs ml-2">נכה</span>}
-                           {car.type === 'dean' && <span className="inline-block bg-slate-800/10 text-slate-800 px-2 py-0.5 rounded text-xs ml-2">דיקן</span>}
-                        </td>
-                        <td className="py-4 px-4 font-bold text-on-surface-variant">מפלס {car.level}</td>
+                        <td className="py-4 px-4 font-bold text-on-surface-variant" dir="ltr">{car.entryTime}</td>
                       </tr>
                     ))
                   )}
