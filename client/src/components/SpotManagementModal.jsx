@@ -14,7 +14,7 @@ export default function SpotManagementModal({ spot, onClose, onUpdate }) {
     setIsSaving(true);
     setError(null);
     try {
-      const response = await axios.put(`http://localhost:3000/api/parking/spots/${spot._id}`, {
+      const response = await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/parking/spots/${spot._id}`, {
         status: status,
         type: type
       }, {

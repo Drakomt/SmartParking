@@ -16,7 +16,7 @@ const useParkingData = (parkingLotId, currentLevel, cityName) => {
       setError(null);
 
       try {
-        const response = await axios.get(`http://localhost:3000/api/parking/${parkingLotId}/spots`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/parking/${parkingLotId}/spots`, {
           params: { level: currentLevel }
         });
         const data = response.data;
@@ -39,7 +39,7 @@ const useParkingData = (parkingLotId, currentLevel, cityName) => {
   useEffect(() => {
     if (!cityName) return;
 
-    const socket = io("http://localhost:3000", {
+    const socket = io(import.meta.env.VITE_API_BASE_URL, {
       query: { city: cityName }
     });
 

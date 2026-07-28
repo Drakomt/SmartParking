@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 
-const API_URL = "http://localhost:3000/api/parking";
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/parking`;
 
 const useParkingLots = (cityName) => {
   const [parkingLotsCity, setParkingLotsCity] = useState([]);
@@ -55,7 +55,7 @@ const useParkingLots = (cityName) => {
   useEffect(() => {
     if (!cityName) return;
 
-    const socket = io("http://localhost:3000", {
+    const socket = io(import.meta.env.VITE_API_BASE_URL, {
       query: { city: cityName }
     });
 
