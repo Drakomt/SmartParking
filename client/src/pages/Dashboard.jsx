@@ -111,6 +111,30 @@ export default function Dashboard() {
     return () => socket.disconnect();
   }, [user]);
 
+  const calculateCarData = (session, lotName) => {
+    const entryDate = new Date(session.entryTime);
+    const now = new Date();
+    const diffMs = now - entryDate;
+    let durationStr = "-";
+    if (!isNaN(diffMs) && diffMs >= 0) {
+      const diffMins = Math.floor(diffMs / 60000);
+      const hours = Math.floor(diffMins / 60);
+      const mins = diffMins % 60;
+      if (hours > 0) durationStr = `${hours} שעות ו-${mins} דקות`;
+      else durationStr = `${mins} דקות`;
+    }
+
+    return {
+      lotName,
+      licensePlate: session.carLicensePlate || "לא הוזן",
+      entryTime: entryDate.toLocaleString("he-IL", {
+        dateStyle: "short",
+        timeStyle: "short",
+      }),
+      duration: durationStr,
+    };
+  };
+
   useEffect(() => {
     // If cars modal is open, we should update the parkedCars list when parkingLots changes
     if (showCars && selectedLotNameForCars) {
@@ -118,14 +142,7 @@ export default function Dashboard() {
         (l) => l.name === selectedLotNameForCars,
       );
       if (currentLot && currentLot.sessions) {
-        const allCars = currentLot.sessions.map((session) => ({
-          lotName: currentLot.name,
-          licensePlate: session.carLicensePlate || "לא הוזן",
-          entryTime: new Date(session.entryTime).toLocaleString("he-IL", {
-            dateStyle: "short",
-            timeStyle: "short",
-          }),
-        }));
+        const allCars = currentLot.sessions.map((session) => calculateCarData(session, currentLot.name));
         setParkedCars(allCars);
       }
     }
@@ -169,14 +186,7 @@ export default function Dashboard() {
       return;
     }
 
-    const allCars = lot.sessions.map((session) => ({
-      lotName: lot.name,
-      licensePlate: session.carLicensePlate || "לא הוזן",
-      entryTime: new Date(session.entryTime).toLocaleString("he-IL", {
-        dateStyle: "short",
-        timeStyle: "short",
-      }),
-    }));
+    const allCars = lot.sessions.map((session) => calculateCarData(session, lot.name));
 
     setParkedCars(allCars);
     setSelectedLotNameForCars(lot.name);
@@ -403,14 +413,15 @@ export default function Dashboard() {
                 <thead className="bg-surface-container-highest text-on-surface font-bold sticky top-0 z-10 shadow-sm">
                   <tr>
                     <th className="py-3 px-4 rounded-tr-xl">לוחית רישוי</th>
-                    <th className="py-3 px-4 rounded-tl-xl">זמן כניסה</th>
+                    <th className="py-3 px-4">זמן כניסה</th>
+                    <th className="py-3 px-4 rounded-tl-xl">משך שהייה</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/30">
                   {parkedCars.length === 0 ? (
                     <tr>
                       <td
-                        colSpan="2"
+                        colSpan="3"
                         className="text-center py-8 text-on-surface-variant"
                       >
                         אין רכבים חונים בחניון זה כרגע.
@@ -438,6 +449,9 @@ export default function Dashboard() {
                           dir="ltr"
                         >
                           {car.entryTime}
+                        </td>
+                        <td className="py-4 px-4 font-bold text-primary">
+                          {car.duration}
                         </td>
                       </tr>
                     ))

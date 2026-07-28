@@ -7,6 +7,7 @@ export default function LoginForm() {
   const [fields, setFields] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -106,16 +107,29 @@ export default function LoginForm() {
               >
                 סיסמה
               </label>
-              <input
-                name="password"
-                type="password"
-                id="password"
-                value={fields.password}
-                onChange={handleInputChange}
-                className="w-full bg-surface-container-lowest/50 border border-outline-variant rounded-xl px-4 py-3 text-on-surface placeholder-outline focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
-                placeholder="הזן סיסמה"
-                disabled={isLoading}
-              />
+              <div className="relative">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={fields.password}
+                  onChange={handleInputChange}
+                  className="w-full bg-surface-container-lowest/50 border border-outline-variant rounded-xl pr-4 pl-12 py-3 text-on-surface placeholder-outline focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
+                  placeholder="הזן סיסמה"
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none p-1 flex items-center justify-center"
+                  tabIndex="-1"
+                  title={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    {showPassword ? "visibility_off" : "visibility"}
+                  </span>
+                </button>
+              </div>
             </div>
 
             {error && (

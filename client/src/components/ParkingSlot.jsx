@@ -23,24 +23,45 @@ const roadMarkings = {
 };
 
 export default function ParkingSlot({ id, type = "regular", status, isAvilable, isAdmin, onClick }) {
-  let paintedLines = "border-white/60";
-  if (type === "disabled") paintedLines = "border-blue-400";
-  if (type === "dean") paintedLines = "border-black";
+  let paintedLines = "border-x-4 border-t-4 border-b-0 border-white/60";
+  let badge = null;
+  
+  const isOccupied = status !== 'blocked' && !isAvilable;
+  
+  if (type === "disabled") {
+    if (isOccupied) {
+      badge = (
+        <div className="absolute bottom-0 right-0 bg-blue-500 text-white px-1.5 py-0.5 rounded-tl-lg shadow-sm z-30 flex items-center justify-center">
+          <span className="material-symbols-outlined text-[16px]">accessible</span>
+        </div>
+      );
+    }
+  }
+  if (type === "dean") {
+    if (isOccupied) {
+      badge = (
+        <div className="absolute bottom-0 right-0 bg-black text-white px-1.5 py-0.5 rounded-tl-lg shadow-sm z-30 flex items-center justify-center">
+          <span className="material-symbols-outlined text-[16px]">school</span>
+        </div>
+      );
+    }
+  }
 
   return (
     <div
       onClick={isAdmin ? onClick : undefined}
       className={`
             relative h-32 sm:h-40 bg-slate-800/40 
-            border-x-4 border-t-4 border-b-0 ${paintedLines} 
+            ${paintedLines} 
             flex flex-col items-center justify-start pt-2
             transition-all duration-300
             ${isAdmin ? 'cursor-pointer hover:bg-slate-700/50 hover:ring-2 hover:ring-primary z-10' : ''}
         `}
     >
+      {badge}
       <span className="text-slate-400 font-bold text-lg">{id}</span>
 
-      {status !== 'blocked' && <span className="mt-2">{roadMarkings[type]}</span>}
+      {status !== 'blocked' && isAvilable && <span className="mt-2">{roadMarkings[type]}</span>}
 
       {status === 'blocked' ? (
         <>
