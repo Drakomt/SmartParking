@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import ParkingLotView from "../components/ParkingLotView";
 import useParkingLots from "../hooks/useParkingLots";
@@ -32,6 +33,45 @@ export default function HomePage() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const [isLocating, setIsLocating] = useState(false);
+  const [nearbyError, setNearbyError] = useState(null);
+
+  const handleFindNearMe = () => {
+    if (!navigator.geolocation) {
+      setNearbyError("הדפדפן שלך לא תומך בשירותי מיקום.");
+      return;
+    }
+
+    setIsLocating(true);
+    setNearbyError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const res = await axios.get(
+            `${import.meta.env.VITE_API_BASE_URL}/api/parking/nearby?lat=${latitude}&lng=${longitude}`
+          );
+          console.log("Nearby lots:", res.data);
+          alert("חניונים קרובים נטענו (יש לעדכן את התצוגה בהתאם למבנה הנתונים).");
+        } catch (err) {
+          console.error("Nearby API error:", err);
+          setNearbyError("תקלה בעת הזיהוי חניונים קרובים.");
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        setIsLocating(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          setNearbyError("אנא אשר גישה למיקום בדפדפן כדי למצוא חניונים קרובים.");
+        } else {
+          setNearbyError("שגיאה באיתור המיקום שלך.");
+        }
+      }
+    );
+  };
+
   useEffect(() => {
     if (location.state?.showFavorites) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -40,6 +80,10 @@ export default function HomePage() {
     } else if (location.state?.selectedAdminLot) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedParkingLotId(location.state.selectedAdminLot);
+      if (location.state.cityName) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSubmittedCity(location.state.cityName);
+      }
     }
   }, [location.state, navigate]);
 
@@ -297,10 +341,31 @@ export default function HomePage() {
                 מערכת ניהול חניונים מתקדמת ופשוטה לשימוש. הזן את שם העיר כדי
                 למצוא זמינות בזמן אמת.
               </p>
-              <SearchInput
-                onSearch={handleSearchSubmit}
-                availableCities={citiesInDatabase}
-              />
+              <div className="relative z-[999]">
+                <SearchInput
+                  onSearch={handleSearchSubmit}
+                  availableCities={citiesInDatabase}
+                />
+              </div>
+              <div className="mt-6 flex flex-col items-center relative z-0">
+                <button
+                  onClick={handleFindNearMe}
+                  disabled={isLocating}
+                  className="bg-surface-container-highest/80 backdrop-blur-sm hover:bg-primary/20 text-primary font-bold py-3 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 border border-primary/30 disabled:opacity-50"
+                >
+                  {isLocating ? (
+                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <span className="material-symbols-outlined">my_location</span>
+                  )}
+                  {isLocating ? "מאתר את מיקומך..." : "מצא חניונים קרובים אליי"}
+                </button>
+                {nearbyError && (
+                  <p className="text-error bg-error-container/80 backdrop-blur-sm px-4 py-2 rounded-lg mt-3 font-bold text-sm shadow-sm">
+                    {nearbyError}
+                  </p>
+                )}
+              </div>
             </div>
           </section>
 
