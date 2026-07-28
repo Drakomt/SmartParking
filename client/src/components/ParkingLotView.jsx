@@ -1,6 +1,6 @@
 import LevelNavigation from "./LevelNavigation";
 import ParkingSlot from "./ParkingSlot";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import SpotManagementModal from "./SpotManagementModal";
 
 export default function ParkingLotView({
@@ -15,11 +15,11 @@ export default function ParkingLotView({
   const [selectedSpot, setSelectedSpot] = useState(null);
 
   // Generate a stable array of random car image indexes (1-8) once per component mount
-  const randomCarIndexes = useMemo(() => {
+  const [randomCarIndexes] = useState(() => {
     return Array.from({ length: 16 }).map(
       () => Math.floor(Math.random() * 8) + 1,
     );
-  }, []);
+  });
 
   // Check if it's the Mediatheque lot
   const isMediatheque =
@@ -73,7 +73,7 @@ export default function ParkingLotView({
                   status: "occupied",
                   isDummy: true,
                 };
-                const spotNum = index + 1;
+                // const spotNum = index + 1;
                 const carImageIndex = randomCarIndexes[index];
 
                 // Icons for special spots (large, centered, no colors for the spot itself)
