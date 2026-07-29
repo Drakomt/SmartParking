@@ -2,6 +2,35 @@ import parkingLotRepo from '../repositories/parkingLotRepo.js';
 import parkingSpotRepo from '../repositories/parkingSpotRepo.js';
 import cityRepo from '../repositories/cityRepo.js';
 import parkingSessionRepo from '../repositories/parkingSessionRepo.js';
+import { emitParkingSpotUpdate, emitParkingSpotUpdateToAuthorizedUsers } from './socketService.js';
+
+const publishSpotUpdate = async (parkingLot, spot) => {
+  if (!parkingLot || !parkingLot.city || !spot) {
+    return;
+  }
+
+  const payload = {
+    parkingLot: {
+      id: parkingLot._id.toString(),
+      name: parkingLot.name,
+    },
+    city: {
+      id: parkingLot.city._id.toString(),
+      name: parkingLot.city.name,
+    },
+    spot: {
+      id: spot._id.toString(),
+      status: spot.status,
+      type: spot.type,
+      level: spot.level,
+      spotNumber: spot.spotNumber,
+      currentCarLicensePlate: spot.currentCarLicensePlate,
+    },
+  };
+
+  emitParkingSpotUpdate(parkingLot.city.name, payload);
+  await emitParkingSpotUpdateToAuthorizedUsers(parkingLot.city._id, payload);
+};
 
 // ==========================================
 //               CITY SERVICES
@@ -196,7 +225,10 @@ const addSpot = async (spotData, user) => {
   if (authorizedCities.length > 0 && !authorizedCities.some((id) => id.toString() === lot.city._id.toString())) {
     throw new Error('Not authorized to add spot to this parking lot');
   }
-  return await parkingSpotRepo.createSpot(spotData);
+
+  const createdSpot = await parkingSpotRepo.createSpot(spotData);
+  await publishSpotUpdate(lot, createdSpot);
+  return createdSpot;
 };
 
 const editSpot = async (id, updateData, user) => {
@@ -221,7 +253,9 @@ const editSpot = async (id, updateData, user) => {
     }
   }
 
-  return await parkingSpotRepo.updateSpot(id, updateData);
+  const updatedSpot = await parkingSpotRepo.updateSpot(id, updateData);
+  await publishSpotUpdate(lot, updatedSpot);
+  return updatedSpot;
 };
 
 const removeSpot = async (id, user) => {
@@ -236,7 +270,9 @@ const removeSpot = async (id, user) => {
     throw new Error('Not authorized to delete this parking spot');
   }
 
-  return await parkingSpotRepo.deleteSpot(id);
+  const deletedSpot = await parkingSpotRepo.deleteSpot(id);
+  await publishSpotUpdate(lot, existingSpot);
+  return deletedSpot;
 };
 
 export default {
