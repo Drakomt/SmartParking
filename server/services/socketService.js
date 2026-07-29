@@ -39,10 +39,6 @@ const authenticateSocket = async (socket) => {
 };
 
 const joinCityRoom = async (socket, cityName) => {
-    if (!socket.data.user) {
-        return null;
-    }
-
     const normalizedCityName = normalizeCityName(cityName);
     if (!normalizedCityName) {
         return null;
@@ -53,9 +49,11 @@ const joinCityRoom = async (socket, cityName) => {
         return null;
     }
 
-    const authorizedCities = socket.data.user.authorizedCities || [];
-    if (!authorizedCities.some((id) => id.toString() === city._id.toString())) {
-        return null;
+    if (socket.data.user) {
+        const authorizedCities = socket.data.user.authorizedCities || [];
+        if (!authorizedCities.some((id) => id.toString() === city._id.toString())) {
+            return null;
+        }
     }
 
     const nextRoom = getCityRoomName(normalizedCityName);

@@ -16,7 +16,7 @@ const seedCities = [
       {
         name: 'חניון המדיטק',
         address: 'גולדה מאיר 6, חולון',
-        totalSpots: 50,
+        totalSpots: 160,
         levels: 10,
         prefix: 'H-M',
       },
@@ -178,6 +178,30 @@ const seedCities = [
       },
     ],
   },
+  {
+    name: 'באר שבע',
+    lots: [
+      {
+        name: 'חניון באר שבע מרכז',
+        address: 'שדרות הנשיא 1, באר שבע',
+        totalSpots: 40,
+        levels: 3,
+        prefix: 'BS-M',
+      },
+    ],
+  },
+  {
+    name: 'רמת השרון',
+    lots: [
+      {
+        name: 'חניון רמת השרון',
+        address: 'רחוב הגליל 10, רמת השרון',
+        totalSpots: 30,
+        levels: 2,
+        prefix: 'RS-H',
+      },
+    ],
+  },
 ];
 
 const createParkingSpots = (parkingLotId, totalSpots, levels, prefix) => {
@@ -190,7 +214,7 @@ const createParkingSpots = (parkingLotId, totalSpots, levels, prefix) => {
   }
 
   for (let extra = maxLevel; extra < totalSpots; extra += 1) {
-    levelPlan.push(Math.floor(Math.random() * maxLevel) + 1);
+    levelPlan.push((extra % maxLevel) + 1);
   }
 
   const levelCounters = {};
@@ -199,16 +223,23 @@ const createParkingSpots = (parkingLotId, totalSpots, levels, prefix) => {
     const randomIndex = Math.floor(Math.random() * levelPlan.length);
     const [selectedLevel] = levelPlan.splice(randomIndex, 1);
 
-    // increment per-level counter to get the spot's index within its level
     const currentCount = (levelCounters[selectedLevel] || 0) + 1;
     levelCounters[selectedLevel] = currentCount;
 
-    const status = currentCount % 4 === 0 ? 'occupied' : 'free';
+    
+    const status = Math.random() < 0.4 ? 'occupied' : 'free';
 
+    const rand = Math.random();
+    
     let type = 'regular';
-    if (currentCount % 11 === 0) type = 'vip';
-    else if (currentCount % 7 === 0) type = 'dean';
-    else if (currentCount % 5 === 0) type = 'disabled';
+    
+          
+    if (rand < 0.10) {
+      type = 'dean';          
+    } else if (rand < 0.20) {
+      type = 'disabled';     
+    }
+  
 
     // spot name: level + spotIndexInLevel (padded to 2 digits), e.g. level 3 spot 4 -> "304", level 10 spot 12 -> "1012"
     const spotNumber = `${selectedLevel}${String(currentCount).padStart(2, '0')}`;
@@ -299,13 +330,13 @@ router.post('/seed', async (req, res) => {
         fullName: 'sharon',
         email: 'sharon@smartparking.com',
         password: 'sharon',
-        authorizedCities: [createdCities['חולון']._id],
+        authorizedCities: [createdCities['רמת השרון']._id],
       },
       {
         fullName: 'south',
         email: 'south@smartparking.com',
         password: 'south',
-        authorizedCities: [createdCities['תל אביב']._id],
+        authorizedCities: [createdCities['באר שבע']._id],
       },
       {
         fullName: 'north',
