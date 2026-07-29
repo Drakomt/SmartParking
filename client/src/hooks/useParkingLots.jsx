@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
+import { useAuth } from "../contexts/AuthContext";
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/parking`;
 
 const useParkingLots = (cityName) => {
+  const { user } = useAuth();
   const [parkingLotsCity, setParkingLotsCity] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -56,7 +58,8 @@ const useParkingLots = (cityName) => {
     if (!cityName) return;
 
     const socket = io(import.meta.env.VITE_API_BASE_URL, {
-      query: { city: cityName }
+      query: { city: cityName },
+      auth: { token: user?.token }
     });
 
     socket.on("connect", () => {
@@ -72,7 +75,7 @@ const useParkingLots = (cityName) => {
             return {
               ...lot,
               spots: lot.spots ? lot.spots.map(spot => 
-                spot._id === updatedSpot.spot?.id ? { ...spot, status: updatedSpot.spot.status } : spot
+                spot._id === updatedSpot.spot?.id ? { ...spot, status: updatedSpot.spot.status, type: updatedSpot.spot.type } : spot
               ) : []
             };
           }
