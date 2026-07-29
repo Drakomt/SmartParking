@@ -59,12 +59,15 @@ const useParkingLots = (cityName) => {
       query: { city: cityName }
     });
 
+    socket.on("connect", () => {
+      console.log(`Connected to socket server for lots in city: ${cityName}`);
+    });
+
     socket.on("parking-spot-updated", (updatedSpot) => {
       console.log("Real-time spot update received in Search Results:", updatedSpot);
       
       setParkingLotsCity((prevLots) => {
         return prevLots.map(lot => {
-          // Check if this lot owns the updated spot
           if (lot._id === updatedSpot.parkingLot?.id) {
             return {
               ...lot,

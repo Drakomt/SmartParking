@@ -14,14 +14,12 @@ export default function ParkingLotView({
 }) {
   const [selectedSpot, setSelectedSpot] = useState(null);
 
-  // Generate a stable array of random car image indexes (1-8) once per component mount
   const [randomCarIndexes] = useState(() => {
     return Array.from({ length: 16 }).map(
       () => Math.floor(Math.random() * 8) + 1,
     );
   });
 
-  // Check if it's the Mediatheque lot
   const isMediatheque =
     lotName &&
     (lotName.includes("מדיטק") ||
@@ -73,12 +71,10 @@ export default function ParkingLotView({
                   status: "occupied",
                   isDummy: true,
                 };
-                // const spotNum = index + 1;
                 const carImageIndex = randomCarIndexes[index];
 
                 let typeIcon = null;
                 let badge = null;
-                let bgClass = "";
                 const isOccupied =
                   slot.status !== "free" && slot.status !== "blocked";
                 const svgClass = "w-10 h-10 sm:w-14 sm:h-14 opacity-90 drop-shadow-md";
@@ -127,10 +123,9 @@ export default function ParkingLotView({
                   <div
                     key={slot._id}
                     onClick={() => handleSpotClick(slot)}
-                    className={`relative w-full h-full flex flex-col items-center justify-center p-1 sm:p-2 ${bgClass} ${isAdmin && !slot.isDummy ? "cursor-pointer hover:bg-slate-700/40 hover:ring-2 hover:ring-primary transition-all" : ""} rounded-md`}
+                    className={`relative w-full h-full flex flex-col items-center justify-center p-1 sm:p-2 ${isAdmin && !slot.isDummy ? "cursor-pointer hover:bg-slate-700/40 hover:ring-2 hover:ring-primary transition-all" : ""} rounded-md`}
                   >
                     {badge}
-                    {/* Dynamic background/floating icon for all special spots */}
                     {typeIcon && slot.status === "free" && (
                       <div className="absolute inset-0 pointer-events-none z-10 flex justify-center items-center transition-all duration-300">
                         {typeIcon}
@@ -164,7 +159,6 @@ export default function ParkingLotView({
                       />
                     )}
 
-                    {/* Spot number always at the bottom, hidden for dummy spots */}
                     {!slot.isDummy && (
                       <span className="absolute bottom-1 sm:bottom-2 text-xs sm:text-sm font-bold text-slate-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] z-10">
                         {slot.spotNumber}

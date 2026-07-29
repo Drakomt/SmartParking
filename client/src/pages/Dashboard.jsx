@@ -11,19 +11,16 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [parkingLots, setParkingLots] = useState([]); // All lots with details (spots, sessions)
-  const [cities, setCities] = useState([]); // Authorized cities
+  const [parkingLots, setParkingLots] = useState([]);
+  const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Edit Lot Modal State
   const [editingLot, setEditingLot] = useState(null);
 
-  // License Plates View State
   const [showCars, setShowCars] = useState(false);
   const [selectedLotNameForCars, setSelectedLotNameForCars] = useState("");
 
-  // City filtering
   const [selectedCityId, setSelectedCityId] = useState(
     location.state?.selectedCityId || null,
   );
@@ -58,7 +55,6 @@ export default function Dashboard() {
     fetchData();
   }, [user, navigate]);
 
-  // Handle live socket updates
   useEffect(() => {
     if (!user) return;
 
@@ -254,6 +250,8 @@ export default function Dashboard() {
                           selectedAdminLot: lot._id,
                           adminMode: true,
                           selectedCityId: selectedCityId,
+                          cityName: selectedCityName,
+                          lotName: lot.name,
                         },
                       })
                     }
@@ -279,7 +277,6 @@ export default function Dashboard() {
         </>
       )}
 
-      {/* Modals */}
       <EditLotModal 
         isOpen={!!editingLot}
         onClose={() => setEditingLot(null)}

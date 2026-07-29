@@ -52,7 +52,7 @@ const useParkingData = (parkingLotId, currentLevel, cityName) => {
       
       setParkings((prevParkings) => {
         const exists = prevParkings.find(s => s._id === updatedSpot.spot?.id);
-        if (!exists) return prevParkings; // If the spot is not on this level/lot, ignore it
+        if (!exists) return prevParkings;
 
         return prevParkings.map((spot) => 
           spot._id === updatedSpot.spot?.id ? { ...spot, status: updatedSpot.spot.status } : spot

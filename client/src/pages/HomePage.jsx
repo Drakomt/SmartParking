@@ -54,7 +54,6 @@ export default function HomePage() {
             `${import.meta.env.VITE_API_BASE_URL}/api/parking/nearby?lat=${latitude}&lng=${longitude}`
           );
           console.log("Nearby lots:", res.data);
-          alert("חניונים קרובים נטענו (יש לעדכן את התצוגה בהתאם למבנה הנתונים).");
         } catch (err) {
           console.error("Nearby API error:", err);
           setNearbyError("תקלה בעת הזיהוי חניונים קרובים.");
@@ -89,14 +88,13 @@ export default function HomePage() {
   }, [location.state, navigate]);
 
   const toggleFavorite = (e, lot) => {
-    e.stopPropagation(); // Prevent opening the parking lot
+    e.stopPropagation();
     setFavoriteLots((prevFavorites) => {
       let newFavorites;
       const exists = prevFavorites.some((fav) => fav._id === lot._id);
       if (exists) {
         newFavorites = prevFavorites.filter((fav) => fav._id !== lot._id);
       } else {
-        // Store just enough info to render the card
         const { _id, name, address, city, totalSpots, spots } = lot;
         newFavorites = [
           ...prevFavorites,
@@ -122,7 +120,6 @@ export default function HomePage() {
     }
   };
 
-  // Listen for custom navigation events
   useEffect(() => {
     const handleReset = () => {
       setSelectedParkingLotId(null);
@@ -166,7 +163,6 @@ export default function HomePage() {
     error: slotsError,
   } = useParkingData(selectedParkingLotId, currentLevel, submittedCity);
 
-  // Removed duplicate onBack
 
   const handleUpdateLocation = (lotId) => {
     setSelectedParkingLotId(lotId);
@@ -174,6 +170,7 @@ export default function HomePage() {
   };
 
   const selectedLotName =
+    location.state?.lotName ||
     parkingLotsCity?.find((lot) => lot._id === selectedParkingLotId)?.name ||
     favoriteLots?.find((lot) => lot._id === selectedParkingLotId)?.name ||
     "";
