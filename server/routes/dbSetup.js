@@ -19,6 +19,7 @@ const seedCities = [
         totalSpots: 160,
         levels: 10,
         prefix: 'H-M',
+        location: { lat: 32.0159, lng: 34.7744 },
       },
       {
         name: 'חניון העירייה',
@@ -26,6 +27,7 @@ const seedCities = [
         totalSpots: 18,
         levels: 2,
         prefix: 'H-C',
+        location: { lat: 32.0194, lng: 34.7723 },
       },
       {
         name: 'חניון קניון חולון',
@@ -33,6 +35,7 @@ const seedCities = [
         totalSpots: 30,
         levels: 3,
         prefix: 'H-MALL',
+        location: { lat: 32.0083, lng: 34.7792 },
       },
       {
         name: 'חניון וולפסון',
@@ -40,6 +43,7 @@ const seedCities = [
         totalSpots: 22,
         levels: 2,
         prefix: 'H-W',
+        location: { lat: 32.0351, lng: 34.7649 },
       },
     ],
   },
@@ -52,6 +56,7 @@ const seedCities = [
         totalSpots: 40,
         levels: 4,
         prefix: 'TA-AZ',
+        location: { lat: 32.0743, lng: 34.7925 },
       },
       {
         name: 'חניון רוטשילד',
@@ -59,6 +64,7 @@ const seedCities = [
         totalSpots: 22,
         levels: 2,
         prefix: 'TA-R',
+        location: { lat: 32.0637, lng: 34.7691 },
       },
       {
         name: 'חניון דיזנגוף סנטר',
@@ -66,6 +72,7 @@ const seedCities = [
         totalSpots: 28,
         levels: 3,
         prefix: 'TA-D',
+        location: { lat: 32.0754, lng: 34.7753 },
       },
     ],
   },
@@ -78,6 +85,7 @@ const seedCities = [
         totalSpots: 20,
         levels: 2,
         prefix: 'RZ-1',
+        location: { lat: 31.9730, lng: 34.7748 },
       },
       {
         name: 'חניון קניון הזהב',
@@ -85,6 +93,7 @@ const seedCities = [
         totalSpots: 32,
         levels: 3,
         prefix: 'RZ-GOLD',
+        location: { lat: 31.9900, lng: 34.7746 },
       },
     ],
   },
@@ -97,6 +106,7 @@ const seedCities = [
         totalSpots: 26,
         levels: 2,
         prefix: 'RG-B',
+        location: { lat: 32.0836, lng: 34.8009 },
       },
       {
         name: 'חניון אצטדיון',
@@ -104,6 +114,7 @@ const seedCities = [
         totalSpots: 34,
         levels: 4,
         prefix: 'RG-S',
+        location: { lat: 32.1002, lng: 34.8242 },
       },
     ],
   },
@@ -116,6 +127,7 @@ const seedCities = [
         totalSpots: 16,
         levels: 2,
         prefix: 'BY-T',
+        location: { lat: 32.0167, lng: 34.7385 },
       },
       {
         name: 'חניון העירייה בת ים',
@@ -123,6 +135,7 @@ const seedCities = [
         totalSpots: 18,
         levels: 2,
         prefix: 'BY-C',
+        location: { lat: 32.0138, lng: 34.7528 },
       },
     ],
   },
@@ -135,6 +148,7 @@ const seedCities = [
         totalSpots: 14,
         levels: 2,
         prefix: 'GV-C',
+        location: { lat: 32.0709, lng: 34.8118 },
       },
       {
         name: 'חניון גבעתיים מערב',
@@ -142,6 +156,7 @@ const seedCities = [
         totalSpots: 20,
         levels: 2,
         prefix: 'GV-W',
+        location: { lat: 32.0742, lng: 34.8071 },
       },
     ],
   },
@@ -154,6 +169,7 @@ const seedCities = [
         totalSpots: 24,
         levels: 3,
         prefix: 'HF-CN',
+        location: { lat: 32.8048, lng: 34.9862 },
       },
       {
         name: 'חניון הנמל',
@@ -161,6 +177,7 @@ const seedCities = [
         totalSpots: 36,
         levels: 4,
         prefix: 'HF-HR',
+        location: { lat: 32.8210, lng: 34.9971 },
       },
       {
         name: 'חניון גרנד קניון',
@@ -168,6 +185,7 @@ const seedCities = [
         totalSpots: 30,
         levels: 3,
         prefix: 'HF-GR',
+        location: { lat: 32.7907, lng: 35.0076 },
       },
       {
         name: 'חניון בת גלים',
@@ -175,6 +193,7 @@ const seedCities = [
         totalSpots: 18,
         levels: 2,
         prefix: 'HF-BG',
+        location: { lat: 32.8333, lng: 34.9804 },
       },
     ],
   },
@@ -187,6 +206,7 @@ const seedCities = [
         totalSpots: 40,
         levels: 3,
         prefix: 'BS-M',
+        location: { lat: 31.2457, lng: 34.7980 },
       },
     ],
   },
@@ -199,6 +219,7 @@ const seedCities = [
         totalSpots: 30,
         levels: 2,
         prefix: 'RS-H',
+        location: { lat: 32.1465, lng: 34.8391 },
       },
     ],
   },
@@ -379,6 +400,7 @@ router.post('/seed', async (req, res) => {
           address: lotSeed.address,
           totalSpots: lotSeed.totalSpots,
           levels: lotSeed.levels,
+          location: lotSeed.location,
         });
 
         cityDoc.parkingLots.push(lot._id);

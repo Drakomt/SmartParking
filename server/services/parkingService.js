@@ -3,6 +3,7 @@ import parkingSpotRepo from '../repositories/parkingSpotRepo.js';
 import cityRepo from '../repositories/cityRepo.js';
 import parkingSessionRepo from '../repositories/parkingSessionRepo.js';
 import { emitParkingSpotUpdate, emitParkingSpotUpdateToAuthorizedUsers } from './socketService.js';
+import { calculateHaversineDistanceKm } from '../utils/geo.js';
 
 const publishSpotUpdate = async (parkingLot, spot) => {
   if (!parkingLot || !parkingLot.city || !spot) {
@@ -64,6 +65,32 @@ const fetchParkingLots = async (user) => {
     query.city = { $in: authorizedCities };
   }
   return await parkingLotRepo.findAllLots(query);
+};
+
+const fetchNearbyParkingLots = async (lat, lng) => {
+  const parkingLots = await parkingLotRepo.findAllLots();
+
+  return parkingLots
+    .filter((parkingLot) => (
+      Number.isFinite(parkingLot.location?.lat)
+      && Number.isFinite(parkingLot.location?.lng)
+    ))
+    .map((parkingLot) => {
+      const distanceKm = calculateHaversineDistanceKm(
+        { lat, lng },
+        parkingLot.location,
+      );
+
+      return {
+        parkingLot: parkingLot.toObject(),
+        distanceKm,
+      };
+    })
+    .sort((firstLot, secondLot) => firstLot.distanceKm - secondLot.distanceKm)
+    .map(({ parkingLot, distanceKm }) => ({
+      ...parkingLot,
+      distanceKm: Number(distanceKm.toFixed(3)),
+    }));
 };
 
 const fetchAuthorizedLotsWithDetails = async (user) => {
@@ -279,6 +306,7 @@ export default {
   fetchAllCities,
   fetchAuthorizedCities,
   fetchParkingLots,
+  fetchNearbyParkingLots,
   fetchAuthorizedLotsWithDetails,
   fetchAuthorizedLotsByCity,
   fetchLotsByCity,

@@ -38,7 +38,8 @@ router.route('/')
         city: req.body.city,
         address: req.body.address,
         totalSpots: req.body.totalSpots,
-        levels: req.body.levels
+        levels: req.body.levels,
+        location: req.body.location,
       }, req.user);
       res.status(201).json(parkingLot);
     } catch (error) {
@@ -53,6 +54,37 @@ router.get('/lotsbycity', async (req, res) => {
     } catch (error) {
       res.status(404).json({ message: error.message });
     }
+});
+
+router.get('/nearby', async (req, res) => {
+  const latQuery = req.query.lat;
+  const lngQuery = req.query.lng;
+  const lat = Number(latQuery);
+  const lng = Number(lngQuery);
+
+  if (
+    typeof latQuery !== 'string'
+    || typeof lngQuery !== 'string'
+    || latQuery.trim() === ''
+    || lngQuery.trim() === ''
+    || !Number.isFinite(lat)
+    || !Number.isFinite(lng)
+    || lat < -90
+    || lat > 90
+    || lng < -180
+    || lng > 180
+  ) {
+    return res.status(400).json({
+      message: 'Valid lat and lng query parameters are required',
+    });
+  }
+
+  try {
+    const nearbyLots = await parkingService.fetchNearbyParkingLots(lat, lng);
+    return res.json(nearbyLots);
+  } catch (error) {
+    return res.status(500).json({ message: 'Server Error', error: error.message });
+  }
 });
 
 router.get('/parkinglotbyid', async (req, res) => {
