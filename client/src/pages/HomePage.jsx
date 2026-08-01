@@ -54,7 +54,7 @@ export default function HomePage() {
           const res = await axios.get(
             `${import.meta.env.VITE_API_BASE_URL}/api/parking/nearby?lat=${latitude}&lng=${longitude}`
           );
-          const withinRadius = res.data.filter(lot => lot.distanceKm <= 5);
+          const withinRadius = res.data.filter(lot => lot.distanceKm <= 2);
           setNearbyLots(withinRadius);
           setSubmittedCity("");
         } catch (err) {

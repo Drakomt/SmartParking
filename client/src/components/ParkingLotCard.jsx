@@ -7,6 +7,13 @@ export default function ParkingLotCard({
   onClick,
   fallbackCityName = "",
 }) {
+  const formatDistance = (dist) => {
+    if (dist < 1) {
+      return `${Math.round(dist * 1000)} מטר`;
+    }
+    return `${dist.toFixed(1)} ק"מ`;
+  };
+
   return (
     <button
       onClick={onClick}
@@ -26,6 +33,12 @@ export default function ParkingLotCard({
             </span>
             <span>{lot.address || lot.city?.name || fallbackCityName}</span>
           </div>
+          {lot.distanceKm !== undefined && (
+            <div className="flex items-center gap-1 text-primary/80 font-body-sm justify-start mt-1">
+              <span className="material-symbols-outlined text-sm">route</span>
+              <span>{formatDistance(lot.distanceKm)} ממך</span>
+            </div>
+          )}
         </div>
 
         <div className="bg-primary/10 text-primary p-2 rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">

@@ -83,7 +83,6 @@ const fetchAllParkingLotsWithSpots = async () => {
 
 const fetchNearbyParkingLots = async (lat, lng) => {
   const parkingLots = await parkingLotRepo.findAllLots();
-
   const lotsWithDetails = await Promise.all(
     parkingLots.map(async (parkingLot) => {
       const spots = await parkingSpotRepo.findSpotsByLot(parkingLot._id);
