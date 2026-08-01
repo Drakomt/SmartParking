@@ -56,6 +56,15 @@ router.get('/lotsbycity', async (req, res) => {
     }
 });
 
+router.get('/all', async (req, res) => {
+  try {
+    const lots = await parkingService.fetchAllParkingLotsWithSpots();
+    res.json(lots);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
 router.get('/nearby', async (req, res) => {
   const latQuery = req.query.lat;
   const lngQuery = req.query.lng;
