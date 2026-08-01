@@ -1,12 +1,16 @@
+import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import Sidebar from "./Sidebar";
 
 export default function NavBar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-white/70 dark:bg-primary/70 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm flex flex-row-reverse justify-between items-center px-gutter h-16">
+    <>
+      <nav className="fixed top-0 w-full z-50 bg-white/70 dark:bg-primary/70 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm flex flex-row-reverse justify-between items-center px-gutter h-16">
       <div className="flex items-center gap-4">
         <NavLink
           to="/"
@@ -62,7 +66,19 @@ export default function NavBar() {
             כניסה למורשים
           </button>
         )}
+
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="cursor-pointer text-on-surface hover:bg-surface-container-high transition-colors rounded-lg p-2 flex items-center justify-center"
+          title="תפריט"
+        >
+          <span className="material-symbols-outlined text-3xl">menu</span>
+        </button>
       </div>
-    </nav>
+
+      </nav>
+
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+    </>
   );
 }

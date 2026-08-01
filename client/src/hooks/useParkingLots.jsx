@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { io } from "socket.io-client";
-import { useAuth } from "../contexts/AuthContext";
+import { useSocket } from "../contexts/SocketContext";
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/parking`;
 
 const useParkingLots = (cityName) => {
-  const { user } = useAuth();
+  const socket = useSocket();
   const [parkingLotsCity, setParkingLotsCity] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -55,18 +54,11 @@ const useParkingLots = (cityName) => {
   }, [cityName]);
 
   useEffect(() => {
-    if (!cityName) return;
+    if (!cityName || !socket) return;
 
-    const socket = io(import.meta.env.VITE_API_BASE_URL, {
-      query: { city: cityName },
-      auth: { token: user?.token }
-    });
+    socket.emit("join-city-room", cityName);
 
-    socket.on("connect", () => {
-      console.log(`Connected to socket server for lots in city: ${cityName}`);
-    });
-
-    socket.on("parking-spot-updated", (updatedSpot) => {
+    const handleSpotUpdate = (updatedSpot) => {
       console.log("Real-time spot update received in Search Results:", updatedSpot);
       
       setParkingLotsCity((prevLots) => {
@@ -82,12 +74,14 @@ const useParkingLots = (cityName) => {
           return lot;
         });
       });
-    });
+    };
+
+    socket.on("parking-spot-updated", handleSpotUpdate);
 
     return () => {
-      socket.disconnect();
+      socket.off("parking-spot-updated", handleSpotUpdate);
     };
-  }, [cityName]);
+  }, [cityName, socket]);
 
   return { parkingLotsCity, loading, error };
 };

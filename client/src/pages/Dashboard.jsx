@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
+import { useSocket } from "../contexts/SocketContext";
 import { useNavigate, useLocation } from "react-router-dom";
-import { io } from "socket.io-client";
 import CarsModal from "../components/CarsModal";
 import EditLotModal from "../components/EditLotModal";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const socket = useSocket();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -56,17 +57,9 @@ export default function Dashboard() {
   }, [user, navigate]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !socket) return;
 
-    const socket = io(import.meta.env.VITE_API_BASE_URL, {
-      auth: { token: user.token },
-    });
-
-    socket.on("connect", () => {
-      console.log("Admin connected to personal socket room");
-    });
-
-    socket.on("parking-spot-updated", (updatedSpot) => {
+    const handleSpotUpdated = (updatedSpot) => {
       setParkingLots((prevLots) =>
         prevLots.map((lot) => {
           if (lot._id !== updatedSpot.parkingLot) return lot;
@@ -78,9 +71,9 @@ export default function Dashboard() {
           };
         }),
       );
-    });
+    };
 
-    socket.on("parking-session-updated", (updatedSession) => {
+    const handleSessionUpdated = (updatedSession) => {
       setParkingLots((prevLots) =>
         prevLots.map((lot) => {
           if (lot._id !== updatedSession.parkingLot) return lot;
@@ -101,10 +94,16 @@ export default function Dashboard() {
           return { ...lot, sessions };
         }),
       );
-    });
+    };
 
-    return () => socket.disconnect();
-  }, [user]);
+    socket.on("parking-spot-updated", handleSpotUpdated);
+    socket.on("parking-session-updated", handleSessionUpdated);
+
+    return () => {
+      socket.off("parking-spot-updated", handleSpotUpdated);
+      socket.off("parking-session-updated", handleSessionUpdated);
+    };
+  }, [user, socket]);
 
   const handleSaveLotSubmit = async (lotId, formData) => {
     await axios.put(

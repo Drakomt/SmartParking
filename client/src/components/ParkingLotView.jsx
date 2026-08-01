@@ -54,7 +54,7 @@ export default function ParkingLotView({
             }}
             className="cursor-pointer px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-on-primary rounded-xl transition-all duration-300 font-medium z-10 flex items-center gap-2"
           >
-            <span className="material-symbols-outlined text-sm">navigation</span>
+            <i className="fa-brands fa-waze text-lg"></i>
             נווט לחניון
           </button>
         )}

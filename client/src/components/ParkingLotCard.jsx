@@ -65,7 +65,7 @@ export default function ParkingLotCard({
             className="p-2 rounded-full transition-colors flex items-center justify-center text-primary hover:bg-primary/10 hover:text-primary-container"
             title="נווט לחניון ב-Waze"
           >
-            <span className="material-symbols-outlined text-lg">navigation</span>
+            <i className="fa-brands fa-waze text-xl"></i>
           </div>
           <div
             onClick={(e) => onToggleFavorite(e, lot)}
