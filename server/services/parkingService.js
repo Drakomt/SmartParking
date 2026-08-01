@@ -67,10 +67,35 @@ const fetchParkingLots = async (user) => {
   return await parkingLotRepo.findAllLots(query);
 };
 
+const fetchAllParkingLotsWithSpots = async () => {
+  const parkingLots = await parkingLotRepo.findAllLots();
+
+  return await Promise.all(
+    parkingLots.map(async (parkingLot) => {
+      const spots = await parkingSpotRepo.findSpotsByLot(parkingLot._id);
+      return {
+        ...parkingLot.toObject(),
+        spots: spots.map((spot) => spot.toObject()),
+      };
+    })
+  );
+};
+
 const fetchNearbyParkingLots = async (lat, lng) => {
   const parkingLots = await parkingLotRepo.findAllLots();
 
-  return parkingLots
+  const lotsWithDetails = await Promise.all(
+    parkingLots.map(async (parkingLot) => {
+      const spots = await parkingSpotRepo.findSpotsByLot(parkingLot._id);
+
+      return {
+        ...parkingLot.toObject(),
+        spots: spots.map((spot) => spot.toObject()),
+      };
+    })
+  );
+
+  return lotsWithDetails
     .filter((parkingLot) => (
       Number.isFinite(parkingLot.location?.lat)
       && Number.isFinite(parkingLot.location?.lng)
@@ -82,15 +107,11 @@ const fetchNearbyParkingLots = async (lat, lng) => {
       );
 
       return {
-        parkingLot: parkingLot.toObject(),
-        distanceKm,
+        ...parkingLot,
+        distanceKm: Number(distanceKm.toFixed(3)),
       };
     })
-    .sort((firstLot, secondLot) => firstLot.distanceKm - secondLot.distanceKm)
-    .map(({ parkingLot, distanceKm }) => ({
-      ...parkingLot,
-      distanceKm: Number(distanceKm.toFixed(3)),
-    }));
+    .sort((firstLot, secondLot) => firstLot.distanceKm - secondLot.distanceKm);
 };
 
 const fetchAuthorizedLotsWithDetails = async (user) => {
@@ -306,6 +327,7 @@ export default {
   fetchAllCities,
   fetchAuthorizedCities,
   fetchParkingLots,
+  fetchAllParkingLotsWithSpots,
   fetchNearbyParkingLots,
   fetchAuthorizedLotsWithDetails,
   fetchAuthorizedLotsByCity,
