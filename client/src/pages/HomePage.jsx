@@ -36,10 +36,11 @@ export default function HomePage() {
 
   const [isLocating, setIsLocating] = useState(false);
   const [nearbyError, setNearbyError] = useState(null);
+  const [nearbyLots, setNearbyLots] = useState(null);
 
-  const handleFindNearMe = () => {
+  const handleFindNearMe = (showError = true) => {
     if (!navigator.geolocation) {
-      setNearbyError("הדפדפן שלך לא תומך בשירותי מיקום.");
+      if (showError === true) setNearbyError("הדפדפן שלך לא תומך בשירותי מיקום.");
       return;
     }
 
@@ -53,24 +54,35 @@ export default function HomePage() {
           const res = await axios.get(
             `${import.meta.env.VITE_API_BASE_URL}/api/parking/nearby?lat=${latitude}&lng=${longitude}`
           );
-          console.log("Nearby lots:", res.data);
+          const withinRadius = res.data.filter(lot => lot.distanceKm <= 5);
+          setNearbyLots(withinRadius);
+          setSubmittedCity("");
         } catch (err) {
           console.error("Nearby API error:", err);
-          setNearbyError("תקלה בעת הזיהוי חניונים קרובים.");
+          if (showError === true) setNearbyError("תקלה בעת הזיהוי חניונים קרובים.");
         } finally {
           setIsLocating(false);
         }
       },
       (error) => {
         setIsLocating(false);
-        if (error.code === error.PERMISSION_DENIED) {
-          setNearbyError("אנא אשר גישה למיקום בדפדפן כדי למצוא חניונים קרובים.");
-        } else {
-          setNearbyError("שגיאה באיתור המיקום שלך.");
+        if (showError === true) {
+          if (error.code === error.PERMISSION_DENIED) {
+            setNearbyError("אנא אשר גישה למיקום בדפדפן כדי למצוא חניונים קרובים.");
+          } else {
+            setNearbyError("שגיאה באיתור המיקום שלך.");
+          }
         }
       }
     );
   };
+
+  useEffect(() => {
+    if (!location.state?.selectedAdminLot && !location.state?.showFavorites && !submittedCity) {
+      handleFindNearMe(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (location.state?.showFavorites) {
@@ -125,6 +137,7 @@ export default function HomePage() {
       setSelectedParkingLotId(null);
       setCurrentLevel(1);
       setShowFavorites(false);
+      setNearbyLots(null);
     };
     const handleShowFavorites = () => {
       setSelectedParkingLotId(null);
@@ -142,6 +155,7 @@ export default function HomePage() {
   }, []);
 
   const handleSearchSubmit = (city) => {
+    setNearbyLots(null);
     setSubmittedCity(city);
     if (city && city.trim() !== "") {
       const newSearches = [
@@ -169,10 +183,15 @@ export default function HomePage() {
     setCurrentLevel(1);
   };
 
+  const selectedLot = 
+    nearbyLots?.find((lot) => lot._id === selectedParkingLotId) ||
+    parkingLotsCity?.find((lot) => lot._id === selectedParkingLotId) ||
+    favoriteLots?.find((lot) => lot._id === selectedParkingLotId) ||
+    null;
+
   const selectedLotName =
     location.state?.lotName ||
-    parkingLotsCity?.find((lot) => lot._id === selectedParkingLotId)?.name ||
-    favoriteLots?.find((lot) => lot._id === selectedParkingLotId)?.name ||
+    selectedLot?.name ||
     "";
 
   return (
@@ -202,6 +221,7 @@ export default function HomePage() {
               totalLevels={totalLevels}
               onLevelChange={setCurrentLevel}
               lotName={selectedLotName}
+              lotLocation={selectedLot?.location}
               isAdmin={location.state?.adminMode || false}
               lotId={selectedParkingLotId}
             />
@@ -288,9 +308,9 @@ export default function HomePage() {
                   availableCities={citiesInDatabase}
                 />
               </div>
-              <div className="mt-6 flex flex-col items-center relative z-0">
+              <div className="mt-12 flex flex-col items-center relative z-0 w-full max-w-3xl mr-0">
                 <button
-                  onClick={handleFindNearMe}
+                  onClick={() => handleFindNearMe(true)}
                   disabled={isLocating}
                   className="bg-surface-container-highest/80 backdrop-blur-sm hover:bg-primary/20 text-primary font-bold py-3 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 border border-primary/30 disabled:opacity-50"
                 >
@@ -317,7 +337,9 @@ export default function HomePage() {
                   <span className="material-symbols-outlined text-primary">
                     local_parking
                   </span>
-                  {submittedCity
+                  {nearbyLots 
+                    ? "חניונים קרובים אליך"
+                    : submittedCity
                     ? `תוצאות חיפוש עבור "${submittedCity}"`
                     : "חניונים מומלצים"}
                 </h2>
@@ -334,12 +356,9 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  {submittedCity &&
-                  !loading &&
-                  parkingLotsCity &&
-                  parkingLotsCity.length > 0 ? (
+                  {(nearbyLots && nearbyLots.length > 0) || (submittedCity && !loading && parkingLotsCity && parkingLotsCity.length > 0) ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {parkingLotsCity.map((lot) => {
+                      {(nearbyLots || parkingLotsCity).map((lot) => {
                         const isFav = favoriteLots.some(
                           (fav) => fav._id === lot._id,
                         );
@@ -350,26 +369,30 @@ export default function HomePage() {
                             isFavorite={isFav}
                             onClick={() => handleUpdateLocation(lot._id)}
                             onToggleFavorite={toggleFavorite}
-                            fallbackCityName={submittedCity}
+                            fallbackCityName={lot.city?.name || submittedCity || "קרובים אליי"}
                           />
                         );
                       })}
                     </div>
                   ) : (
-                    submittedCity &&
-                    !loading && (
+                    (nearbyLots && nearbyLots.length === 0) ? (
+                      <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-6 text-center shadow-inner">
+                        <p className="text-on-surface-variant text-lg">
+                          לא נמצאו חניונים ברדיוס הקרוב אליך
+                        </p>
+                      </div>
+                    ) : (submittedCity && !loading) ? (
                       <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-6 text-center shadow-inner">
                         <p className="text-on-surface-variant text-lg">
                           לא נמצאו חניונים בעיר "{submittedCity}"
                         </p>
                       </div>
-                    )
+                    ) : null
                   )}
 
-                  {!submittedCity && (
+                  {!submittedCity && !nearbyLots && (
                     <div className="text-on-surface-variant font-body-md py-4 text-center">
-                      הזן שם עיר (לדוגמה חולון) בתיבת החיפוש או בחר מהחיפושים
-                      האחרונים כדי לראות חניונים זמינים.
+                      הזן שם עיר (לדוגמה חולון) בתיבת החיפוש, בחר מהחיפושים האחרונים, או השתמש במיקום שלך כדי לראות חניונים זמינים.
                     </div>
                   )}
                 </div>

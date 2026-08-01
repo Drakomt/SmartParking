@@ -52,15 +52,30 @@ export default function ParkingLotCard({
             </span>
           )}
         </div>
-        <div
-          onClick={(e) => onToggleFavorite(e, lot)}
-          className={`p-2 rounded-full transition-colors flex items-center justify-center hover:bg-yellow-500/10 ${
-            isFavorite
-              ? "text-yellow-500"
-              : "text-outline-variant hover:text-yellow-500"
-          }`}
-          title="שמור למועדפים"
-        >
+        <div className="flex gap-2 items-center">
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              if (lot.location?.lat && lot.location?.lng) {
+                window.open(`https://waze.com/ul?ll=${lot.location.lat},${lot.location.lng}&navigate=yes`, '_blank');
+              } else {
+                alert('קואורדינטות חסרות לחניון זה');
+              }
+            }}
+            className="p-2 rounded-full transition-colors flex items-center justify-center text-primary hover:bg-primary/10 hover:text-primary-container"
+            title="נווט לחניון ב-Waze"
+          >
+            <span className="material-symbols-outlined text-lg">navigation</span>
+          </div>
+          <div
+            onClick={(e) => onToggleFavorite(e, lot)}
+            className={`p-2 rounded-full transition-colors flex items-center justify-center hover:bg-yellow-500/10 ${
+              isFavorite
+                ? "text-yellow-500"
+                : "text-outline-variant hover:text-yellow-500"
+            }`}
+            title="שמור למועדפים"
+          >
           <span
             className="material-symbols-outlined"
             style={{
@@ -69,6 +84,7 @@ export default function ParkingLotCard({
           >
             star
           </span>
+        </div>
         </div>
       </div>
     </button>

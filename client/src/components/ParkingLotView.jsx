@@ -10,6 +10,7 @@ export default function ParkingLotView({
   totalLevels,
   onLevelChange,
   lotName,
+  lotLocation,
   isAdmin,
 }) {
   const [selectedSpot, setSelectedSpot] = useState(null);
@@ -45,6 +46,18 @@ export default function ParkingLotView({
         <h2 className="text-2xl text-primary font-bold tracking-wide absolute left-0 right-0 text-center pointer-events-none">
           {lotName ? `מצב חניון: ${lotName}` : "מצב חניון"}
         </h2>
+
+        {lotLocation?.lat && lotLocation?.lng && (
+          <button
+            onClick={() => {
+              window.open(`https://waze.com/ul?ll=${lotLocation.lat},${lotLocation.lng}&navigate=yes`, '_blank');
+            }}
+            className="cursor-pointer px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-on-primary rounded-xl transition-all duration-300 font-medium z-10 flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-sm">navigation</span>
+            נווט לחניון
+          </button>
+        )}
       </div>
 
       {!parkings || parkings.length === 0 ? (
