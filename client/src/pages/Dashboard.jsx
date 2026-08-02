@@ -151,7 +151,7 @@ export default function Dashboard() {
   const selectedCityName = selectedCityId ? getCityName(selectedCityId) : "";
 
   return (
-    <div className="pt-24 px-4 sm:px-8 max-w-6xl mx-auto" dir="rtl">
+    <div className="pt-24 pb-20 px-4 sm:px-8 max-w-6xl mx-auto" dir="rtl">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-black text-primary">
           אזור אישי - מנהל מערכת

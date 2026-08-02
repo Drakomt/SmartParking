@@ -85,7 +85,6 @@ export default function HomePage() {
     if (allNearbyLots) {
       const nextLot = allNearbyLots.find(lot => lot.distanceKm > searchRadius);
       if (nextLot) {
-        // Increase by at least 2km, but jump straight to the next lot if it's far away
         const jumpRadius = Math.ceil(nextLot.distanceKm);
         const newRadius = Math.max(searchRadius + 2, jumpRadius);
         
@@ -249,12 +248,29 @@ export default function HomePage() {
       ) : showFavorites ? (
         <div className="max-w-7xl mx-auto px-container-padding py-section-margin w-full flex flex-col gap-section-margin mt-8">
           <section className="flex flex-col w-full">
-            <h2 className="font-headline-md text-headline-md text-primary mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined text-yellow-500">
-                star
-              </span>
-              חניונים שמורים
-            </h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-headline-md text-headline-md text-primary flex items-center gap-2">
+                <span className="material-symbols-outlined text-yellow-500">
+                  star
+                </span>
+                חניונים שמורים
+              </h2>
+              {favoriteLots.length > 0 && (
+                <button
+                  onClick={() => {
+                    if (window.confirm("האם אתה בטוח שברצונך למחוק את כל החניונים השמורים?")) {
+                      setFavoriteLots([]);
+                      localStorage.removeItem("smartParking_favorites");
+                    }
+                  }}
+                  className="cursor-pointer px-4 py-2 border border-error/50 text-error hover:bg-error/10 hover:border-error rounded-xl transition-all duration-300 font-medium flex items-center gap-2"
+                  title="נקה מועדפים"
+                >
+                  <span className="material-symbols-outlined text-sm">delete</span>
+                  <span className="hidden sm:inline">נקה הכל</span>
+                </button>
+              )}
+            </div>
             <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] border border-outline-variant/20 flex-grow min-h-[300px]">
               {favoriteLots.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

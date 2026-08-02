@@ -8,6 +8,7 @@ export default function LoginForm() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -39,7 +40,7 @@ export default function LoginForm() {
 
       console.log("התחברות בהצלחה:", response.data);
 
-      login(response.data);
+      login(response.data, rememberMe);
       setFields({ email: "", password: "" });
 
       navigate("/dashboard");
@@ -57,7 +58,6 @@ export default function LoginForm() {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen pt-16 w-full overflow-hidden">
-      {/* Background Image (same as Hero) */}
       <div className="absolute inset-0 w-full h-full -z-10">
         <div
           className="bg-cover bg-center w-full h-full opacity-80"
@@ -130,6 +130,19 @@ export default function LoginForm() {
                   </span>
                 </button>
               </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-right">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 text-primary bg-surface-container-lowest border-outline-variant rounded focus:ring-primary focus:ring-2 cursor-pointer"
+              />
+              <label htmlFor="rememberMe" className="text-body-md text-on-surface cursor-pointer select-none">
+                זכור אותי במחשב זה
+              </label>
             </div>
 
             {error && (

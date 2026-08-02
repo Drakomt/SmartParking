@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
-// Fix for default marker icons in react-leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: markerIcon,
@@ -36,7 +36,7 @@ export default function AllLotsPage() {
     fetchLots();
   }, []);
 
-  const israelCenter = [32.0, 34.8]; // Roughly center of Israel
+  const israelCenter = [32.0, 34.8];
 
   return (
     <div className="pt-24 pb-12 px-4 sm:px-8 max-w-2xl mx-auto w-full flex flex-col items-center">

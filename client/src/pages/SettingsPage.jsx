@@ -30,7 +30,6 @@ export default function SettingsPage() {
 
       <div className="bg-surface-container-lowest rounded-3xl p-8 shadow-sm border border-outline-variant/30 flex-grow">
         
-        {/* General Settings */}
         <h2 className="text-xl font-bold text-primary mb-6">הגדרות כלליות</h2>
         <div className="space-y-6 mb-10">
           
@@ -50,7 +49,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Accessibility Accordion */}
         <div className="border border-outline-variant/30 rounded-2xl overflow-hidden mb-8">
           <button 
             onClick={() => setIsAccessibilityOpen(!isAccessibilityOpen)}
