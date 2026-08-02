@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSettings } from "../contexts/SettingsContext";
 
@@ -16,6 +16,15 @@ export default function SettingsPage() {
   } = useSettings();
 
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false);
+  const accessibilityRef = useRef(null);
+
+  useEffect(() => {
+    if (isAccessibilityOpen && accessibilityRef.current) {
+      setTimeout(() => {
+        accessibilityRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 50);
+    }
+  }, [isAccessibilityOpen]);
 
   return (
     <main className="flex-grow pt-24 px-4 sm:px-8 max-w-4xl mx-auto w-full flex flex-col min-h-[calc(100vh-100px)] pb-12">
@@ -80,7 +89,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="border border-outline-variant/30 rounded-2xl overflow-hidden mb-8">
+        <div ref={accessibilityRef} className="border border-outline-variant/30 rounded-2xl overflow-hidden mb-8">
           <button 
             onClick={() => setIsAccessibilityOpen(!isAccessibilityOpen)}
             className="w-full bg-surface-container-low hover:bg-surface-container transition-colors p-6 flex items-center justify-between cursor-pointer"

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSettings } from "../contexts/SettingsContext";
 import axios from "axios";
 import { MapContainer, TileLayer, Marker, Popup, useMap, GeoJSON } from "react-leaflet";
 import L from "leaflet";
@@ -27,6 +28,7 @@ function MapController({ target }) {
 
 export default function AllLotsPage() {
   const navigate = useNavigate();
+  const { isColorBlindMode } = useSettings();
   const [lots, setLots] = useState([]);
   const [groupedLots, setGroupedLots] = useState({});
   const [loading, setLoading] = useState(true);
@@ -270,13 +272,13 @@ export default function AllLotsPage() {
               
               {cityBoundary && (
                 <GeoJSON 
-                  key={`${openCity}-${Date.now()}`} 
+                  key={`${openCity}-${isColorBlindMode ? 'colorblind' : 'normal'}-${Date.now()}`} 
                   data={cityBoundary} 
                   pathOptions={{ 
-                    color: '#ef4444', 
+                    color: isColorBlindMode ? '#d97706' : '#ef4444', 
                     weight: 3, 
                     fillOpacity: 0.15, 
-                    fillColor: '#ef4444' 
+                    fillColor: isColorBlindMode ? '#d97706' : '#ef4444' 
                   }} 
                 />
               )}
