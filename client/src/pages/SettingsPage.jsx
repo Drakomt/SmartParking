@@ -11,6 +11,8 @@ export default function SettingsPage() {
     setIsLargeText,
     isColorBlindMode,
     setIsColorBlindMode,
+    themeColor,
+    setThemeColor,
   } = useSettings();
 
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false);
@@ -35,7 +37,7 @@ export default function SettingsPage() {
           
           <div 
             onClick={() => setIsDarkMode(!isDarkMode)}
-            className="flex items-center justify-between pb-2 cursor-pointer group"
+            className="flex items-center justify-between pb-6 border-b border-outline-variant/20 cursor-pointer group mb-6"
           >
             <div>
               <h3 className="font-bold text-on-surface text-lg group-hover:text-primary transition-colors">מצב לילה</h3>
@@ -46,6 +48,35 @@ export default function SettingsPage() {
             >
               <div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${isDarkMode ? 'translate-x-[-28px]' : 'translate-x-0'}`}></div>
             </button>
+          </div>
+
+          <div>
+            <h3 className="font-bold text-on-surface text-lg mb-4">ערכת נושא (צבעי האתר)</h3>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setThemeColor('classic')}
+                className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${themeColor === 'classic' ? 'border-[#091426] dark:border-[#3b82f6] bg-surface-container-low shadow-sm' : 'border-outline-variant/30 hover:border-outline/50 cursor-pointer'}`}
+              >
+                <div className="w-8 h-8 rounded-full bg-[#091426] dark:bg-[#3b82f6]"></div>
+                <span className="font-bold text-sm">קלאסי</span>
+              </button>
+              
+              <button 
+                onClick={() => setThemeColor('ocean')}
+                className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${themeColor === 'ocean' ? 'border-[#0284c7] dark:border-[#38bdf8] bg-surface-container-low shadow-sm' : 'border-outline-variant/30 hover:border-outline/50 cursor-pointer'}`}
+              >
+                <div className="w-8 h-8 rounded-full bg-[#0284c7] dark:bg-[#38bdf8]"></div>
+                <span className="font-bold text-sm">אוקיינוס</span>
+              </button>
+              
+              <button 
+                onClick={() => setThemeColor('earth')}
+                className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${themeColor === 'earth' ? 'border-[#ea580c] dark:border-[#f59e0b] bg-surface-container-low shadow-sm' : 'border-outline-variant/30 hover:border-outline/50 cursor-pointer'}`}
+              >
+                <div className="w-8 h-8 rounded-full bg-[#ea580c] dark:bg-[#f59e0b]"></div>
+                <span className="font-bold text-sm">אדמה ושקיעה</span>
+              </button>
+            </div>
           </div>
         </div>
 

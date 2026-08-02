@@ -22,6 +22,11 @@ export const SettingsProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : false;
   });
 
+  const [themeColor, setThemeColor] = useState(() => {
+    const saved = localStorage.getItem('themeColor');
+    return saved ? JSON.parse(saved) : 'classic';
+  });
+
   useEffect(() => {
     localStorage.setItem('isDarkMode', JSON.stringify(isDarkMode));
     if (isDarkMode) {
@@ -49,6 +54,16 @@ export const SettingsProvider = ({ children }) => {
     }
   }, [isColorBlindMode]);
 
+  useEffect(() => {
+    localStorage.setItem('themeColor', JSON.stringify(themeColor));
+    document.documentElement.classList.remove('theme-ocean', 'theme-earth');
+    if (themeColor === 'ocean') {
+      document.documentElement.classList.add('theme-ocean');
+    } else if (themeColor === 'earth') {
+      document.documentElement.classList.add('theme-earth');
+    }
+  }, [themeColor]);
+
   const value = {
     isDarkMode,
     setIsDarkMode,
@@ -56,6 +71,8 @@ export const SettingsProvider = ({ children }) => {
     setIsLargeText,
     isColorBlindMode,
     setIsColorBlindMode,
+    themeColor,
+    setThemeColor,
   };
 
   return (

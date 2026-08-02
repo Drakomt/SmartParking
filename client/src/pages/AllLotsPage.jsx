@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, GeoJSON } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -36,6 +36,47 @@ export default function AllLotsPage() {
   const [mapTarget, setMapTarget] = useState({ center: israelCenter, zoom: 8 });
   const [openCity, setOpenCity] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  const [cityBoundary, setCityBoundary] = useState(null);
+  const boundaryCache = React.useRef({});
+
+  useEffect(() => {
+    if (!openCity) {
+      setCityBoundary(null);
+      return;
+    }
+
+    setCityBoundary(null);
+
+    if (boundaryCache.current[openCity]) {
+      setCityBoundary(boundaryCache.current[openCity]);
+      return;
+    }
+
+    const fetchBoundary = async () => {
+      try {
+        const url = `https://nominatim.openstreetmap.org/search.php?q=${encodeURIComponent(openCity + ', ישראל')}&polygon_geojson=1&format=json&limit=1`;
+        const res = await axios.get(url, {
+          headers: {
+            'User-Agent': 'SmartParkingApp/1.0'
+          }
+        });
+        
+        if (res.data && res.data.length > 0 && res.data[0].geojson) {
+          const geojsonData = res.data[0].geojson;
+          boundaryCache.current[openCity] = geojsonData;
+          setCityBoundary(geojsonData);
+        } else {
+          setCityBoundary(null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch city boundary", err);
+        setCityBoundary(null);
+      }
+    };
+
+    fetchBoundary();
+  }, [openCity]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,13 +91,11 @@ export default function AllLotsPage() {
         
         setLots(lotsData);
         
-        // Create a map for quick city name lookup
         const cityIdToName = {};
         citiesData.forEach(c => {
           cityIdToName[c._id] = c.name;
         });
         
-        // Group by city
         const grouped = {};
         lotsData.forEach(lot => {
           let cityName = "אחר";
@@ -71,7 +110,6 @@ export default function AllLotsPage() {
           grouped[cityName].push(lot);
         });
         
-        // Sort keys alphabetically
         const sortedGrouped = {};
         Object.keys(grouped).sort().forEach(key => {
           sortedGrouped[key] = grouped[key];
@@ -147,8 +185,6 @@ export default function AllLotsPage() {
       </div>
 
       <div className="flex flex-col md:flex-row gap-6 flex-grow min-h-0 pb-4">
-        
-        {/* Sidebar Accordion (Right Side) */}
         <div className="w-full md:w-1/3 lg:w-1/4 bg-surface-container-lowest rounded-3xl shadow-sm border border-outline-variant/30 flex flex-col overflow-hidden shrink-0 h-[40vh] md:h-full">
           <div className="p-4 bg-primary/5 border-b border-outline-variant/20 shadow-sm z-10 flex flex-col gap-3">
             <h2 className="font-bold text-primary text-lg flex items-center gap-2">
@@ -202,7 +238,7 @@ export default function AllLotsPage() {
                               className="p-3 border-b border-outline-variant/10 last:border-0 hover:bg-primary/10 cursor-pointer transition-colors group"
                             >
                               <div className="flex justify-between items-start">
-                                <h3 className="font-bold text-primary group-hover:text-primary-container text-[15px]">{lot.name}</h3>
+                                <h3 className="font-bold text-primary text-[15px]">{lot.name}</h3>
                                 <div className={`text-xs px-2 py-0.5 rounded font-bold ${freeSpots > 0 ? 'bg-blue-100 text-blue-900' : 'bg-error-container text-error'}`}>
                                   {freeSpots} פנויים
                                 </div>
@@ -219,8 +255,6 @@ export default function AllLotsPage() {
             )}
           </div>
         </div>
-
-        {/* Map Container (Left Side) */}
         <div className="w-full md:w-2/3 lg:w-3/4 rounded-3xl overflow-hidden shadow-lg border border-outline-variant/30 relative flex-grow min-h-[400px]">
           {loading ? (
             <div className="absolute inset-0 flex justify-center items-center bg-surface-container-lowest z-10">
@@ -228,11 +262,25 @@ export default function AllLotsPage() {
             </div>
           ) : (
             <MapContainer center={mapTarget.center} zoom={mapTarget.zoom} scrollWheelZoom={true} className="w-full h-full z-0">
-              <MapController target={mapTarget} />
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
+              <MapController target={mapTarget} />
+              
+              {cityBoundary && (
+                <GeoJSON 
+                  key={`${openCity}-${Date.now()}`} 
+                  data={cityBoundary} 
+                  pathOptions={{ 
+                    color: '#ef4444', 
+                    weight: 3, 
+                    fillOpacity: 0.15, 
+                    fillColor: '#ef4444' 
+                  }} 
+                />
+              )}
+
               {lots.map((lot) => {
                 if (lot.location?.lat && lot.location?.lng) {
                   const freeSpots = lot.spots ? lot.spots.filter(s => s.status === 'free').length : 0;
@@ -242,7 +290,7 @@ export default function AllLotsPage() {
                       <Popup className="font-sans text-center" dir="rtl">
                         <div className="flex flex-col items-center gap-2 p-1">
                           <strong className="text-lg text-primary">{lot.name}</strong>
-                          <span className="text-sm text-on-surface-variant flex items-center justify-center">
+                          <span className="text-sm font-medium text-on-surface flex items-center justify-center">
                             <span className="material-symbols-outlined text-sm ml-1">location_on</span>
                             {lot.address || lot.city?.name || ""}
                           </span>

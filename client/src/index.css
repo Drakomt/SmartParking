@@ -135,3 +135,77 @@ html.theme-colorblind .text-error {
 html.theme-colorblind .text-on-error-container {
   color: var(--color-on-error-container) !important;
 }
+
+/* Leaflet Popup Theme Support */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background-color: var(--color-surface-container-lowest) !important;
+  color: var(--color-on-surface) !important;
+}
+
+/* Color Themes */
+html.theme-ocean {
+  /* Ocean Light */
+  --color-background: #f0f9ff !important;
+  --color-surface: #f0f9ff !important;
+  --color-surface-container-lowest: #ffffff !important;
+  --color-surface-container-low: #e0f2fe !important;
+  --color-surface-container-high: #bae6fd !important;
+  --color-surface-container-highest: #7dd3fc !important;
+  --color-on-background: #0f172a !important;
+  --color-on-surface: #0f172a !important;
+  --color-on-surface-variant: #334155 !important;
+  --color-primary: #0284c7 !important;
+  --color-primary-container: #0369a1 !important;
+  --color-secondary-container: #bae6fd !important;
+  --color-outline: #94a3b8 !important;
+  --color-outline-variant: #cbd5e1 !important;
+}
+html.dark.theme-ocean {
+  /* Ocean Dark */
+  --color-background: #0f172a !important;
+  --color-surface: #0f172a !important;
+  --color-surface-container-lowest: #020617 !important;
+  --color-surface-container-low: #1e293b !important;
+  --color-surface-container-high: #334155 !important;
+  --color-surface-container-highest: #475569 !important;
+  --color-on-background: #f1f5f9 !important;
+  --color-on-surface: #f1f5f9 !important;
+  --color-on-surface-variant: #94a3b8 !important;
+  --color-primary: #38bdf8 !important;
+  --color-outline: #64748b !important;
+  --color-outline-variant: #334155 !important;
+}
+
+html.theme-earth {
+  /* Earth Light */
+  --color-background: #fdfbf7 !important;
+  --color-surface: #fdfbf7 !important;
+  --color-surface-container-lowest: #ffffff !important;
+  --color-surface-container-low: #f5f0e6 !important;
+  --color-surface-container-high: #e7e0d3 !important;
+  --color-surface-container-highest: #d6ccba !important;
+  --color-on-background: #292524 !important;
+  --color-on-surface: #292524 !important;
+  --color-on-surface-variant: #57534e !important;
+  --color-primary: #ea580c !important;
+  --color-primary-container: #c2410c !important;
+  --color-secondary-container: #fed7aa !important;
+  --color-outline: #a8a29e !important;
+  --color-outline-variant: #d6d3d1 !important;
+}
+html.dark.theme-earth {
+  /* Earth Dark */
+  --color-background: #292524 !important;
+  --color-surface: #292524 !important;
+  --color-surface-container-lowest: #1c1917 !important;
+  --color-surface-container-low: #44403c !important;
+  --color-surface-container-high: #57534e !important;
+  --color-surface-container-highest: #78716c !important;
+  --color-on-background: #fafaf9 !important;
+  --color-on-surface: #fafaf9 !important;
+  --color-on-surface-variant: #d6d3d1 !important;
+  --color-primary: #f59e0b !important;
+  --color-outline: #a8a29e !important;
+  --color-outline-variant: #57534e !important;
+}

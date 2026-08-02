@@ -178,7 +178,7 @@ export default function Dashboard() {
                 <div
                   key={city._id}
                   onClick={() => setSelectedCityId(city._id)}
-                  className="bg-white/80 p-8 rounded-2xl shadow border border-outline-variant/30 hover:border-primary hover:shadow-md cursor-pointer transition-all flex flex-col items-center justify-center gap-2"
+                  className="bg-surface-container-lowest p-8 rounded-2xl shadow border border-outline-variant/30 hover:border-primary hover:shadow-md cursor-pointer transition-all flex flex-col items-center justify-center gap-2"
                 >
                   <span className="material-symbols-outlined text-4xl text-primary">
                     location_city
@@ -223,7 +223,7 @@ export default function Dashboard() {
             {lotsToDisplay.map((lot) => (
               <div
                 key={lot._id}
-                className="bg-white/80 p-6 rounded-2xl shadow border border-outline-variant/30 hover:border-primary transition-all relative flex flex-col h-full"
+                className="bg-surface-container-lowest p-6 rounded-2xl shadow border border-outline-variant/30 hover:border-primary transition-all relative flex flex-col h-full"
               >
                 <button
                   onClick={() => setEditingLot(lot)}
