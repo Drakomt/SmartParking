@@ -37,6 +37,8 @@ export default function HomePage() {
   const [isLocating, setIsLocating] = useState(false);
   const [nearbyError, setNearbyError] = useState(null);
   const [nearbyLots, setNearbyLots] = useState(null);
+  const [allNearbyLots, setAllNearbyLots] = useState(null);
+  const [searchRadius, setSearchRadius] = useState(2);
 
   const handleFindNearMe = (showError = true) => {
     if (!navigator.geolocation) {
@@ -54,6 +56,8 @@ export default function HomePage() {
           const res = await axios.get(
             `${import.meta.env.VITE_API_BASE_URL}/api/parking/nearby?lat=${latitude}&lng=${longitude}`
           );
+          setAllNearbyLots(res.data);
+          setSearchRadius(2);
           const withinRadius = res.data.filter(lot => lot.distanceKm <= 2);
           setNearbyLots(withinRadius);
           setSubmittedCity("");
@@ -75,6 +79,21 @@ export default function HomePage() {
         }
       }
     );
+  };
+
+  const handleShowMoreNearby = () => {
+    if (allNearbyLots) {
+      const nextLot = allNearbyLots.find(lot => lot.distanceKm > searchRadius);
+      if (nextLot) {
+        // Increase by at least 2km, but jump straight to the next lot if it's far away
+        const jumpRadius = Math.ceil(nextLot.distanceKm);
+        const newRadius = Math.max(searchRadius + 2, jumpRadius);
+        
+        setSearchRadius(newRadius);
+        const withinRadius = allNearbyLots.filter(lot => lot.distanceKm <= newRadius);
+        setNearbyLots(withinRadius);
+      }
+    }
   };
 
   useEffect(() => {
@@ -363,14 +382,15 @@ export default function HomePage() {
                           (fav) => fav._id === lot._id,
                         );
                         return (
-                          <ParkingLotCard
-                            key={lot._id}
-                            lot={lot}
-                            isFavorite={isFav}
-                            onClick={() => handleUpdateLocation(lot._id)}
-                            onToggleFavorite={toggleFavorite}
-                            fallbackCityName={lot.city?.name || submittedCity || "קרובים אליי"}
-                          />
+                          <div key={lot._id} className="animate-fade-in-up h-full">
+                            <ParkingLotCard
+                              lot={lot}
+                              isFavorite={isFav}
+                              onClick={() => handleUpdateLocation(lot._id)}
+                              onToggleFavorite={toggleFavorite}
+                              fallbackCityName={lot.city?.name || submittedCity || "קרובים אליי"}
+                            />
+                          </div>
                         );
                       })}
                     </div>
@@ -397,6 +417,18 @@ export default function HomePage() {
                   )}
                 </div>
               </section>
+
+              {nearbyLots && allNearbyLots && nearbyLots.length < allNearbyLots.length && (
+                <div className="flex justify-center mb-6">
+                  <button
+                    onClick={handleShowMoreNearby}
+                    className="cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary font-bold rounded-xl px-6 py-3 transition-colors flex items-center gap-2 border border-primary/20"
+                  >
+                    <span className="material-symbols-outlined">expand_more</span>
+                    הצג עוד
+                  </button>
+                </div>
+              )}
 
               {recentSearches.length > 0 && (
                 <section className="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] border border-outline-variant/20 flex flex-col w-full">

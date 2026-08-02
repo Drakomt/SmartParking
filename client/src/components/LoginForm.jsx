@@ -69,7 +69,7 @@ export default function LoginForm() {
         <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background"></div>
       </div>
 
-      <div className="w-full max-w-md bg-white/80 backdrop-blur-2xl rounded-3xl shadow-[0_20px_40px_-10px_rgba(30,41,59,0.15)] border border-white/50 overflow-hidden m-4 relative z-10">
+      <div className="w-full max-w-md bg-surface/80 backdrop-blur-2xl rounded-3xl shadow-[0_20px_40px_-10px_rgba(30,41,59,0.15)] border border-outline-variant/50 overflow-hidden m-4 relative z-10">
         <div className="p-6 sm:p-8">
           <div className="mb-6 text-right">
             <h2 className="text-3xl font-headline-lg font-bold text-primary mb-2">

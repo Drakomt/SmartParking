@@ -10,7 +10,7 @@ export default function NavBar() {
 
   return (
     <>
-      <nav className="fixed top-0 w-full z-50 bg-white/70 dark:bg-primary/70 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm flex flex-row-reverse justify-between items-center px-gutter h-16">
+      <nav className="fixed top-0 w-full z-50 bg-surface/70 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm flex flex-row-reverse justify-between items-center px-gutter h-16">
       <div className="flex items-center gap-4">
         <NavLink
           to="/"
@@ -30,7 +30,7 @@ export default function NavBar() {
               window.dispatchEvent(new CustomEvent("show-favorites"));
             }
           }}
-          className="cursor-pointer text-black hover:bg-yellow-500/10 transition-colors font-headline-sm text-headline-sm rounded-lg px-3 sm:px-4 py-2 flex items-center justify-center gap-1 sm:gap-2"
+          className="cursor-pointer text-on-surface hover:bg-yellow-500/10 transition-colors font-headline-sm text-headline-sm rounded-lg px-3 sm:px-4 py-2 flex items-center justify-center gap-1 sm:gap-2"
           title="חניונים שמורים"
         >
           <span className="material-symbols-outlined text-yellow-500 text-lg sm:text-xl">

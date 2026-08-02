@@ -14,8 +14,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
       {/* Sidebar Panel */}
       <div
-        style={{ backgroundColor: '#ffffff' }}
-        className={`fixed top-0 right-0 h-full w-64 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed top-0 right-0 h-full w-64 bg-surface-container-lowest shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -39,6 +38,25 @@ export default function Sidebar({ isOpen, onClose }) {
             כל החניונים שלנו
           </Link>
         </nav>
+
+        <div className="p-4 border-t border-outline-variant/20 flex flex-col gap-2">
+          <Link
+            to="/settings"
+            onClick={onClose}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-colors font-medium cursor-pointer"
+          >
+            <span className="material-symbols-outlined">settings</span>
+            הגדרות
+          </Link>
+          <Link
+            to="/about"
+            onClick={onClose}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-colors font-medium cursor-pointer"
+          >
+            <span className="material-symbols-outlined">info</span>
+            אודות
+          </Link>
+        </div>
       </div>
     </>
   );
