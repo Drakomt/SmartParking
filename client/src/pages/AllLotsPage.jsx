@@ -175,7 +175,7 @@ export default function AllLotsPage() {
 
   return (
     <div className="pt-24 pb-8 px-4 sm:px-8 max-w-7xl mx-auto w-full flex flex-col h-[100dvh]">
-      <div className="flex items-center justify-start gap-4 mb-6 shrink-0">
+      <div className="flex items-center justify-start gap-2 mb-6 shrink-0">
         <button
           onClick={() => navigate(-1)}
           className="p-2 rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant flex items-center justify-center cursor-pointer"

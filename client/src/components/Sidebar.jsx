@@ -35,6 +35,14 @@ export default function Sidebar({ isOpen, onClose }) {
             <span className="material-symbols-outlined">local_parking</span>
             כל החניונים שלנו
           </Link>
+          <Link
+            to="/payment"
+            onClick={onClose}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 text-on-surface hover:text-primary transition-colors font-medium cursor-pointer mt-1"
+          >
+            <span className="material-symbols-outlined">credit_card</span>
+            תשלום לחניון
+          </Link>
         </nav>
 
         <div className="p-4 border-t border-outline-variant/20 flex flex-col gap-2">

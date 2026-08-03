@@ -57,8 +57,16 @@ export default function HomePage() {
             `${import.meta.env.VITE_API_BASE_URL}/api/parking/nearby?lat=${latitude}&lng=${longitude}`
           );
           setAllNearbyLots(res.data);
-          setSearchRadius(2);
-          const withinRadius = res.data.filter(lot => lot.distanceKm <= 2);
+          
+          let initialRadius = 2;
+          let withinRadius = res.data.filter(lot => lot.distanceKm <= initialRadius);
+          
+          if (withinRadius.length === 0 && res.data.length > 0) {
+            withinRadius = res.data.slice(0, 2);
+            initialRadius = Math.ceil(withinRadius[withinRadius.length - 1].distanceKm);
+          }
+          
+          setSearchRadius(initialRadius);
           setNearbyLots(withinRadius);
           setSubmittedCity("");
         } catch (err) {
