@@ -40,6 +40,8 @@ router.route('/')
         totalSpots: req.body.totalSpots,
         levels: req.body.levels,
         location: req.body.location,
+        parkingFeeMinor: req.body.parkingFeeMinor,
+        currency: req.body.currency,
       }, req.user);
       res.status(201).json(parkingLot);
     } catch (error) {

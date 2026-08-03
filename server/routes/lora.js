@@ -5,7 +5,8 @@ import loraService from '../services/loraServices.js';
 
 router.post('/update-spot', async (req, res) => {
     try {
-        const payload = req.body.data ?? req.body;
+        res.setHeader('Cache-Control', 'no-store');
+        const payload = req.body;
         const result = await loraService.processLoraPayload(payload);
         return res.status(200).json(result);
     } catch (error) {

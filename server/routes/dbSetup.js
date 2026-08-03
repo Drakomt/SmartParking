@@ -6,6 +6,8 @@ import ParkingSpot from '../models/ParkingSpot.js';
 import User from '../models/User.js';
 import ParkingSession from '../models/ParkingSession.js';
 import Camera from '../models/Camera.js';
+import ParkingPayment from '../models/ParkingPayment.js';
+import PayPalWebhookEvent from '../models/PayPalWebhookEvent.js';
 
 const router = express.Router();
 
@@ -225,6 +227,30 @@ const seedCities = [
   },
 ];
 
+const seedParkingFeesMinor = Object.freeze({
+  'H-M': 2000,
+  'H-C': 1800,
+  'H-MALL': 2200,
+  'H-W': 1600,
+  'TA-AZ': 3500,
+  'TA-R': 3000,
+  'TA-D': 3200,
+  'RZ-1': 1800,
+  'RZ-GOLD': 2200,
+  'RG-B': 2800,
+  'RG-S': 2200,
+  'BY-T': 1800,
+  'BY-C': 1600,
+  'GV-C': 2200,
+  'GV-W': 2000,
+  'HF-CN': 2200,
+  'HF-HR': 1800,
+  'HF-GR': 2000,
+  'HF-BG': 1600,
+  'BS-M': 1500,
+  'RS-H': 2400,
+});
+
 const createParkingSpots = (parkingLotId, totalSpots, levels, prefix) => {
   const spots = [];
   const maxLevel = Math.min(16, Math.max(1, Math.min(levels, totalSpots)));
@@ -291,7 +317,9 @@ router.post('/init', async (req, res) => {
       ParkingSpot.deleteMany({}),
       User.deleteMany({}),
       ParkingSession.deleteMany({}),
-      Camera.deleteMany({})
+      Camera.deleteMany({}),
+      ParkingPayment.deleteMany({}),
+      PayPalWebhookEvent.deleteMany({}),
     ]);
 
     // Explicitly create collections 
@@ -303,6 +331,8 @@ router.post('/init', async (req, res) => {
     await User.createCollection().catch(() => {});
     await ParkingSession.createCollection().catch(() => {});
     await Camera.createCollection().catch(() => {});
+    await ParkingPayment.createCollection().catch(() => {});
+    await PayPalWebhookEvent.createCollection().catch(() => {});
 
     res.json({ message: 'Database initialized: All existing data cleared and collections ensured.' });
   } catch (error) {
@@ -322,7 +352,9 @@ router.post('/seed', async (req, res) => {
       ParkingSpot.deleteMany({}),
       User.deleteMany({}),
       ParkingSession.deleteMany({}),
-      Camera.deleteMany({})
+      Camera.deleteMany({}),
+      ParkingPayment.deleteMany({}),
+      PayPalWebhookEvent.deleteMany({}),
     ]);
 
     // 1. Mock Cities
@@ -401,6 +433,8 @@ router.post('/seed', async (req, res) => {
           totalSpots: lotSeed.totalSpots,
           levels: lotSeed.levels,
           location: lotSeed.location,
+          parkingFeeMinor: seedParkingFeesMinor[lotSeed.prefix],
+          currency: 'ILS',
         });
 
         cityDoc.parkingLots.push(lot._id);
