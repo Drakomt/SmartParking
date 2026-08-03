@@ -31,8 +31,20 @@ const findSessionsByLot = async (parkingLotId) => {
   return await ParkingSession.find({ parkingLot: parkingLotId });
 };
 
+const findSessionByIdWithLot = async (sessionId) => {
+  return await ParkingSession.findById(sessionId).populate('parkingLot');
+};
+
 const deleteSession = async (sessionId) => {
   return await ParkingSession.findByIdAndDelete(sessionId);
 };
 
-export default { findSessionsByLot,createSession, findByLicensePlate, findRandomSession, findRandomSessionByLot, deleteSession };
+export default {
+  findSessionsByLot,
+  findSessionByIdWithLot,
+  createSession,
+  findByLicensePlate,
+  findRandomSession,
+  findRandomSessionByLot,
+  deleteSession,
+};

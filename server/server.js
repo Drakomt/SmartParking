@@ -3,9 +3,17 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import connectDB from './config/db.js';
+import { validatePayPalConfig } from './config/paypal.js';
 import { initializeSocketServer } from './services/socketService.js';
 
 dotenv.config();
+
+try {
+  validatePayPalConfig();
+} catch (error) {
+  console.error(`Server configuration error: ${error.message}`);
+  process.exit(1);
+}
 
 // Connect to MongoDB
 connectDB();
@@ -13,13 +21,14 @@ connectDB();
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173' }));
 app.use(express.json());
 
 import loraRouter from './routes/lora.js';
 import authRouter from './routes/auth.js';
 import parkingRouter from './routes/parking.js';
 import dbSetupRouter from './routes/dbSetup.js';
+import paypalRouter from './routes/paypal.js';
 
 app.get("/", (req, res) => {
   res.send("Hello Smart Parking");
@@ -28,6 +37,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/parking", parkingRouter);
 app.use("/api/db", dbSetupRouter);
+app.use("/api/paypal", paypalRouter);
 app.use("/lora", loraRouter);
 
 const server = createServer(app);

@@ -44,6 +44,19 @@ const parkingLotSchema = new mongoose.Schema({
     type: locationSchema,
     required: false,
   },
+  parkingFeeMinor: {
+    type: Number,
+    min: 1,
+    validate: {
+      validator: Number.isSafeInteger,
+      message: 'parkingFeeMinor must be an integer amount in minor units',
+    },
+  },
+  currency: {
+    type: String,
+    enum: ['ILS'],
+    uppercase: true,
+  },
 }, { timestamps: true });
 
 export default mongoose.model('ParkingLot', parkingLotSchema);
