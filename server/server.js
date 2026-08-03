@@ -4,12 +4,14 @@ import dotenv from 'dotenv';
 import { createServer } from 'http';
 import connectDB from './config/db.js';
 import { validatePayPalConfig } from './config/paypal.js';
+import { validateCheckoutConfig } from './config/checkout.js';
 import { initializeSocketServer } from './services/socketService.js';
 
 dotenv.config();
 
 try {
   validatePayPalConfig();
+  validateCheckoutConfig();
 } catch (error) {
   console.error(`Server configuration error: ${error.message}`);
   process.exit(1);

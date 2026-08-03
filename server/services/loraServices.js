@@ -6,6 +6,7 @@ import {
     emitParkingSpotUpdateToAuthorizedUsers,
     emitParkingSessionUpdateToAuthorizedUsers,
 } from './socketService.js';
+import { createCheckoutCredentials } from '../utils/checkoutCredentials.js';
 
 const generateLicensePlate = async () => {
     const digits = '0123456789';
@@ -114,15 +115,33 @@ const createParkingSession = async ({ parkingLotId, parkingSpotId }) => {
     }
 
     const carLicensePlate = await generateLicensePlate();
+    const checkoutCredentials = createCheckoutCredentials();
     const session = await parkingSessionRepo.createSession({
         carLicensePlate,
         parkingLot: parkingLot._id,
         parkingSpot: null,
+        checkoutId: checkoutCredentials.checkoutId,
+        checkoutTokenHash: checkoutCredentials.checkoutTokenHash,
+        checkoutExpiresAt: checkoutCredentials.checkoutExpiresAt,
+        checkoutStatus: 'PAYABLE',
     });
 
     await emitUpdate(parkingLot, null, session);
 
-    return session;
+    return {
+        session: {
+            id: session._id.toString(),
+            carLicensePlate: session.carLicensePlate,
+            parkingLot: session.parkingLot,
+            parkingSpot: session.parkingSpot,
+            entryTime: session.entryTime,
+        },
+        checkout: {
+            checkoutId: checkoutCredentials.checkoutId,
+            checkoutToken: checkoutCredentials.checkoutToken,
+            expiresAt: checkoutCredentials.checkoutExpiresAt,
+        },
+    };
 };
 
 const removeRandomParkingSession = async ({ parkingLotId } = {}) => {

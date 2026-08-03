@@ -35,6 +35,29 @@ const findSessionByIdWithLot = async (sessionId) => {
   return await ParkingSession.findById(sessionId).populate('parkingLot');
 };
 
+const findByCheckoutIdWithLot = async (checkoutId) => {
+  return await ParkingSession.findOne({ checkoutId })
+    .select('+checkoutTokenHash')
+    .populate('parkingLot');
+};
+
+const completeCheckoutOnce = async (sessionId, completedAt) => {
+  return await ParkingSession.findOneAndUpdate(
+    {
+      _id: sessionId,
+      checkoutStatus: 'PAYABLE',
+      checkoutConsumedAt: null,
+    },
+    {
+      $set: {
+        checkoutStatus: 'COMPLETED',
+        checkoutConsumedAt: completedAt,
+      },
+    },
+    { new: true },
+  );
+};
+
 const deleteSession = async (sessionId) => {
   return await ParkingSession.findByIdAndDelete(sessionId);
 };
@@ -42,6 +65,8 @@ const deleteSession = async (sessionId) => {
 export default {
   findSessionsByLot,
   findSessionByIdWithLot,
+  findByCheckoutIdWithLot,
+  completeCheckoutOnce,
   createSession,
   findByLicensePlate,
   findRandomSession,

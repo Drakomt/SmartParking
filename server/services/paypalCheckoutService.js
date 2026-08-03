@@ -16,6 +16,7 @@ import {
   validatePayPalId,
   validateWebhookEvent,
 } from '../utils/paymentValidation.js';
+import { verifyCheckoutToken } from '../utils/checkoutCredentials.js';
 
 const OPERATION_LOCK_MS = 30_000;
 const NON_PAYABLE_STATUSES = new Set(['COMPLETED', 'DENIED', 'REFUNDED', 'REVERSED']);
@@ -44,26 +45,36 @@ export const createPayPalCheckoutService = ({
   createId = randomUUID,
   now = () => new Date(),
 } = {}) => {
-  const assertUserCanAccessLot = (user, parkingLot) => {
-    const cityId = toId(parkingLot?.city);
-    const authorizedCities = user?.authorizedCities || [];
-    if (!user || !cityId || !authorizedCities.some((id) => toId(id) === cityId)) {
-      throw new AppError('Not authorized to pay for this parking session', {
-        statusCode: 403,
-        code: 'PAYMENT_FORBIDDEN',
-      });
+  const checkoutUnavailable = () => new AppError('Checkout is not available', {
+    statusCode: 404,
+    code: 'CHECKOUT_NOT_AVAILABLE',
+  });
+
+  const loadCheckout = async (checkoutId, checkoutToken) => {
+    const parkingSession = await sessionRepo.findByCheckoutIdWithLot(checkoutId);
+    if (
+      !parkingSession
+      || !parkingSession.parkingLot
+      || !verifyCheckoutToken(checkoutToken, parkingSession.checkoutTokenHash)
+    ) {
+      throw checkoutUnavailable();
     }
+
+    return parkingSession;
   };
 
-  const loadPayableSession = async (parkingSessionId, user) => {
-    const parkingSession = await sessionRepo.findSessionByIdWithLot(parkingSessionId);
-    if (!parkingSession || !parkingSession.parkingLot) {
-      throw new AppError('Parking session not found', {
-        statusCode: 404,
-        code: 'LOCAL_ORDER_NOT_FOUND',
+  const assertCheckoutPayable = (parkingSession) => {
+    const expiresAt = new Date(parkingSession.checkoutExpiresAt);
+    if (
+      parkingSession.checkoutStatus !== 'PAYABLE'
+      || Number.isNaN(expiresAt.getTime())
+      || expiresAt <= now()
+    ) {
+      throw new AppError('Payment is not currently eligible', {
+        statusCode: 409,
+        code: 'PAYMENT_NOT_ELIGIBLE',
       });
     }
-    assertUserCanAccessLot(user, parkingSession.parkingLot);
 
     const { parkingFeeMinor, currency } = parkingSession.parkingLot;
     if (!Number.isSafeInteger(parkingFeeMinor) || parkingFeeMinor <= 0 || !currency) {
@@ -80,19 +91,12 @@ export const createPayPalCheckoutService = ({
     };
   };
 
-  const assertPaymentOwner = (payment, user) => {
-    if (toId(payment.payer) !== toId(user?._id)) {
-      throw new AppError('Not authorized to access this payment', {
-        statusCode: 403,
-        code: 'PAYMENT_FORBIDDEN',
-      });
-    }
-  };
-
-  const getOrCreatePayment = async ({ parkingSession, parkingLot, amountMinor, currency }, user) => {
+  const getOrCreatePayment = async ({ parkingSession, parkingLot, amountMinor, currency }) => {
     let payment = await paymentRepo.findByParkingSession(parkingSession._id);
     if (payment) {
-      assertPaymentOwner(payment, user);
+      if (payment.checkoutId !== parkingSession.checkoutId) {
+        throw checkoutUnavailable();
+      }
       return payment;
     }
 
@@ -100,7 +104,7 @@ export const createPayPalCheckoutService = ({
       payment = await paymentRepo.createPayment({
         parkingSession: parkingSession._id,
         parkingLot: parkingLot._id,
-        payer: user._id,
+        checkoutId: parkingSession.checkoutId,
         amountMinor,
         currency,
         paymentProvider: 'paypal',
@@ -116,7 +120,9 @@ export const createPayPalCheckoutService = ({
       if (!payment) {
         throw error;
       }
-      assertPaymentOwner(payment, user);
+      if (payment.checkoutId !== parkingSession.checkoutId) {
+        throw checkoutUnavailable();
+      }
     }
     return payment;
   };
@@ -131,9 +137,23 @@ export const createPayPalCheckoutService = ({
     paymentRepo.updatePayment(paymentId, { ...update, operationLockUntil: null })
   );
 
-  const createOrder = async ({ parkingSessionId, user }) => {
-    const sessionDetails = await loadPayableSession(parkingSessionId, user);
-    let payment = await getOrCreatePayment(sessionDetails, user);
+  const createOrder = async ({ checkoutId, checkoutToken }) => {
+    const parkingSession = await loadCheckout(checkoutId, checkoutToken);
+    const existingPayment = await paymentRepo.findByCheckoutId(checkoutId);
+    if (
+      existingPayment
+      && toId(existingPayment.parkingSession) !== toId(parkingSession)
+    ) {
+      throw checkoutUnavailable();
+    }
+    if (existingPayment?.paypalPaymentStatus === 'COMPLETED') {
+      throw new AppError('Payment has already been completed', {
+        statusCode: 409,
+        code: 'PAYMENT_ALREADY_COMPLETED',
+      });
+    }
+    const sessionDetails = assertCheckoutPayable(parkingSession);
+    let payment = existingPayment || await getOrCreatePayment(sessionDetails);
 
     if (payment.paypalPaymentStatus === 'COMPLETED') {
       throw new AppError('Payment has already been completed', {
@@ -165,7 +185,7 @@ export const createPayPalCheckoutService = ({
 
     try {
       const paypalOrder = await paypalApi.createOrder({
-        localOrderId: toId(sessionDetails.parkingSession),
+        localOrderId: checkoutId,
         amount: formatMinorUnits(payment.amountMinor, payment.currency),
         currency: payment.currency,
         requestId: payment.paypalCreateRequestId,
@@ -176,7 +196,7 @@ export const createPayPalCheckoutService = ({
         paypalPaymentStatus: paypalOrder.status === 'APPROVED' ? 'APPROVED' : 'CREATED',
       });
       logger.info('PayPal order created', {
-        localOrderId: toId(sessionDetails.parkingSession),
+        localOrderId: toId(parkingSession),
         paypalOrderId,
       });
       return { orderId: paypalOrderId };
@@ -189,8 +209,8 @@ export const createPayPalCheckoutService = ({
   const extractCapture = (paypalOrder, payment) => {
     const purchaseUnits = Array.isArray(paypalOrder?.purchase_units) ? paypalOrder.purchase_units : [];
     const matchingUnit = purchaseUnits.find((unit) => (
-      unit.custom_id === toId(payment.parkingSession)
-      || unit.reference_id === toId(payment.parkingSession)
+      unit.custom_id === payment.checkoutId
+      || unit.reference_id === payment.checkoutId
     ));
     const captures = matchingUnit?.payments?.captures;
     if (!matchingUnit || !Array.isArray(captures) || captures.length === 0) {
@@ -223,17 +243,38 @@ export const createPayPalCheckoutService = ({
     }
   };
 
-  const captureOrder = async ({ paypalOrderId, user }) => {
+  const activateCheckoutOnce = async (payment) => {
+    if (payment?.paypalPaymentStatus !== 'COMPLETED') return;
+    await sessionRepo.completeCheckoutOnce(
+      payment.parkingSession,
+      payment.paidAt || now(),
+    );
+  };
+
+  const completePaymentAndCheckout = async (payment, completionData) => {
+    let completedPayment = await paymentRepo.completePaymentOnce(payment._id, completionData);
+    if (!completedPayment) {
+      completedPayment = await paymentRepo.findByPayPalOrderId(payment.paypalOrderId);
+    }
+    await activateCheckoutOnce(completedPayment);
+    return completedPayment;
+  };
+
+  const captureOrder = async ({ paypalOrderId, checkoutId, checkoutToken }) => {
     let payment = await paymentRepo.findByPayPalOrderId(paypalOrderId);
     if (!payment) {
-      throw new AppError('PayPal order was not found', {
-        statusCode: 404,
-        code: 'PAYPAL_ORDER_NOT_FOUND',
-      });
+      throw checkoutUnavailable();
     }
-    assertPaymentOwner(payment, user);
+    const parkingSession = await loadCheckout(checkoutId, checkoutToken);
+    if (
+      payment.checkoutId !== checkoutId
+      || toId(payment.parkingSession) !== toId(parkingSession)
+    ) {
+      throw checkoutUnavailable();
+    }
 
     if (payment.paypalPaymentStatus === 'COMPLETED') {
+      await activateCheckoutOnce(payment);
       return paymentResponse(payment);
     }
     if (['DENIED', 'REFUNDED', 'REVERSED'].includes(payment.paypalPaymentStatus)) {
@@ -243,11 +284,12 @@ export const createPayPalCheckoutService = ({
       });
     }
 
-    await loadPayableSession(toId(payment.parkingSession), user);
+    assertCheckoutPayable(parkingSession);
     const lockedPayment = await acquirePaymentLock(payment);
     if (!lockedPayment) {
       payment = await paymentRepo.findByPayPalOrderId(paypalOrderId);
       if (payment?.paypalPaymentStatus === 'COMPLETED') {
+        await activateCheckoutOnce(payment);
         return paymentResponse(payment);
       }
       throw new AppError('Payment operation is already in progress', {
@@ -307,14 +349,11 @@ export const createPayPalCheckoutService = ({
         throw error;
       }
       const paidAt = capture.create_time ? new Date(capture.create_time) : now();
-      payment = await paymentRepo.completePaymentOnce(payment._id, {
+      payment = await completePaymentAndCheckout(payment, {
         paypalCaptureId: captureId,
         paidAt,
         fulfilledAt: paidAt,
       });
-      if (!payment) {
-        payment = await paymentRepo.findByPayPalOrderId(paypalOrderId);
-      }
       logger.info('PayPal payment completed', {
         localOrderId: toId(payment.parkingSession),
         paypalOrderId,
@@ -341,7 +380,7 @@ export const createPayPalCheckoutService = ({
       if (payment) return payment;
     }
     if (resource.custom_id) {
-      return paymentRepo.findByParkingSession(resource.custom_id);
+      return paymentRepo.findByCheckoutId(resource.custom_id);
     }
     return null;
   };
@@ -354,12 +393,11 @@ export const createPayPalCheckoutService = ({
       verifyCaptureAmount(resource.amount, payment);
       const captureId = validatePayPalId(resource.id, 'paypalCaptureId');
       const paidAt = resource.create_time ? new Date(resource.create_time) : now();
-      const completed = await paymentRepo.completePaymentOnce(payment._id, {
+      return completePaymentAndCheckout(payment, {
         paypalCaptureId: captureId,
         paidAt,
         fulfilledAt: paidAt,
       });
-      return completed || paymentRepo.findByPayPalOrderId(payment.paypalOrderId);
     }
 
     if (eventType === 'PAYMENT.CAPTURE.PENDING') {

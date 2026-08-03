@@ -1,14 +1,12 @@
 import express from 'express';
-import { protect } from '../middleware/auth.js';
 import paypalCheckoutService from '../services/paypalCheckoutService.js';
 import paymentLogger from '../utils/paymentLogger.js';
+import { createRateLimiter } from '../middleware/rateLimit.js';
 import {
   validateCreateOrderBody,
   validatePayPalId,
 } from '../utils/paymentValidation.js';
 import AppError from '../errors/AppError.js';
-
-const router = express.Router();
 
 const sendError = (res, error, operation) => {
   if (error instanceof AppError) {
@@ -24,42 +22,69 @@ const sendError = (res, error, operation) => {
   });
 };
 
-router.post('/orders', protect, async (req, res) => {
-  try {
-    const parkingSessionId = validateCreateOrderBody(req.body);
-    const result = await paypalCheckoutService.createOrder({
-      parkingSessionId,
-      user: req.user,
-    });
-    return res.status(201).json(result);
-  } catch (error) {
-    return sendError(res, error, 'create');
-  }
+const defaultCreateOrderLimiter = createRateLimiter({
+  windowMs: 10 * 60_000,
+  maxRequests: 20,
+  keyGenerator: (req) => `${req.ip}:${req.body?.checkoutId || 'invalid'}`,
 });
 
-router.post('/orders/:paypalOrderId/capture', protect, async (req, res) => {
-  try {
-    const paypalOrderId = validatePayPalId(req.params.paypalOrderId);
-    const result = await paypalCheckoutService.captureOrder({
-      paypalOrderId,
-      user: req.user,
-    });
-    return res.status(result.status === 'PENDING' ? 202 : 200).json(result);
-  } catch (error) {
-    return sendError(res, error, 'capture');
-  }
+const defaultCaptureOrderLimiter = createRateLimiter({
+  windowMs: 10 * 60_000,
+  maxRequests: 30,
+  keyGenerator: (req) => `${req.ip}:${req.params?.paypalOrderId || 'invalid'}`,
 });
 
-router.post('/webhooks', async (req, res) => {
-  try {
-    const result = await paypalCheckoutService.processWebhook({
-      headers: req.headers,
-      event: req.body,
-    });
-    return res.status(200).json(result);
-  } catch (error) {
-    return sendError(res, error, 'webhook');
-  }
-});
+export const createPayPalRouter = ({
+  checkoutService = paypalCheckoutService,
+  createOrderLimiter = defaultCreateOrderLimiter,
+  captureOrderLimiter = defaultCaptureOrderLimiter,
+} = {}) => {
+  const router = express.Router();
 
-export default router;
+  router.use((_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
+
+  router.post('/orders', createOrderLimiter, async (req, res) => {
+    try {
+      const checkoutCredentials = validateCreateOrderBody(req.body);
+      const result = await checkoutService.createOrder({
+        ...checkoutCredentials,
+      });
+      return res.status(201).json(result);
+    } catch (error) {
+      return sendError(res, error, 'create');
+    }
+  });
+
+  router.post('/orders/:paypalOrderId/capture', captureOrderLimiter, async (req, res) => {
+    try {
+      const paypalOrderId = validatePayPalId(req.params.paypalOrderId);
+      const checkoutCredentials = validateCreateOrderBody(req.body);
+      const result = await checkoutService.captureOrder({
+        paypalOrderId,
+        ...checkoutCredentials,
+      });
+      return res.status(result.status === 'PENDING' ? 202 : 200).json(result);
+    } catch (error) {
+      return sendError(res, error, 'capture');
+    }
+  });
+
+  router.post('/webhooks', async (req, res) => {
+    try {
+      const result = await checkoutService.processWebhook({
+        headers: req.headers,
+        event: req.body,
+      });
+      return res.status(200).json(result);
+    } catch (error) {
+      return sendError(res, error, 'webhook');
+    }
+  });
+
+  return router;
+};
+
+export default createPayPalRouter();

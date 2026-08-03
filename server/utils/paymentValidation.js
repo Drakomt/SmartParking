@@ -1,8 +1,9 @@
-import mongoose from 'mongoose';
 import AppError from '../errors/AppError.js';
 
 const PAYPAL_ID_PATTERN = /^[A-Z0-9]{8,64}$/;
 const WEBHOOK_EVENT_ID_PATTERN = /^[A-Z0-9-]{8,128}$/i;
+const CHECKOUT_ID_PATTERN = /^[a-f0-9]{32}$/;
+const CHECKOUT_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
 
 export const validateCreateOrderBody = (body) => {
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
@@ -12,22 +13,33 @@ export const validateCreateOrderBody = (body) => {
     });
   }
 
-  const fields = Object.keys(body);
-  if (fields.length !== 1 || fields[0] !== 'orderId') {
-    throw new AppError('Only orderId may be provided', {
+  const fields = Object.keys(body).sort();
+  if (
+    fields.length !== 2
+    || fields[0] !== 'checkoutId'
+    || fields[1] !== 'checkoutToken'
+  ) {
+    throw new AppError('Only checkoutId and checkoutToken may be provided', {
       statusCode: 400,
       code: 'VALIDATION_ERROR',
     });
   }
 
-  if (typeof body.orderId !== 'string' || !mongoose.Types.ObjectId.isValid(body.orderId)) {
-    throw new AppError('orderId must be a valid parking session ID', {
+  const checkoutId = typeof body.checkoutId === 'string'
+    ? body.checkoutId.trim().toLowerCase()
+    : '';
+  const checkoutToken = typeof body.checkoutToken === 'string'
+    ? body.checkoutToken.trim()
+    : '';
+
+  if (!CHECKOUT_ID_PATTERN.test(checkoutId) || !CHECKOUT_TOKEN_PATTERN.test(checkoutToken)) {
+    throw new AppError('Checkout credentials are invalid', {
       statusCode: 400,
       code: 'VALIDATION_ERROR',
     });
   }
 
-  return body.orderId;
+  return { checkoutId, checkoutToken };
 };
 
 export const validatePayPalId = (value, fieldName = 'paypalOrderId') => {

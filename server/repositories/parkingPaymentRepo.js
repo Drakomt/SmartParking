@@ -12,6 +12,10 @@ const findByPayPalCaptureId = async (paypalCaptureId) => (
   ParkingPayment.findOne({ paypalCaptureId })
 );
 
+const findByCheckoutId = async (checkoutId) => (
+  ParkingPayment.findOne({ checkoutId })
+);
+
 const createPayment = async (paymentData) => ParkingPayment.create(paymentData);
 
 const claimOperation = async (paymentId, now, lockUntil) => (
@@ -54,6 +58,7 @@ export default {
   findByParkingSession,
   findByPayPalOrderId,
   findByPayPalCaptureId,
+  findByCheckoutId,
   createPayment,
   claimOperation,
   updatePayment,

@@ -25,11 +25,13 @@ const parkingPaymentSchema = new mongoose.Schema({
     required: true,
     immutable: true,
   },
-  payer: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+  checkoutId: {
+    type: String,
     required: true,
+    unique: true,
+    sparse: true,
     immutable: true,
+    match: /^[a-f0-9]{32}$/,
   },
   amountMinor: {
     type: Number,
