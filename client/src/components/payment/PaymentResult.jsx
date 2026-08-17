@@ -1,7 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 
 export default function PaymentResult({ status, onReset, onRetry }) {
   const isSuccess = status === 'success';
+  const [email, setEmail] = useState('');
+  const [isSent, setIsSent] = useState(false);
+
+  const handleSendEmail = (e) => {
+    e.preventDefault();
+    if (email) {
+      // Dummy logic for sending email
+      setIsSent(true);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center animate-fade-in-up max-w-md mx-auto py-10">
@@ -25,13 +35,46 @@ export default function PaymentResult({ status, onReset, onRetry }) {
       </p>
 
       {isSuccess ? (
-        <button
-          onClick={onReset}
-          className="w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold py-4 px-6 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 border border-outline-variant/30 cursor-pointer"
-        >
-          <span className="material-symbols-outlined">home</span>
-          סיום וחזרה להתחלה
-        </button>
+        <div className="w-full flex flex-col gap-6 mt-4">
+          {!isSent ? (
+            <form onSubmit={handleSendEmail} className="w-full flex flex-col gap-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
+              <label htmlFor="receiptEmail" className="text-sm font-medium text-on-surface">
+                קבלת חשבונית למייל (אופציונלי)
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  id="receiptEmail"
+                  placeholder="כתובת דואר אלקטרוני"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 bg-surface border border-outline-variant/50 rounded-lg px-4 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm"
+                  dir="ltr"
+                />
+                <button
+                  type="submit"
+                  disabled={!email}
+                  className="bg-primary hover:bg-primary/90 text-on-primary font-bold px-4 py-2 rounded-lg transition-all text-sm disabled:opacity-50 cursor-pointer"
+                >
+                  שלח
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="w-full flex items-center gap-3 bg-success/10 text-success p-4 rounded-xl border border-success/30">
+              <span className="material-symbols-outlined text-success">mark_email_read</span>
+              <span className="text-sm font-bold">החשבונית נשלחה בהצלחה לכתובת {email}</span>
+            </div>
+          )}
+
+          <button
+            onClick={onReset}
+            className="w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold py-4 px-6 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 border border-outline-variant/30 cursor-pointer"
+          >
+            <span className="material-symbols-outlined">home</span>
+            סיום וחזרה להתחלה
+          </button>
+        </div>
       ) : (
         <div className="w-full flex flex-col gap-3">
           <button
