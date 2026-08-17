@@ -10,6 +10,34 @@ const findByLicensePlate = async (carLicensePlate) => {
   return await ParkingSession.findOne({ carLicensePlate });
 };
 
+const findActiveByLicensePlateWithLot = async (carLicensePlate) => {
+  return await ParkingSession.findOne({
+    carLicensePlate,
+    checkoutStatus: { $nin: ['COMPLETED', 'CANCELLED'] },
+  })
+    .sort({ entryTime: -1 })
+    .populate('parkingLot');
+};
+
+const updateCheckoutCredentials = async (sessionId, checkoutCredentials) => {
+  return await ParkingSession.findOneAndUpdate(
+    {
+      _id: sessionId,
+      checkoutStatus: { $nin: ['COMPLETED', 'CANCELLED'] },
+    },
+    {
+      $set: {
+        checkoutId: checkoutCredentials.checkoutId,
+        checkoutTokenHash: checkoutCredentials.checkoutTokenHash,
+        checkoutExpiresAt: checkoutCredentials.checkoutExpiresAt,
+        checkoutStatus: 'PAYABLE',
+        checkoutConsumedAt: null,
+      },
+    },
+    { new: true, runValidators: true },
+  ).populate('parkingLot');
+};
+
 const findRandomSession = async () => {
   const result = await ParkingSession.aggregate([{ $sample: { size: 1 } }]);
   return result[0] || null;
@@ -66,6 +94,8 @@ export default {
   findSessionsByLot,
   findSessionByIdWithLot,
   findByCheckoutIdWithLot,
+  findActiveByLicensePlateWithLot,
+  updateCheckoutCredentials,
   completeCheckoutOnce,
   createSession,
   findByLicensePlate,

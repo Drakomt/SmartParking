@@ -1,7 +1,15 @@
 import express from 'express';
 const router = express.Router();
 import parkingService from '../services/parkingService.js';
+import parkingSessionService from '../services/parkingSessionService.js';
 import { protect } from '../middleware/auth.js';
+import { createRateLimiter } from '../middleware/rateLimit.js';
+import AppError from '../errors/AppError.js';
+
+const sessionLookupLimiter = createRateLimiter({
+  windowMs: 10 * 60_000,
+  maxRequests: 30,
+});
 
 // ==========================================
 //               CITY ROUTES
@@ -95,6 +103,28 @@ router.get('/nearby', async (req, res) => {
     return res.json(nearbyLots);
   } catch (error) {
     return res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
+router.get('/session/lookup', sessionLookupLimiter, async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+
+  try {
+    const result = await parkingSessionService.lookupForCheckout(req.query.plate);
+    return res.json(result);
+  } catch (error) {
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({
+        message: error.message,
+        code: error.code,
+      });
+    }
+
+    console.error('Parking session lookup failed');
+    return res.status(500).json({
+      message: 'Unable to look up parking session',
+      code: 'INTERNAL_ERROR',
+    });
   }
 });
 

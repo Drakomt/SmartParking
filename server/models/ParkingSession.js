@@ -23,18 +23,15 @@ const parkingSessionSchema = new mongoose.Schema({
     type: String,
     unique: true,
     sparse: true,
-    immutable: true,
     match: /^[a-f0-9]{32}$/,
   },
   checkoutTokenHash: {
     type: String,
     select: false,
-    immutable: true,
     match: /^[a-f0-9]{64}$/,
   },
   checkoutExpiresAt: {
     type: Date,
-    immutable: true,
   },
   checkoutStatus: {
     type: String,
