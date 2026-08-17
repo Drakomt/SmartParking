@@ -9,10 +9,12 @@ export default function PaymentPage() {
   // State to track current step: 1 = search, 2 = invoice, 3 = result
   const [step, setStep] = useState(1);
   const [licensePlate, setLicensePlate] = useState("");
+  const [sessionData, setSessionData] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState(null); // 'success' or 'error'
 
-  const handleSearchSubmit = (plateNumber) => {
+  const handleSearchSubmit = (plateNumber, data) => {
     setLicensePlate(plateNumber);
+    setSessionData(data);
     setStep(2); // Proceed to invoice
   };
 
@@ -71,12 +73,14 @@ export default function PaymentPage() {
           {step === 2 && (
             <InvoiceSummary 
               licensePlate={licensePlate} 
+              sessionData={sessionData}
               onPay={handlePaymentComplete} 
             />
           )}
           {step === 3 && (
             <PaymentResult 
               status={paymentStatus} 
+              sessionData={sessionData}
               onReset={handleReset} 
               onRetry={handleRetry}
             />

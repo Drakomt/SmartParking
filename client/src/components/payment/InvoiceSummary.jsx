@@ -2,17 +2,27 @@ import React, { useState } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import axios from "axios";
 
-export default function InvoiceSummary({ licensePlate, onPay }) {
+export default function InvoiceSummary({ licensePlate, sessionData, onPay }) {
   const [error, setError] = useState(null);
 
-  // Static placeholders since we are not using backend data or mock data yet.
-  const parkingLotName = "חניון ממתין לנתונים...";
-  const entryTime = "--:--";
-  const duration = "- שעות";
-  const amountToPay = "0";
+  const parkingLotName = sessionData?.parkingLotName || "חניון ממתין לנתונים...";
+  const entryTime = sessionData?.entryTime ? new Date(sessionData.entryTime).toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'}) : "--:--";
+  
+  let duration = "- שעות";
+  if (sessionData?.entryTime) {
+      const entryDate = new Date(sessionData.entryTime);
+      const diffMs = new Date() - entryDate;
+      if (diffMs > 0) {
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        duration = `${diffHours} שעות ו-${diffMins} דקות`;
+      }
+  }
 
-  const mockCheckoutId = "1234567890abcdef1234567890abcdef";
-  const mockCheckoutToken = "abcdef1234567890abcdef1234567890abcdef12345";
+  const amountToPay = sessionData?.amountToPay ? Number(sessionData.amountToPay).toFixed(2) : "0.00";
+
+  const checkoutId = sessionData?.checkoutId || "";
+  const checkoutToken = sessionData?.checkoutToken || "";
 
   const paypalOptions = {
     "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID || "test",
@@ -24,14 +34,12 @@ export default function InvoiceSummary({ licensePlate, onPay }) {
   const createOrder = async () => {
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/paypal/orders`, {
-        checkoutId: mockCheckoutId,
-        checkoutToken: mockCheckoutToken,
+        checkoutId: checkoutId,
+        checkoutToken: checkoutToken,
       });
       return response.data.orderId;
     } catch (err) {
       console.error("Failed to create order:", err);
-      // Fallback for UI testing if backend isn't ready
-      // return "mock_order_id";
       throw err;
     }
   };
@@ -39,8 +47,8 @@ export default function InvoiceSummary({ licensePlate, onPay }) {
   const onApprove = async (data) => {
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/paypal/orders/${data.orderID}/capture`, {
-        checkoutId: mockCheckoutId,
-        checkoutToken: mockCheckoutToken,
+        checkoutId: checkoutId,
+        checkoutToken: checkoutToken,
       });
       
       if (response.data.status === 'COMPLETED' || response.data.status === 'APPROVED') {

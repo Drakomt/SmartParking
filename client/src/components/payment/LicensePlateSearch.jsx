@@ -1,17 +1,28 @@
 import React, { useState } from "react";
+import axios from "axios";
 
 export default function LicensePlateSearch({ onSearch }) {
   const [plate, setPlate] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!plate || plate.trim().length < 6) {
       setError("אנא הזן מספר רישוי תקין (לפחות 6 ספרות).");
       return;
     }
     setError("");
-    onSearch(plate);
+    setLoading(true);
+
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/parking/session/lookup?plate=${plate}`);
+      onSearch(plate, response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || "שגיאה באיתור הרכב. ייתכן שאין חוב פעיל או שהרכב לא נמצא.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -47,10 +58,17 @@ export default function LicensePlateSearch({ onSearch }) {
 
         <button
           type="submit"
-          className="w-full mt-4 bg-primary hover:bg-primary/90 text-on-primary font-bold py-4 px-6 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+          disabled={loading}
+          className="w-full mt-4 bg-primary hover:bg-primary/90 text-on-primary font-bold py-4 px-6 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
         >
-          <span>המשך לתשלום</span>
-          <span className="material-symbols-outlined" style={{ transform: 'rotate(180deg)' }}>arrow_forward</span>
+          {loading ? (
+             <span className="material-symbols-outlined animate-spin">progress_activity</span>
+          ) : (
+            <>
+              <span>המשך לתשלום</span>
+              <span className="material-symbols-outlined" style={{ transform: 'rotate(180deg)' }}>arrow_forward</span>
+            </>
+          )}
         </button>
       </form>
     </div>

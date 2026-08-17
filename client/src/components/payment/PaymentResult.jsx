@@ -1,15 +1,34 @@
 import React, { useState } from "react";
+import axios from "axios";
 
-export default function PaymentResult({ status, onReset, onRetry }) {
+export default function PaymentResult({ status, sessionData, onReset, onRetry }) {
   const isSuccess = status === 'success';
   const [email, setEmail] = useState('');
   const [isSent, setIsSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSendEmail = (e) => {
+  const handleSendEmail = async (e) => {
     e.preventDefault();
-    if (email) {
-      // Dummy logic for sending email
+    if (!email || !sessionData) return;
+    
+    setLoading(true);
+    setError('');
+
+    try {
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/parking/session/receipt`, {
+        email,
+        checkoutId: sessionData.checkoutId,
+        checkoutToken: sessionData.checkoutToken
+      });
       setIsSent(true);
+    } catch (err) {
+      console.error("Failed to send receipt:", err);
+      // For testing UI flow without backend:
+      // setIsSent(true);
+      setError("שגיאה בשליחת המייל. (ודא שהשרת תומך בכך)");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,12 +72,13 @@ export default function PaymentResult({ status, onReset, onRetry }) {
                 />
                 <button
                   type="submit"
-                  disabled={!email}
-                  className="bg-primary hover:bg-primary/90 text-on-primary font-bold px-4 py-2 rounded-lg transition-all text-sm disabled:opacity-50 cursor-pointer"
+                  disabled={!email || loading}
+                  className="bg-primary hover:bg-primary/90 text-on-primary font-bold px-4 py-2 rounded-lg transition-all text-sm disabled:opacity-50 cursor-pointer flex items-center justify-center min-w-[70px]"
                 >
-                  שלח
+                  {loading ? <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span> : "שלח"}
                 </button>
               </div>
+              {error && <p className="text-error text-xs font-medium px-1">{error}</p>}
             </form>
           ) : (
             <div className="w-full flex items-center gap-3 bg-success/10 text-success p-4 rounded-xl border border-success/30">
