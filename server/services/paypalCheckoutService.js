@@ -11,6 +11,7 @@ import {
   normalizeCurrency,
   parseMajorUnits,
 } from '../utils/money.js';
+import { calculateParkingPriceByLicensePlate } from '../utils/parkingPricing.js';
 import {
   getWebhookHeaders,
   validatePayPalId,
@@ -76,8 +77,12 @@ export const createPayPalCheckoutService = ({
       });
     }
 
-    const { parkingFeeMinor, currency } = parkingSession.parkingLot;
-    if (!Number.isSafeInteger(parkingFeeMinor) || parkingFeeMinor <= 0 || !currency) {
+    const { currency } = parkingSession.parkingLot;
+    const amountMinor = calculateParkingPriceByLicensePlate({
+      session: parkingSession,
+      now,
+    });
+    if (!currency || !Number.isSafeInteger(amountMinor) || amountMinor <= 0) {
       throw new AppError('Payment is not currently eligible', {
         statusCode: 422,
         code: 'PAYMENT_NOT_ELIGIBLE',
@@ -86,7 +91,7 @@ export const createPayPalCheckoutService = ({
     return {
       parkingSession,
       parkingLot: parkingSession.parkingLot,
-      amountMinor: parkingFeeMinor,
+      amountMinor,
       currency: assertSupportedCurrency(currency),
     };
   };

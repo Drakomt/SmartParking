@@ -56,6 +56,10 @@ router.route('/')
         totalSpots: req.body.totalSpots,
         levels: req.body.levels,
         location: req.body.location,
+        isFree: req.body.isFree,
+        freeFirstHours: req.body.freeFirstHours,
+        pricePerMinute: req.body.pricePerMinute,
+        fullDayPriceMinor: req.body.fullDayPriceMinor,
         parkingFeeMinor: req.body.parkingFeeMinor,
         currency: req.body.currency,
       }, req.user);

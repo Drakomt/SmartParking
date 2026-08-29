@@ -3,6 +3,12 @@ import parkingSessionRepo from '../repositories/parkingSessionRepo.js';
 import parkingPaymentRepo from '../repositories/parkingPaymentRepo.js';
 import { createCheckoutCredentials } from '../utils/checkoutCredentials.js';
 import { assertSupportedCurrency, formatMinorUnits } from '../utils/money.js';
+import { calculateParkingPriceByLicensePlate } from '../utils/parkingPricing.js';
+
+const normalizeLicensePlate = (value) => String(value ?? '')
+  .trim()
+  .toUpperCase()
+  .replace(/[^A-Z0-9]/g, '');
 
 export const createParkingSessionService = ({
   sessionRepo = parkingSessionRepo,
@@ -17,7 +23,7 @@ export const createParkingSessionService = ({
       });
     }
 
-    const normalizedPlate = licensePlate.trim();
+    const normalizedPlate = normalizeLicensePlate(licensePlate);
     const session = await sessionRepo.findActiveByLicensePlateWithLot(normalizedPlate);
     if (!session || !session.parkingLot) {
       throw new AppError('Active parking session not found', {
@@ -26,9 +32,10 @@ export const createParkingSessionService = ({
       });
     }
 
-    const { parkingFeeMinor, currency, name: parkingLotName } = session.parkingLot;
+    const { currency, name: parkingLotName } = session.parkingLot;
     const normalizedCurrency = assertSupportedCurrency(currency);
-    if (!Number.isSafeInteger(parkingFeeMinor) || parkingFeeMinor <= 0) {
+    const amountMinor = calculateParkingPriceByLicensePlate({ session });
+    if (!Number.isSafeInteger(amountMinor) || amountMinor <= 0) {
       throw new AppError('Payment is not currently eligible', {
         statusCode: 422,
         code: 'PAYMENT_NOT_ELIGIBLE',
@@ -58,7 +65,7 @@ export const createParkingSessionService = ({
     return {
       checkoutId: checkoutCredentials.checkoutId,
       checkoutToken: checkoutCredentials.checkoutToken,
-      amountToPay: formatMinorUnits(parkingFeeMinor, normalizedCurrency),
+      amountToPay: formatMinorUnits(amountMinor, normalizedCurrency),
       entryTime: updatedSession.entryTime,
       parkingLotName,
     };

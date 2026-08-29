@@ -44,13 +44,24 @@ const parkingLotSchema = new mongoose.Schema({
     type: locationSchema,
     required: false,
   },
+  isFree: {
+    type: Boolean,
+    default: false,
+  },
+  freeFirstHours: {
+    type: Number,
+    default: 0,
+  },
+  pricePerMinute: {
+    type: Number,
+    default: 0,
+  },
+  fullDayPriceMinor: {
+    type: Number,
+    default: 0,
+  },
   parkingFeeMinor: {
     type: Number,
-    min: 1,
-    validate: {
-      validator: Number.isSafeInteger,
-      message: 'parkingFeeMinor must be an integer amount in minor units',
-    },
   },
   currency: {
     type: String,
