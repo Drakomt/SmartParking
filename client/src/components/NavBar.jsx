@@ -61,7 +61,7 @@ export default function NavBar() {
         ) : (
           <button
             onClick={() => navigate("/login")}
-            className="cursor-pointer text-secondary dark:text-secondary-fixed-dim hover:bg-secondary-container/10 transition-colors font-headline-sm text-headline-sm border border-secondary/30 rounded-lg px-3 sm:px-4 py-2 flex items-center justify-center"
+            className="cursor-pointer bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors font-bold border border-primary/30 rounded-lg px-3 sm:px-4 py-2 flex items-center justify-center"
           >
             כניסה למורשים
           </button>

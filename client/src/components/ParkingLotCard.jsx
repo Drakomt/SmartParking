@@ -24,7 +24,7 @@ export default function ParkingLotCard({
 
       <div className="flex justify-between items-start w-full">
         <div className="flex flex-col gap-1 text-right">
-          <span className="font-headline-sm text-primary group-hover:text-primary-container transition-colors">
+          <span className="font-headline-sm text-primary transition-colors">
             {lot.name}
           </span>
           <div className="flex items-center gap-1 text-on-surface-variant font-body-md justify-start">
@@ -75,7 +75,7 @@ export default function ParkingLotCard({
                 alert('קואורדינטות חסרות לחניון זה');
               }
             }}
-            className="p-2 rounded-full transition-colors flex items-center justify-center text-primary hover:bg-primary/10 hover:text-primary-container"
+            className="p-2 rounded-full transition-colors flex items-center justify-center text-primary hover:bg-primary/10"
             title="נווט לחניון ב-Waze"
           >
             <i className="fa-brands fa-waze text-xl"></i>
