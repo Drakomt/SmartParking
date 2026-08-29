@@ -35,28 +35,46 @@ export default function ParkingLotView({
     <div
       className={`bg-surface-container-lowest p-6 sm:p-8 rounded-3xl shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] border border-outline-variant/20 w-full mx-auto mt-6 ${isMediatheque ? "max-w-5xl" : "max-w-2xl"}`}
     >
-      <div className="flex items-center justify-between mb-8 relative">
-        <button
-          onClick={onBack}
-          className="cursor-pointer px-5 py-2 bg-transparent border border-outline-variant/50 hover:border-primary hover:bg-primary/10 text-on-surface-variant hover:text-primary rounded-xl transition-all duration-300 font-medium z-10"
-        >
-          חזור
-        </button>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+        <div className="flex items-center justify-between w-full sm:w-auto">
+          <button
+            onClick={onBack}
+            className="cursor-pointer px-4 sm:px-5 py-2 bg-transparent border border-outline-variant/50 hover:border-primary hover:bg-primary/10 text-on-surface-variant hover:text-primary rounded-xl transition-all duration-300 font-medium z-10"
+          >
+            חזור
+          </button>
 
-        <h2 className="text-2xl text-primary font-bold tracking-wide absolute left-0 right-0 text-center pointer-events-none">
+          {/* Mobile Waze button (visible only on small screens) */}
+          {lotLocation?.lat && lotLocation?.lng && (
+            <button
+              onClick={() => {
+                window.open(`https://waze.com/ul?ll=${lotLocation.lat},${lotLocation.lng}&navigate=yes`, '_blank');
+              }}
+              className="sm:hidden cursor-pointer p-2 bg-primary/10 text-primary hover:bg-primary hover:text-on-primary rounded-xl transition-all duration-300 font-medium z-10 flex items-center justify-center"
+              title="נווט לחניון"
+            >
+              <i className="fa-brands fa-waze text-2xl"></i>
+            </button>
+          )}
+        </div>
+
+        <h2 className="text-xl sm:text-2xl text-primary font-bold tracking-wide text-center flex-grow">
           {lotName ? `מצב חניון: ${lotName}` : "מצב חניון"}
         </h2>
 
-        {lotLocation?.lat && lotLocation?.lng && (
+        {/* Desktop Waze button */}
+        {lotLocation?.lat && lotLocation?.lng ? (
           <button
             onClick={() => {
               window.open(`https://waze.com/ul?ll=${lotLocation.lat},${lotLocation.lng}&navigate=yes`, '_blank');
             }}
-            className="cursor-pointer px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-on-primary rounded-xl transition-all duration-300 font-medium z-10 flex items-center gap-2"
+            className="hidden sm:flex cursor-pointer px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-on-primary rounded-xl transition-all duration-300 font-medium z-10 items-center gap-2"
           >
             <i className="fa-brands fa-waze text-lg"></i>
             נווט לחניון
           </button>
+        ) : (
+          <div className="hidden sm:block w-[140px]"></div> /* Placeholder to keep title centered if no waze */
         )}
       </div>
 
@@ -147,7 +165,7 @@ export default function ParkingLotView({
 
                     {slot.status === "blocked" ? (
                       <>
-                        <span className="absolute inset-0 flex items-center justify-center text-red-500 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] z-20 pointer-events-none">
+                        <span className="parking-blocked-icon absolute inset-0 flex items-center justify-center drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] z-20 pointer-events-none">
                           <span
                             className="material-symbols-outlined"
                             style={{ fontSize: "48px" }}
@@ -155,12 +173,12 @@ export default function ParkingLotView({
                             block
                           </span>
                         </span>
-                        <span className="absolute bottom-5 sm:bottom-7 text-sm sm:text-lg font-extrabold text-orange-500 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] z-10">
-                          חסום
-                        </span>
-                      </>
-                    ) : slot.status === "free" ? (
-                      <span className="absolute bottom-5 sm:bottom-7 text-sm sm:text-lg font-extrabold text-green-600 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] z-10">
+                      <span className="parking-blocked-label absolute bottom-5 sm:bottom-7 text-sm sm:text-lg font-extrabold drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] z-10">
+                        חסום
+                      </span>
+                    </>
+                  ) : slot.status === "free" ? (
+                      <span className="parking-slot-free-label absolute bottom-5 sm:bottom-7 text-sm sm:text-lg font-extrabold drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] z-10">
                         פנוי
                       </span>
                     ) : (

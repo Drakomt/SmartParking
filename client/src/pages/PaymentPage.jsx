@@ -36,7 +36,7 @@ export default function PaymentPage() {
 
   return (
     <div className="pt-24 pb-8 px-4 sm:px-8 max-w-4xl mx-auto w-full flex flex-col min-h-[calc(100vh-100px)]">
-      <div className="flex flex-col items-center gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 w-full">
         <button
           onClick={() => {
             if (step > 1 && step < 3) {
@@ -45,14 +45,15 @@ export default function PaymentPage() {
               navigate("/");
             }
           }}
-          className="absolute top-20 right-4 sm:right-8 z-40 px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface flex items-center gap-2 cursor-pointer font-medium border border-outline-variant/30 shadow-sm"
+          className="self-start sm:self-auto px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface flex items-center gap-2 cursor-pointer font-medium border border-outline-variant/30 shadow-sm"
         >
-          {step > 1 && step < 3 ? 'חזור לשלב הקודם' : 'חזרה לדף הבית'}
+          {step > 1 && step < 3 ? 'חזור' : 'חזרה לדף הבית'}
         </button>
-        <h1 className="text-3xl font-black text-primary flex items-center gap-3">
-          <span className="material-symbols-outlined text-4xl">payments</span>
+        <h1 className="text-2xl sm:text-3xl font-black text-primary flex items-center justify-center gap-3 flex-grow text-center">
+          <span className="material-symbols-outlined text-3xl sm:text-4xl">payments</span>
           תשלום לחניון
         </h1>
+        <div className="hidden sm:block w-[140px]"></div> {/* Spacer for perfect centering */}
       </div>
 
       <div className="bg-surface-container-lowest rounded-3xl shadow-lg border border-outline-variant/30 overflow-hidden relative min-h-[400px]">

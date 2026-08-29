@@ -76,16 +76,14 @@ export default function ParkingSlot({ id, type = "regular", status, isAvilable, 
           </div>
         </>
       ) : !isAvilable ? (
-        <div className="absolute bottom-4 flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/30 rounded-full transition-all duration-500">
-          <div className="w-2 h-2 bg-red-500 rounded-full shadow-[0_0_8px_#ef4444]"></div>
-          <span className="text-red-500 text-xs font-bold tracking-wider">
+        <div className="parking-status parking-status-occupied absolute bottom-4 flex items-center px-3 py-1 rounded-full transition-all duration-500">
+          <span className="text-xs font-bold tracking-wider">
             תפוס
           </span>
         </div>
       ) : (
-        <div className="absolute bottom-4 flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/30 rounded-full transition-all duration-500">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_8px_#4ade80]"></div>
-          <span className="text-green-400 text-xs font-bold tracking-wider">
+        <div className="parking-status parking-status-free absolute bottom-4 flex items-center px-3 py-1 rounded-full transition-all duration-500">
+          <span className="text-xs font-bold tracking-wider">
             פנוי
           </span>
         </div>

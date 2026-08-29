@@ -6,6 +6,7 @@ import AllLotsPage from "./pages/AllLotsPage";
 import AboutPage from "./pages/AboutPage";
 import SettingsPage from "./pages/SettingsPage";
 import PaymentPage from "./pages/PaymentPage";
+import PriceListPage from "./pages/PriceListPage";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SocketProvider } from "./contexts/SocketContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
@@ -26,6 +27,7 @@ function App() {
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/payment" element={<PaymentPage />} />
+                <Route path="/price-list" element={<PriceListPage />} />
                 <Route path="/login" element={<LoginForm />} />
                 <Route path="/dashboard" element={<Dashboard />} />
               </Routes>

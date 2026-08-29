@@ -43,6 +43,14 @@ export default function Sidebar({ isOpen, onClose }) {
             <span className="material-symbols-outlined">credit_card</span>
             תשלום לחניון
           </Link>
+          <Link
+            to="/price-list"
+            onClick={onClose}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 text-on-surface hover:text-primary transition-colors font-medium cursor-pointer"
+          >
+            <span className="material-symbols-outlined">sell</span>
+            מחירון חניונים
+          </Link>
         </nav>
 
         <div className="p-4 border-t border-outline-variant/20 flex flex-col gap-2">
