@@ -60,3 +60,18 @@ test('fractional elapsed minutes are rounded to integer minor-unit pricing', () 
   assert.equal(calculateParkingPriceForLot(lot, 30.5), 610);
   assert.equal(calculateParkingPriceForLot(lot, 30.333), 607);
 });
+
+test('nested pricing object is treated the same as legacy top-level fields', () => {
+  const lot = {
+    pricing: {
+      freeFirstHours: 1,
+      pricePerMinute: 0.25,
+      fullDayPriceMinor: 1800,
+      parkingFeeMinor: 0,
+      isFree: false,
+    },
+  };
+
+  assert.equal(calculateParkingPriceForLot(lot, 60), 0);
+  assert.equal(calculateParkingPriceForLot(lot, 180), 3000);
+});

@@ -493,8 +493,10 @@ router.post('/seed', async (req, res) => {
           totalSpots: lotSeed.totalSpots,
           levels: lotSeed.levels,
           location: lotSeed.location,
-          ...pricingConfig,
-          parkingFeeMinor: seedParkingFeesMinor[lotSeed.prefix] || 0,
+          pricing: {
+            ...pricingConfig,
+            parkingFeeMinor: seedParkingFeesMinor[lotSeed.prefix] || 0,
+          },
           currency: 'ILS',
         });
 

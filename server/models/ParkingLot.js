@@ -15,6 +15,29 @@ const locationSchema = new mongoose.Schema({
   },
 }, { _id: false });
 
+const pricingSchema = new mongoose.Schema({
+  isFree: {
+    type: Boolean,
+    default: false,
+  },
+  freeFirstHours: {
+    type: Number,
+    default: 0,
+  },
+  pricePerMinute: {
+    type: Number,
+    default: 0,
+  },
+  fullDayPriceMinor: {
+    type: Number,
+    default: 0,
+  },
+  parkingFeeMinor: {
+    type: Number,
+    default: 0,
+  },
+}, { _id: false });
+
 const parkingLotSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -44,24 +67,15 @@ const parkingLotSchema = new mongoose.Schema({
     type: locationSchema,
     required: false,
   },
-  isFree: {
-    type: Boolean,
-    default: false,
-  },
-  freeFirstHours: {
-    type: Number,
-    default: 0,
-  },
-  pricePerMinute: {
-    type: Number,
-    default: 0,
-  },
-  fullDayPriceMinor: {
-    type: Number,
-    default: 0,
-  },
-  parkingFeeMinor: {
-    type: Number,
+  pricing: {
+    type: pricingSchema,
+    default: () => ({
+      isFree: false,
+      freeFirstHours: 0,
+      pricePerMinute: 0,
+      fullDayPriceMinor: 0,
+      parkingFeeMinor: 0,
+    }),
   },
   currency: {
     type: String,

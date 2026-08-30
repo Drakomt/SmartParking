@@ -10,19 +10,20 @@ export const calculateParkingPriceForLot = (lot, totalMinutes) => {
     return 0;
   }
 
+  const pricing = lot.pricing ?? lot;
   const minutes = Math.max(0, Number(totalMinutes));
-  const isFree = Boolean(lot.isFree);
+  const isFree = Boolean(pricing.isFree);
   if (isFree) {
     return 0;
   }
 
-  const legacyFlatFeeMinor = Number.isFinite(Number(lot.parkingFeeMinor))
-    ? Math.max(0, Math.round(Number(lot.parkingFeeMinor)))
+  const legacyFlatFeeMinor = Number.isFinite(Number(pricing.parkingFeeMinor))
+    ? Math.max(0, Math.round(Number(pricing.parkingFeeMinor)))
     : 0;
 
-  const freeFirstHours = Math.max(0, toFiniteNumber(lot.freeFirstHours, 0));
-  const pricePerMinute = Math.max(0, toFiniteNumber(lot.pricePerMinute, 0));
-  const fullDayPriceMinor = Math.max(0, Math.round(toFiniteNumber(lot.fullDayPriceMinor, 0)));
+  const freeFirstHours = Math.max(0, toFiniteNumber(pricing.freeFirstHours, 0));
+  const pricePerMinute = Math.max(0, toFiniteNumber(pricing.pricePerMinute, 0));
+  const fullDayPriceMinor = Math.max(0, Math.round(toFiniteNumber(pricing.fullDayPriceMinor, 0)));
 
   if (legacyFlatFeeMinor > 0 && freeFirstHours === 0 && pricePerMinute === 0 && fullDayPriceMinor === 0) {
     return legacyFlatFeeMinor;
