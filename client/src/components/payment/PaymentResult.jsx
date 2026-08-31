@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
+import ExitCountdown from "./ExitCountdown";
 
-export default function PaymentResult({ status, sessionData, onReset, onRetry }) {
+export default function PaymentResult({ status, sessionData, graceExpiresAt, onGraceExpired, onReset, onRetry }) {
   const isSuccess = status === 'success';
   const [email, setEmail] = useState('');
   const [isSent, setIsSent] = useState(false);
@@ -49,12 +50,15 @@ export default function PaymentResult({ status, sessionData, onReset, onRetry })
       
       <p className="text-on-surface-variant text-center mb-10 text-lg">
         {isSuccess 
-          ? 'תודה רבה! החשבונית נשלחה למייל שלך. שער החניון ייפתח כעת באופן אוטומטי ביציאה.' 
+          ? 'התשלום נקלט בהצלחה. יש לצאת מהחניון לפני סיום הזמן כדי להימנע מחיוב נוסף.'
           : 'מצטערים, חלה שגיאה במהלך עיבוד התשלום מול חברת האשראי או פייפאל. אנא נסה שוב.'}
       </p>
 
       {isSuccess ? (
         <div className="w-full flex flex-col gap-6 mt-4">
+          {graceExpiresAt && (
+            <ExitCountdown expiresAt={graceExpiresAt} onExpired={onGraceExpired} />
+          )}
           {!isSent ? (
             <form onSubmit={handleSendEmail} className="w-full flex flex-col gap-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
               <label htmlFor="receiptEmail" className="text-sm font-medium text-on-surface">

@@ -45,7 +45,7 @@ export default function ParkingLotView({
           </button>
 
           {/* Mobile Waze button (visible only on small screens) */}
-          {lotLocation?.lat && lotLocation?.lng && (
+          {!isAdmin && lotLocation?.lat && lotLocation?.lng && (
             <button
               onClick={() => {
                 window.open(`https://waze.com/ul?ll=${lotLocation.lat},${lotLocation.lng}&navigate=yes`, '_blank');
@@ -63,7 +63,7 @@ export default function ParkingLotView({
         </h2>
 
         {/* Desktop Waze button */}
-        {lotLocation?.lat && lotLocation?.lng ? (
+        {!isAdmin && lotLocation?.lat && lotLocation?.lng ? (
           <button
             onClick={() => {
               window.open(`https://waze.com/ul?ll=${lotLocation.lat},${lotLocation.lng}&navigate=yes`, '_blank');

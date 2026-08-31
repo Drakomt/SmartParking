@@ -5,6 +5,7 @@ import { useSocket } from "../contexts/SocketContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import CarsModal from "../components/CarsModal";
 import EditLotModal from "../components/EditLotModal";
+import AuthorizedVehiclesModal from "../components/AuthorizedVehiclesModal";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -18,6 +19,7 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
 
   const [editingLot, setEditingLot] = useState(null);
+  const [authorizedVehiclesLot, setAuthorizedVehiclesLot] = useState(null);
 
   const [showCars, setShowCars] = useState(false);
   const [selectedLotNameForCars, setSelectedLotNameForCars] = useState("");
@@ -131,6 +133,18 @@ export default function Dashboard() {
     setShowCars(true);
   };
 
+  const getLotPricingLabel = (lot) => {
+    const pricing = lot.pricing ?? {};
+    if (pricing.isFree) return "חינם";
+    if (Number(pricing.pricePerMinute) > 0) {
+      return `${Number(pricing.pricePerMinute).toLocaleString("he-IL", { maximumFractionDigits: 2 })} ₪ לדקה`;
+    }
+    if (Number(pricing.parkingFeeMinor) > 0) {
+      return `${(Number(pricing.parkingFeeMinor) / 100).toLocaleString("he-IL", { maximumFractionDigits: 2 })} ₪`;
+    }
+    return "לא הוגדר";
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen pt-16">
@@ -240,6 +254,22 @@ export default function Dashboard() {
                   <span>סך הכל חניות: {lot.totalSpots}</span>
                   <span>מפלסים: {lot.levels}</span>
                 </div>
+                <div className="mb-5 rounded-xl bg-primary/5 px-3 py-2 text-sm text-on-surface-variant">
+                  תעריף: <span className="font-bold text-primary">{getLotPricingLabel(lot)}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAuthorizedVehiclesLot(lot)}
+                  className="mb-3 flex w-full cursor-pointer items-center justify-between rounded-lg border border-outline-variant/30 px-3 py-2 text-sm font-bold text-on-surface transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-lg" aria-hidden="true">no_crash</span>
+                    ניהול רכבים פטורים
+                  </span>
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                    {lot.authorizedVehicles?.length ?? 0}
+                  </span>
+                </button>
 
                 <div className="mt-auto space-y-3">
                   <button
@@ -280,6 +310,13 @@ export default function Dashboard() {
         isOpen={!!editingLot}
         onClose={() => setEditingLot(null)}
         lot={editingLot}
+        onSave={handleSaveLotSubmit}
+      />
+
+      <AuthorizedVehiclesModal
+        isOpen={!!authorizedVehiclesLot}
+        lot={authorizedVehiclesLot}
+        onClose={() => setAuthorizedVehiclesLot(null)}
         onSave={handleSaveLotSubmit}
       />
 

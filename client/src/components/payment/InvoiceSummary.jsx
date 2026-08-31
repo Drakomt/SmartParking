@@ -52,7 +52,7 @@ export default function InvoiceSummary({ licensePlate, sessionData, onPay }) {
       });
       
       if (response.data.status === 'COMPLETED' || response.data.status === 'APPROVED') {
-        onPay('success');
+        onPay('success', response.data);
       } else {
         onPay('error');
       }

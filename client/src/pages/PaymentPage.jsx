@@ -3,6 +3,25 @@ import { useNavigate } from "react-router-dom";
 import LicensePlateSearch from "../components/payment/LicensePlateSearch";
 import InvoiceSummary from "../components/payment/InvoiceSummary";
 import PaymentResult from "../components/payment/PaymentResult";
+import NoPaymentRequired from "../components/payment/NoPaymentRequired";
+import axios from "axios";
+
+const EXIT_GRACE_PERIOD_MS = 15 * 60 * 1000;
+
+const normalizePlate = (value) => String(value ?? "").replace(/[^A-Z0-9]/gi, "").toUpperCase();
+
+const getBackendGraceExpiry = (data) => {
+  if (data?.graceExpiresAt && Number.isFinite(new Date(data.graceExpiresAt).getTime())) {
+    return new Date(data.graceExpiresAt).toISOString();
+  }
+  if (Number.isFinite(Number(data?.remainingGraceSeconds))) {
+    return new Date(Date.now() + Number(data.remainingGraceSeconds) * 1000).toISOString();
+  }
+  if (data?.paidAt && Number.isFinite(new Date(data.paidAt).getTime())) {
+    return new Date(new Date(data.paidAt).getTime() + EXIT_GRACE_PERIOD_MS).toISOString();
+  }
+  return null;
+};
 
 export default function PaymentPage() {
   const navigate = useNavigate();
@@ -11,16 +30,55 @@ export default function PaymentPage() {
   const [licensePlate, setLicensePlate] = useState("");
   const [sessionData, setSessionData] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState(null); // 'success' or 'error'
+  const [graceExpiresAt, setGraceExpiresAt] = useState(null);
+  const [graceLicensePlate, setGraceLicensePlate] = useState("");
 
   const handleSearchSubmit = (plateNumber, data) => {
     setLicensePlate(plateNumber);
     setSessionData(data);
+
+    if (data?.paymentRequired === false) {
+      const backendExpiry = getBackendGraceExpiry(data);
+      const knownExpiry = normalizePlate(plateNumber) === normalizePlate(graceLicensePlate)
+        ? graceExpiresAt
+        : null;
+      setGraceExpiresAt(backendExpiry || knownExpiry);
+      setGraceLicensePlate(plateNumber);
+      setStep(4);
+      return;
+    }
+
     setStep(2); // Proceed to invoice
   };
 
-  const handlePaymentComplete = (status) => {
+  const handlePaymentComplete = (status, paymentData) => {
     setPaymentStatus(status);
+    if (status === "success") {
+      setGraceExpiresAt(
+        getBackendGraceExpiry(paymentData)
+        || new Date(Date.now() + EXIT_GRACE_PERIOD_MS).toISOString(),
+      );
+      setGraceLicensePlate(licensePlate);
+    }
     setStep(3); // Proceed to result
+  };
+
+  const handleGraceExpired = async () => {
+    setGraceExpiresAt(null);
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/parking/session/lookup?plate=${encodeURIComponent(licensePlate)}`,
+      );
+      setSessionData(response.data);
+      if (response.data?.paymentRequired) {
+        setStep(2);
+      } else {
+        setStep(4);
+      }
+    } catch (error) {
+      console.error("Failed to refresh parking debt after grace period", error);
+      setStep(1);
+    }
   };
 
   const handleReset = () => {
@@ -82,8 +140,18 @@ export default function PaymentPage() {
             <PaymentResult 
               status={paymentStatus} 
               sessionData={sessionData}
+              graceExpiresAt={graceExpiresAt}
+              onGraceExpired={handleGraceExpired}
               onReset={handleReset} 
               onRetry={handleRetry}
+            />
+          )}
+          {step === 4 && (
+            <NoPaymentRequired
+              sessionData={sessionData}
+              expiresAt={graceExpiresAt}
+              onExpired={handleGraceExpired}
+              onReset={handleReset}
             />
           )}
         </div>
