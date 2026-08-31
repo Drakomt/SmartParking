@@ -68,6 +68,20 @@ const findSessionsByLot = async (parkingLotId) => {
   return await ParkingSession.find({ parkingLot: parkingLotId });
 };
 
+const grantPassToAuthorizedVehicles = async (parkingLotId, licensePlates) => {
+  if (licensePlates.length === 0) return { modifiedCount: 0 };
+
+  return await ParkingSession.updateMany(
+    {
+      parkingLot: parkingLotId,
+      carLicensePlate: { $in: licensePlates },
+      checkoutStatus: { $in: ['Payable', 'paid'] },
+    },
+    { $set: { checkoutStatus: 'pass' } },
+    { runValidators: true },
+  );
+};
+
 const findSessionByIdWithLot = async (sessionId) => {
   return await ParkingSession.findById(sessionId).populate('parkingLot');
 };
@@ -103,6 +117,7 @@ const deleteSession = async (sessionId) => {
 
 export default {
   findSessionsByLot,
+  grantPassToAuthorizedVehicles,
   findSessionByIdWithLot,
   findByCheckoutIdWithLot,
   findActiveByLicensePlateWithLot,
