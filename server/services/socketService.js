@@ -88,7 +88,8 @@ const registerConnectionHandlers = (socket) => {
 const initializeSocketServer = (httpServer) => {
     ioInstance = new Server(httpServer, {
         cors: {
-            origin: process.env.CLIENT_ORIGIN || '*',
+            origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+            credentials: true,
             methods: ['GET', 'POST'],
         },
     });
