@@ -4,6 +4,27 @@ import cityRepo from '../repositories/cityRepo.js';
 import parkingSessionRepo from '../repositories/parkingSessionRepo.js';
 import { emitParkingSpotUpdate, emitParkingSpotUpdateToAuthorizedUsers } from './socketService.js';
 import { calculateHaversineDistanceKm } from '../utils/geo.js';
+import { normalizeLicensePlate } from '../utils/licensePlate.js';
+import AppError from '../errors/AppError.js';
+
+const normalizeAuthorizedVehicles = (lotData) => {
+  if (lotData.authorizedVehicles === undefined) return lotData;
+  if (
+    !Array.isArray(lotData.authorizedVehicles)
+    || lotData.authorizedVehicles.some((plate) => (
+      typeof plate !== 'string' || normalizeLicensePlate(plate) === ''
+    ))
+  ) {
+    throw new AppError('authorizedVehicles must be a list of license plate strings', {
+      statusCode: 400,
+      code: 'VALIDATION_ERROR',
+    });
+  }
+  return {
+    ...lotData,
+    authorizedVehicles: [...new Set(lotData.authorizedVehicles.map(normalizeLicensePlate))],
+  };
+};
 
 const publishSpotUpdate = async (parkingLot, spot) => {
   if (!parkingLot || !parkingLot.city || !spot) {
@@ -64,7 +85,7 @@ const fetchParkingLots = async (user) => {
     const authorizedCities = user.authorizedCities?.length > 0 ? user.authorizedCities : [user.authorizedCity];
     query.city = { $in: authorizedCities };
   }
-  return await parkingLotRepo.findAllLots(query);
+  return await parkingLotRepo.findAllLots(query, { includeAuthorizedVehicles: true });
 };
 
 const fetchAllParkingLotsWithSpots = async () => {
@@ -123,7 +144,9 @@ const fetchAuthorizedLotsWithDetails = async (user) => {
     return [];
   }
 
-  const parkingLots = await parkingLotRepo.findAllLots({ city: { $in: authorizedCities } });
+  const parkingLots = await parkingLotRepo.findAllLots(
+    { city: { $in: authorizedCities } }, { includeAuthorizedVehicles: true },
+  );
 
   return await Promise.all(
     parkingLots.map(async (parkingLot) => {
@@ -212,7 +235,7 @@ const addParkingLot = async (lotData, user) => {
       lotData.city = authorizedCities[0];
     }
   }
-  return await parkingLotRepo.createLot(lotData);
+  return await parkingLotRepo.createLot(normalizeAuthorizedVehicles(lotData));
 };
 
 const editParkingLot = async (id, updateData, user) => {
@@ -228,7 +251,7 @@ const editParkingLot = async (id, updateData, user) => {
     throw new Error('Not authorized to update this parking lot');
   }
 
-  return await parkingLotRepo.updateLot(id, updateData);
+  return await parkingLotRepo.updateLot(id, normalizeAuthorizedVehicles(updateData));
 };
 
 const removeParkingLot = async (id, user) => {

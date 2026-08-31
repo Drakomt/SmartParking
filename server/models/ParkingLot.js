@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { normalizeLicensePlate } from '../utils/licensePlate.js';
 
 const locationSchema = new mongoose.Schema({
   lat: {
@@ -12,6 +13,29 @@ const locationSchema = new mongoose.Schema({
     required: true,
     min: -180,
     max: 180,
+  },
+}, { _id: false });
+
+const pricingSchema = new mongoose.Schema({
+  isFree: {
+    type: Boolean,
+    default: false,
+  },
+  freeFirstHours: {
+    type: Number,
+    default: 0,
+  },
+  pricePerMinute: {
+    type: Number,
+    default: 0,
+  },
+  fullDayPriceMinor: {
+    type: Number,
+    default: 0,
+  },
+  parkingFeeMinor: {
+    type: Number,
+    default: 0,
   },
 }, { _id: false });
 
@@ -44,18 +68,27 @@ const parkingLotSchema = new mongoose.Schema({
     type: locationSchema,
     required: false,
   },
-  parkingFeeMinor: {
-    type: Number,
-    min: 1,
-    validate: {
-      validator: Number.isSafeInteger,
-      message: 'parkingFeeMinor must be an integer amount in minor units',
-    },
+  pricing: {
+    type: pricingSchema,
+    default: () => ({
+      isFree: false,
+      freeFirstHours: 0,
+      pricePerMinute: 0,
+      fullDayPriceMinor: 0,
+      parkingFeeMinor: 0,
+    }),
   },
   currency: {
     type: String,
     enum: ['ILS'],
     uppercase: true,
+  },
+  authorizedVehicles: {
+    type: [{ type: String, set: normalizeLicensePlate, match: /^[A-Z0-9]+$/ }],
+    default: [],
+    castNonArrays: false,
+    // Public lot listings must not disclose the vehicle allowlist.
+    select: false,
   },
 }, { timestamps: true });
 

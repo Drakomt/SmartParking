@@ -13,30 +13,39 @@ const findByLicensePlate = async (carLicensePlate) => {
 const findActiveByLicensePlateWithLot = async (carLicensePlate) => {
   return await ParkingSession.findOne({
     carLicensePlate,
-    checkoutStatus: { $nin: ['COMPLETED', 'CANCELLED'] },
+    checkoutStatus: { $in: ['Payable', 'paid', 'pass'] },
   })
     .sort({ entryTime: -1 })
     .populate('parkingLot');
 };
 
-const updateCheckoutCredentials = async (sessionId, checkoutCredentials) => {
+const updateCheckoutCredentials = async (sessionId, checkoutCredentials, previousCheckoutId) => {
   return await ParkingSession.findOneAndUpdate(
     {
       _id: sessionId,
-      checkoutStatus: { $nin: ['COMPLETED', 'CANCELLED'] },
+      checkoutId: previousCheckoutId ?? { $exists: false },
+      checkoutPaymentStarted: { $ne: true },
+      checkoutStatus: { $in: ['Payable', 'paid'] },
     },
     {
       $set: {
         checkoutId: checkoutCredentials.checkoutId,
         checkoutTokenHash: checkoutCredentials.checkoutTokenHash,
         checkoutExpiresAt: checkoutCredentials.checkoutExpiresAt,
-        checkoutStatus: 'PAYABLE',
         checkoutConsumedAt: null,
       },
     },
     { new: true, runValidators: true },
   ).populate('parkingLot');
 };
+
+const claimCheckoutForPayment = async (sessionId, checkoutId) => (
+  ParkingSession.findOneAndUpdate(
+    { _id: sessionId, checkoutId, checkoutConsumedAt: null, checkoutStatus: { $in: ['Payable', 'paid'] } },
+    { $set: { checkoutPaymentStarted: true } },
+    { new: true, runValidators: true },
+  )
+);
 
 const findRandomSession = async () => {
   const result = await ParkingSession.aggregate([{ $sample: { size: 1 } }]);
@@ -69,17 +78,19 @@ const findByCheckoutIdWithLot = async (checkoutId) => {
     .populate('parkingLot');
 };
 
-const completeCheckoutOnce = async (sessionId, completedAt) => {
+const completeCheckoutOnce = async (sessionId, completedAt, checkoutId) => {
   return await ParkingSession.findOneAndUpdate(
     {
       _id: sessionId,
-      checkoutStatus: 'PAYABLE',
+      checkoutId,
+      checkoutStatus: { $in: ['Payable', 'paid'] },
       checkoutConsumedAt: null,
     },
     {
       $set: {
-        checkoutStatus: 'COMPLETED',
+        checkoutStatus: 'paid',
         checkoutConsumedAt: completedAt,
+        checkoutPaymentStarted: false,
       },
     },
     { new: true },
@@ -96,6 +107,7 @@ export default {
   findByCheckoutIdWithLot,
   findActiveByLicensePlateWithLot,
   updateCheckoutCredentials,
+  claimCheckoutForPayment,
   completeCheckoutOnce,
   createSession,
   findByLicensePlate,

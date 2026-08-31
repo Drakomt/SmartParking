@@ -16,7 +16,7 @@ const parkingPaymentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ParkingSession',
     required: true,
-    unique: true,
+    index: true,
     immutable: true,
   },
   parkingLot: {
@@ -32,6 +32,13 @@ const parkingPaymentSchema = new mongoose.Schema({
     sparse: true,
     immutable: true,
     match: /^[a-f0-9]{32}$/,
+  },
+  // Preserve authentication for receipts/retries after the next checkout begins.
+  checkoutTokenHash: {
+    type: String,
+    select: false,
+    immutable: true,
+    match: /^[a-f0-9]{64}$/,
   },
   amountMinor: {
     type: Number,

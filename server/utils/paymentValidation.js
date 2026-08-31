@@ -4,6 +4,25 @@ const PAYPAL_ID_PATTERN = /^[A-Z0-9]{8,64}$/;
 const WEBHOOK_EVENT_ID_PATTERN = /^[A-Z0-9-]{8,128}$/i;
 const CHECKOUT_ID_PATTERN = /^[a-f0-9]{32}$/;
 const CHECKOUT_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const normalizeCheckoutCredentials = (body) => {
+  const checkoutId = typeof body.checkoutId === 'string'
+    ? body.checkoutId.trim().toLowerCase()
+    : '';
+  const checkoutToken = typeof body.checkoutToken === 'string'
+    ? body.checkoutToken.trim()
+    : '';
+
+  if (!CHECKOUT_ID_PATTERN.test(checkoutId) || !CHECKOUT_TOKEN_PATTERN.test(checkoutToken)) {
+    throw new AppError('Checkout credentials are invalid', {
+      statusCode: 400,
+      code: 'VALIDATION_ERROR',
+    });
+  }
+
+  return { checkoutId, checkoutToken };
+};
 
 export const validateCreateOrderBody = (body) => {
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
@@ -25,21 +44,42 @@ export const validateCreateOrderBody = (body) => {
     });
   }
 
-  const checkoutId = typeof body.checkoutId === 'string'
-    ? body.checkoutId.trim().toLowerCase()
-    : '';
-  const checkoutToken = typeof body.checkoutToken === 'string'
-    ? body.checkoutToken.trim()
-    : '';
+  return normalizeCheckoutCredentials(body);
+};
 
-  if (!CHECKOUT_ID_PATTERN.test(checkoutId) || !CHECKOUT_TOKEN_PATTERN.test(checkoutToken)) {
-    throw new AppError('Checkout credentials are invalid', {
+export const validateReceiptBody = (body) => {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    throw new AppError('Request body must be a JSON object', {
       statusCode: 400,
       code: 'VALIDATION_ERROR',
     });
   }
 
-  return { checkoutId, checkoutToken };
+  const fields = Object.keys(body).sort();
+  if (
+    fields.length !== 3
+    || fields[0] !== 'checkoutId'
+    || fields[1] !== 'checkoutToken'
+    || fields[2] !== 'email'
+  ) {
+    throw new AppError('Only email, checkoutId and checkoutToken may be provided', {
+      statusCode: 400,
+      code: 'VALIDATION_ERROR',
+    });
+  }
+
+  const email = typeof body.email === 'string' ? body.email.trim() : '';
+  if (email.length > 254 || !EMAIL_PATTERN.test(email)) {
+    throw new AppError('Email address is invalid', {
+      statusCode: 400,
+      code: 'VALIDATION_ERROR',
+    });
+  }
+
+  return {
+    email,
+    ...normalizeCheckoutCredentials(body),
+  };
 };
 
 export const validatePayPalId = (value, fieldName = 'paypalOrderId') => {

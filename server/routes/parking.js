@@ -2,13 +2,21 @@ import express from 'express';
 const router = express.Router();
 import parkingService from '../services/parkingService.js';
 import parkingSessionService from '../services/parkingSessionService.js';
+import parkingReceiptService from '../services/parkingReceiptService.js';
 import { protect } from '../middleware/auth.js';
 import { createRateLimiter } from '../middleware/rateLimit.js';
 import AppError from '../errors/AppError.js';
+import { validateReceiptBody } from '../utils/paymentValidation.js';
 
 const sessionLookupLimiter = createRateLimiter({
   windowMs: 10 * 60_000,
   maxRequests: 30,
+});
+
+const receiptLimiter = createRateLimiter({
+  windowMs: 10 * 60_000,
+  maxRequests: 10,
+  keyGenerator: (req) => `${req.ip}:${req.body?.checkoutId || 'invalid'}`,
 });
 
 // ==========================================
@@ -48,12 +56,18 @@ router.route('/')
         totalSpots: req.body.totalSpots,
         levels: req.body.levels,
         location: req.body.location,
+        pricing: req.body.pricing,
+        authorizedVehicles: req.body.authorizedVehicles,
+        isFree: req.body.isFree,
+        freeFirstHours: req.body.freeFirstHours,
+        pricePerMinute: req.body.pricePerMinute,
+        fullDayPriceMinor: req.body.fullDayPriceMinor,
         parkingFeeMinor: req.body.parkingFeeMinor,
         currency: req.body.currency,
       }, req.user);
       res.status(201).json(parkingLot);
     } catch (error) {
-      res.status(500).json({ message: 'Server Error', error: error.message });
+      res.status(error.statusCode || 500).json({ message: 'Server Error', error: error.message });
     }
   });
 
@@ -128,6 +142,29 @@ router.get('/session/lookup', sessionLookupLimiter, async (req, res) => {
   }
 });
 
+router.post('/session/receipt', receiptLimiter, async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+
+  try {
+    const receiptRequest = validateReceiptBody(req.body);
+    const result = await parkingReceiptService.sendReceipt(receiptRequest);
+    return res.json(result);
+  } catch (error) {
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({
+        message: error.message,
+        code: error.code,
+      });
+    }
+
+    console.error('Parking receipt request failed');
+    return res.status(500).json({
+      message: 'Unable to send receipt email',
+      code: 'INTERNAL_ERROR',
+    });
+  }
+});
+
 router.get('/parkinglotbyid', async (req, res) => {
     try {
       if (!req.query.id) {
@@ -177,7 +214,7 @@ router.route('/:id')
       const updatedLot = await parkingService.editParkingLot(req.params.id, updateData, req.user);
       res.json(updatedLot);
     } catch (error) {
-      const statusCode = error.message.includes('authorized') ? 403 : 404;
+      const statusCode = error.statusCode || (error.message.includes('authorized') ? 403 : 404);
       res.status(statusCode).json({ message: error.message });
     }
   })
