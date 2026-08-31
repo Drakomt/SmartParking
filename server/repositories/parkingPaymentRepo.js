@@ -1,11 +1,16 @@
 import ParkingPayment from '../models/ParkingPayment.js';
 
 const findByParkingSession = async (parkingSessionId) => (
-  ParkingPayment.findOne({ parkingSession: parkingSessionId })
+  ParkingPayment.findOne({ parkingSession: parkingSessionId }).sort({ createdAt: -1, _id: -1 })
+);
+
+const findCompletedByParkingSession = async (parkingSessionId) => (
+  ParkingPayment.find({ parkingSession: parkingSessionId, paypalPaymentStatus: 'COMPLETED' })
+    .sort({ paidAt: -1, _id: -1 })
 );
 
 const findByPayPalOrderId = async (paypalOrderId) => (
-  ParkingPayment.findOne({ paypalOrderId })
+  ParkingPayment.findOne({ paypalOrderId }).select('+checkoutTokenHash')
 );
 
 const findByPayPalCaptureId = async (paypalCaptureId) => (
@@ -13,7 +18,7 @@ const findByPayPalCaptureId = async (paypalCaptureId) => (
 );
 
 const findByCheckoutId = async (checkoutId) => (
-  ParkingPayment.findOne({ checkoutId })
+  ParkingPayment.findOne({ checkoutId }).select('+checkoutTokenHash')
 );
 
 const createPayment = async (paymentData) => ParkingPayment.create(paymentData);
@@ -56,6 +61,7 @@ const completePaymentOnce = async (paymentId, completionData) => (
 
 export default {
   findByParkingSession,
+  findCompletedByParkingSession,
   findByPayPalOrderId,
   findByPayPalCaptureId,
   findByCheckoutId,

@@ -74,11 +74,16 @@ export const createParkingReceiptService = ({
   mailer = mailService,
 } = {}) => {
   const sendReceipt = async ({ email, checkoutId, checkoutToken }) => {
-    const session = await sessionRepo.findByCheckoutIdWithLot(checkoutId);
+    const payment = await paymentRepo.findByCheckoutId(checkoutId);
+    let session = await sessionRepo.findByCheckoutIdWithLot(checkoutId);
+    const verifiedPaymentToken = payment && verifyCheckoutToken(checkoutToken, payment.checkoutTokenHash);
+    if (!session && verifiedPaymentToken) {
+      session = await sessionRepo.findSessionByIdWithLot(payment.parkingSession);
+    }
     if (
       !session
       || !session.parkingLot
-      || !verifyCheckoutToken(checkoutToken, session.checkoutTokenHash)
+      || !(verifiedPaymentToken || verifyCheckoutToken(checkoutToken, session.checkoutTokenHash))
     ) {
       throw new AppError('Checkout is not available', {
         statusCode: 404,
@@ -86,10 +91,8 @@ export const createParkingReceiptService = ({
       });
     }
 
-    const payment = await paymentRepo.findByCheckoutId(checkoutId);
     if (
-      session.checkoutStatus !== 'COMPLETED'
-      || payment?.paypalPaymentStatus !== 'COMPLETED'
+      payment?.paypalPaymentStatus !== 'COMPLETED'
       || toId(payment.parkingSession) !== toId(session)
     ) {
       throw new AppError('Payment must be completed before requesting a receipt', {

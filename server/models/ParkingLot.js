@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { normalizeLicensePlate } from '../utils/licensePlate.js';
 
 const locationSchema = new mongoose.Schema({
   lat: {
@@ -81,6 +82,13 @@ const parkingLotSchema = new mongoose.Schema({
     type: String,
     enum: ['ILS'],
     uppercase: true,
+  },
+  authorizedVehicles: {
+    type: [{ type: String, set: normalizeLicensePlate, match: /^[A-Z0-9]+$/ }],
+    default: [],
+    castNonArrays: false,
+    // Public lot listings must not disclose the vehicle allowlist.
+    select: false,
   },
 }, { timestamps: true });
 

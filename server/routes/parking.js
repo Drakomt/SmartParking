@@ -56,6 +56,8 @@ router.route('/')
         totalSpots: req.body.totalSpots,
         levels: req.body.levels,
         location: req.body.location,
+        pricing: req.body.pricing,
+        authorizedVehicles: req.body.authorizedVehicles,
         isFree: req.body.isFree,
         freeFirstHours: req.body.freeFirstHours,
         pricePerMinute: req.body.pricePerMinute,
@@ -65,7 +67,7 @@ router.route('/')
       }, req.user);
       res.status(201).json(parkingLot);
     } catch (error) {
-      res.status(500).json({ message: 'Server Error', error: error.message });
+      res.status(error.statusCode || 500).json({ message: 'Server Error', error: error.message });
     }
   });
 
@@ -212,7 +214,7 @@ router.route('/:id')
       const updatedLot = await parkingService.editParkingLot(req.params.id, updateData, req.user);
       res.json(updatedLot);
     } catch (error) {
-      const statusCode = error.message.includes('authorized') ? 403 : 404;
+      const statusCode = error.statusCode || (error.message.includes('authorized') ? 403 : 404);
       res.status(statusCode).json({ message: error.message });
     }
   })

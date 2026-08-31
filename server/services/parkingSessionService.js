@@ -4,19 +4,16 @@ import parkingPaymentRepo from '../repositories/parkingPaymentRepo.js';
 import { createCheckoutCredentials } from '../utils/checkoutCredentials.js';
 import { assertSupportedCurrency, formatMinorUnits } from '../utils/money.js';
 import { calculateParkingPriceByLicensePlate } from '../utils/parkingPricing.js';
-
-const normalizeLicensePlate = (value) => String(value ?? '')
-  .trim()
-  .toUpperCase()
-  .replace(/[^A-Z0-9]/g, '');
+import { normalizeLicensePlate } from '../utils/licensePlate.js';
 
 export const createParkingSessionService = ({
   sessionRepo = parkingSessionRepo,
   paymentRepo = parkingPaymentRepo,
   generateCheckoutCredentials = createCheckoutCredentials,
+  now = () => new Date(),
 } = {}) => {
   const lookupForCheckout = async (licensePlate) => {
-    if (typeof licensePlate !== 'string' || licensePlate.trim() === '') {
+    if (typeof licensePlate !== 'string' || normalizeLicensePlate(licensePlate) === '') {
       throw new AppError('License plate is required', {
         statusCode: 400,
         code: 'VALIDATION_ERROR',
@@ -33,32 +30,49 @@ export const createParkingSessionService = ({
     }
 
     const { currency, name: parkingLotName } = session.parkingLot;
-    const normalizedCurrency = assertSupportedCurrency(currency);
-    const amountMinor = calculateParkingPriceByLicensePlate({ session });
-    if (!Number.isSafeInteger(amountMinor) || amountMinor <= 0) {
+    const payments = session.checkoutStatus === 'pass'
+      ? [] : await paymentRepo.findCompletedByParkingSession(session._id);
+    const amountMinor = calculateParkingPriceByLicensePlate({ session, payments, now });
+    if (!Number.isSafeInteger(amountMinor) || amountMinor < 0) {
       throw new AppError('Payment is not currently eligible', {
         statusCode: 422,
         code: 'PAYMENT_NOT_ELIGIBLE',
       });
     }
 
-    const existingPayment = await paymentRepo.findByParkingSession(session._id);
-    if (existingPayment) {
+    // A free/grace-period lookup must not revoke credentials needed by a receipt.
+    if (amountMinor === 0) {
+      return {
+        checkoutId: null,
+        checkoutToken: null,
+        amountToPay: '0.00',
+        entryTime: session.entryTime,
+        parkingLotName,
+        checkoutStatus: session.checkoutStatus,
+        paymentRequired: false,
+      };
+    }
+
+    const normalizedCurrency = assertSupportedCurrency(currency);
+    const existingPayment = session.checkoutId
+      ? await paymentRepo.findByCheckoutId(session.checkoutId) : null;
+    if (existingPayment && existingPayment.paypalPaymentStatus !== 'COMPLETED') {
       throw new AppError('Payment has already been started for this parking session', {
         statusCode: 409,
         code: 'PAYMENT_ALREADY_STARTED',
       });
     }
 
-    const checkoutCredentials = generateCheckoutCredentials();
+    const checkoutCredentials = generateCheckoutCredentials({ now: now() });
     const updatedSession = await sessionRepo.updateCheckoutCredentials(
       session._id,
       checkoutCredentials,
+      session.checkoutId,
     );
     if (!updatedSession) {
-      throw new AppError('Active parking session not found', {
-        statusCode: 404,
-        code: 'PARKING_SESSION_NOT_FOUND',
+      throw new AppError('Checkout changed or a payment is already in progress; look up the session again', {
+        statusCode: 409,
+        code: 'PAYMENT_IN_PROGRESS',
       });
     }
 
@@ -68,6 +82,8 @@ export const createParkingSessionService = ({
       amountToPay: formatMinorUnits(amountMinor, normalizedCurrency),
       entryTime: updatedSession.entryTime,
       parkingLotName,
+      checkoutStatus: updatedSession.checkoutStatus,
+      paymentRequired: true,
     };
   };
 

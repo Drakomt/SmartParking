@@ -51,8 +51,12 @@ export const createPayPalCheckoutService = ({
     code: 'CHECKOUT_NOT_AVAILABLE',
   });
 
-  const loadCheckout = async (checkoutId, checkoutToken) => {
-    const parkingSession = await sessionRepo.findByCheckoutIdWithLot(checkoutId);
+  const loadCheckout = async (checkoutId, checkoutToken, completedPayment) => {
+    let parkingSession = await sessionRepo.findByCheckoutIdWithLot(checkoutId);
+    if (!parkingSession && completedPayment && verifyCheckoutToken(checkoutToken, completedPayment.checkoutTokenHash)) {
+      parkingSession = await sessionRepo.findSessionByIdWithLot(completedPayment.parkingSession);
+      if (parkingSession?.parkingLot) return parkingSession;
+    }
     if (
       !parkingSession
       || !parkingSession.parkingLot
@@ -64,10 +68,10 @@ export const createPayPalCheckoutService = ({
     return parkingSession;
   };
 
-  const assertCheckoutPayable = (parkingSession) => {
+  const assertCheckoutPayable = async (parkingSession) => {
     const expiresAt = new Date(parkingSession.checkoutExpiresAt);
     if (
-      parkingSession.checkoutStatus !== 'PAYABLE'
+      !['Payable', 'paid'].includes(parkingSession.checkoutStatus)
       || Number.isNaN(expiresAt.getTime())
       || expiresAt <= now()
     ) {
@@ -78,8 +82,10 @@ export const createPayPalCheckoutService = ({
     }
 
     const { currency } = parkingSession.parkingLot;
+    const payments = await paymentRepo.findCompletedByParkingSession(parkingSession._id);
     const amountMinor = calculateParkingPriceByLicensePlate({
       session: parkingSession,
+      payments,
       now,
     });
     if (!currency || !Number.isSafeInteger(amountMinor) || amountMinor <= 0) {
@@ -97,7 +103,7 @@ export const createPayPalCheckoutService = ({
   };
 
   const getOrCreatePayment = async ({ parkingSession, parkingLot, amountMinor, currency }) => {
-    let payment = await paymentRepo.findByParkingSession(parkingSession._id);
+    let payment = await paymentRepo.findByCheckoutId(parkingSession.checkoutId);
     if (payment) {
       if (payment.checkoutId !== parkingSession.checkoutId) {
         throw checkoutUnavailable();
@@ -110,6 +116,7 @@ export const createPayPalCheckoutService = ({
         parkingSession: parkingSession._id,
         parkingLot: parkingLot._id,
         checkoutId: parkingSession.checkoutId,
+        checkoutTokenHash: parkingSession.checkoutTokenHash,
         amountMinor,
         currency,
         paymentProvider: 'paypal',
@@ -121,7 +128,7 @@ export const createPayPalCheckoutService = ({
       if (error?.code !== 11000) {
         throw error;
       }
-      payment = await paymentRepo.findByParkingSession(parkingSession._id);
+      payment = await paymentRepo.findByCheckoutId(parkingSession.checkoutId);
       if (!payment) {
         throw error;
       }
@@ -157,7 +164,9 @@ export const createPayPalCheckoutService = ({
         code: 'PAYMENT_ALREADY_COMPLETED',
       });
     }
-    const sessionDetails = assertCheckoutPayable(parkingSession);
+    const sessionDetails = await assertCheckoutPayable(parkingSession);
+    const claimedCheckout = await sessionRepo.claimCheckoutForPayment(parkingSession._id, checkoutId);
+    if (!claimedCheckout) throw checkoutUnavailable();
     let payment = existingPayment || await getOrCreatePayment(sessionDetails);
 
     if (payment.paypalPaymentStatus === 'COMPLETED') {
@@ -178,7 +187,7 @@ export const createPayPalCheckoutService = ({
 
     const lockedPayment = await acquirePaymentLock(payment);
     if (!lockedPayment) {
-      payment = await paymentRepo.findByParkingSession(sessionDetails.parkingSession._id);
+      payment = await paymentRepo.findByCheckoutId(checkoutId);
       if (payment?.paypalOrderId) {
         return { orderId: payment.paypalOrderId };
       }
@@ -253,6 +262,7 @@ export const createPayPalCheckoutService = ({
     await sessionRepo.completeCheckoutOnce(
       payment.parkingSession,
       payment.paidAt || now(),
+      payment.checkoutId,
     );
   };
 
@@ -270,7 +280,9 @@ export const createPayPalCheckoutService = ({
     if (!payment) {
       throw checkoutUnavailable();
     }
-    const parkingSession = await loadCheckout(checkoutId, checkoutToken);
+    const parkingSession = await loadCheckout(
+      checkoutId, checkoutToken, payment.paypalPaymentStatus === 'COMPLETED' ? payment : null,
+    );
     if (
       payment.checkoutId !== checkoutId
       || toId(payment.parkingSession) !== toId(parkingSession)
@@ -289,7 +301,7 @@ export const createPayPalCheckoutService = ({
       });
     }
 
-    assertCheckoutPayable(parkingSession);
+    await assertCheckoutPayable(parkingSession);
     const lockedPayment = await acquirePaymentLock(payment);
     if (!lockedPayment) {
       payment = await paymentRepo.findByPayPalOrderId(paypalOrderId);

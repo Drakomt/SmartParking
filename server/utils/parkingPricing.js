@@ -1,4 +1,5 @@
 export const MINUTES_PER_DAY = 24 * 60;
+export const PAID_EXIT_GRACE_MINUTES = 15;
 
 const toFiniteNumber = (value, fallback = 0) => {
   const parsedValue = Number(value);
@@ -61,13 +62,41 @@ export const calculateParkingPriceForLot = (lot, totalMinutes) => {
 
 export const calculateParkingPriceByLicensePlate = ({
   session,
+  payments = [],
   now = () => Date.now(),
 }) => {
   if (!session || !session.parkingLot) {
     return 0;
   }
 
-  const entryTime = session.entryTime ? new Date(session.entryTime).getTime() : now();
-  const elapsedMinutes = Math.max(0, (now() - entryTime) / 60_000);
-  return calculateParkingPriceForLot(session.parkingLot, elapsedMinutes);
+  if (session.checkoutStatus === 'pass') return 0;
+
+  const currentTime = new Date(now()).getTime();
+  const completedPayments = payments.filter((payment) => (
+    payment.paypalPaymentStatus === 'COMPLETED'
+    && String(payment.parkingSession?._id || payment.parkingSession) === String(session._id)
+  ));
+  const paymentTimes = completedPayments
+    .filter((payment) => payment.paidAt != null)
+    .map((payment) => new Date(payment.paidAt).getTime())
+    .filter(Number.isFinite);
+  const latestPaymentTime = paymentTimes.length ? Math.max(...paymentTimes) : null;
+
+  if (
+    session.checkoutStatus === 'paid'
+    && latestPaymentTime !== null
+    && currentTime >= latestPaymentTime
+    && currentTime - latestPaymentTime < PAID_EXIT_GRACE_MINUTES * 60_000
+  ) {
+    return 0;
+  }
+
+  const entryTime = session.entryTime ? new Date(session.entryTime).getTime() : currentTime;
+  const elapsedMinutes = Math.max(0, (currentTime - entryTime) / 60_000);
+  const totalPrice = calculateParkingPriceForLot(session.parkingLot, elapsedMinutes);
+  const amountAlreadyPaid = completedPayments.reduce((total, payment) => (
+    total + (Number.isSafeInteger(payment.amountMinor) && payment.amountMinor > 0
+      ? payment.amountMinor : 0)
+  ), 0);
+  return Math.max(0, totalPrice - amountAlreadyPaid);
 };
