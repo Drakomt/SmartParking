@@ -251,7 +251,19 @@ const editParkingLot = async (id, updateData, user) => {
     throw new Error('Not authorized to update this parking lot');
   }
 
-  return await parkingLotRepo.updateLot(id, normalizeAuthorizedVehicles(updateData));
+  const normalizedUpdate = normalizeAuthorizedVehicles(updateData);
+  const updatedLot = await parkingLotRepo.updateLot(id, normalizedUpdate);
+
+  if (updatedLot && normalizedUpdate.authorizedVehicles !== undefined) {
+    // Reconcile the entire saved list, not only newly added plates, so a retry
+    // also repairs stale sessions. Preserve credentials and payment history.
+    await parkingSessionRepo.grantPassToAuthorizedVehicles(
+      updatedLot._id,
+      updatedLot.authorizedVehicles || [],
+    );
+  }
+
+  return updatedLot;
 };
 
 const removeParkingLot = async (id, user) => {

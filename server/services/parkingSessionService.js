@@ -3,7 +3,7 @@ import parkingSessionRepo from '../repositories/parkingSessionRepo.js';
 import parkingPaymentRepo from '../repositories/parkingPaymentRepo.js';
 import { createCheckoutCredentials } from '../utils/checkoutCredentials.js';
 import { assertSupportedCurrency, formatMinorUnits } from '../utils/money.js';
-import { calculateParkingPriceByLicensePlate } from '../utils/parkingPricing.js';
+import { calculateParkingPriceByLicensePlate, getPaidExitGracePeriod } from '../utils/parkingPricing.js';
 import { normalizeLicensePlate } from '../utils/licensePlate.js';
 
 export const createParkingSessionService = ({
@@ -32,6 +32,8 @@ export const createParkingSessionService = ({
     const { currency, name: parkingLotName } = session.parkingLot;
     const payments = session.checkoutStatus === 'pass'
       ? [] : await paymentRepo.findCompletedByParkingSession(session._id);
+    const gracePeriod = getPaidExitGracePeriod({ session, payments });
+    const graceExpiresAt = gracePeriod?.graceExpiresAt.toISOString() ?? null;
     const amountMinor = calculateParkingPriceByLicensePlate({ session, payments, now });
     if (!Number.isSafeInteger(amountMinor) || amountMinor < 0) {
       throw new AppError('Payment is not currently eligible', {
@@ -50,6 +52,7 @@ export const createParkingSessionService = ({
         parkingLotName,
         checkoutStatus: session.checkoutStatus,
         paymentRequired: false,
+        graceExpiresAt,
       };
     }
 
@@ -84,6 +87,7 @@ export const createParkingSessionService = ({
       parkingLotName,
       checkoutStatus: updatedSession.checkoutStatus,
       paymentRequired: true,
+      graceExpiresAt,
     };
   };
 
