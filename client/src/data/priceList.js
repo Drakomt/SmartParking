@@ -1,24 +1,40 @@
-// Temporary data source for the price list. When the backend endpoint is ready,
-// replace this array with a request here and keep the page component unchanged.
-const mockPriceList = [
-  { id: "h-m", lotName: "חניון המדיטק", city: "חולון", address: "גולדה מאיר 6", feeMinor: 2000, currency: "ILS" },
-  { id: "h-c", lotName: "חניון העירייה", city: "חולון", address: "ויצמן 58", feeMinor: 1800, currency: "ILS" },
-  { id: "h-mall", lotName: "חניון קניון חולון", city: "חולון", address: "שדרות ירושלים 62", feeMinor: 2200, currency: "ILS" },
-  { id: "ta-az", lotName: "חניון עזריאלי", city: "תל אביב", address: "דרך מנחם בגין 132", feeMinor: 3500, currency: "ILS" },
-  { id: "ta-r", lotName: "חניון רוטשילד", city: "תל אביב", address: "שדרות רוטשילד 1", feeMinor: 3000, currency: "ILS" },
-  { id: "ta-d", lotName: "חניון דיזנגוף סנטר", city: "תל אביב", address: "דיזנגוף 50", feeMinor: 3200, currency: "ILS" },
-  { id: "rg-b", lotName: "חניון הבורסה", city: "רמת גן", address: "תובל 11", feeMinor: 2800, currency: "ILS" },
-  { id: "hf-cn", lotName: "חניון מרכז הכרמל", city: "חיפה", address: "שדרות הנשיא 124", feeMinor: 2200, currency: "ILS" },
-  { id: "hf-hr", lotName: "חניון הנמל", city: "חיפה", address: "שדרות פל-ים 8", feeMinor: 1800, currency: "ILS" },
-  { id: "bs-m", lotName: "חניון באר שבע מרכז", city: "באר שבע", address: "שדרות הנשיא 1", feeMinor: 1500, currency: "ILS" },
-];
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+
+const asNumber = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0);
+
+function normalizePriceItem(lot, cityNames) {
+  const pricing = lot.pricing ?? lot;
+  const cityId = typeof lot.city === "string" ? lot.city : lot.city?._id;
+  const city = lot.city?.name ?? cityNames.get(cityId) ?? "לא צוין";
+
+  return {
+    id: lot._id,
+    lotName: lot.name,
+    city,
+    address: lot.address || "כתובת לא צוינה",
+    currency: lot.currency || "ILS",
+    isFree: Boolean(pricing.isFree),
+    freeFirstHours: asNumber(pricing.freeFirstHours),
+    pricePerMinute: asNumber(pricing.pricePerMinute),
+    fullDayPriceMinor: asNumber(pricing.fullDayPriceMinor),
+    parkingFeeMinor: asNumber(pricing.parkingFeeMinor),
+  };
+}
 
 export async function getPriceList() {
-  // Backend integration point:
-  // const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/parking/prices`);
-  // if (!response.ok) throw new Error("Failed to load price list");
-  // return (await response.json()).map(normalizePriceItem);
-  return mockPriceList;
+  const [lotsResponse, citiesResponse] = await Promise.all([
+    fetch(`${API_BASE_URL}/api/parking/all`),
+    fetch(`${API_BASE_URL}/api/parking/cities`),
+  ]);
+
+  if (!lotsResponse.ok || !citiesResponse.ok) {
+    throw new Error("Failed to load parking prices");
+  }
+
+  const [lots, cities] = await Promise.all([lotsResponse.json(), citiesResponse.json()]);
+  const cityNames = new Map(cities.map((city) => [city._id, city.name]));
+
+  return lots.map((lot) => normalizePriceItem(lot, cityNames));
 }
 
 export function formatParkingFee(feeMinor, currency = "ILS") {
@@ -30,5 +46,20 @@ export function formatParkingFee(feeMinor, currency = "ILS") {
   }).format(feeMinor / 100);
 }
 
-// Expected backend item shape: { _id, name, city: { name } | string, address,
-// parkingFeeMinor, currency }. Add normalizePriceItem here if the returned field names differ.
+export function formatParkingRate(lot) {
+  if (lot.isFree) return "חינם";
+  if (lot.pricePerMinute > 0) {
+    return `${formatParkingFee(Math.round(lot.pricePerMinute * 100), lot.currency)} לדקה`;
+  }
+  if (lot.parkingFeeMinor > 0) return formatParkingFee(lot.parkingFeeMinor, lot.currency);
+  return "לא פורסם תעריף";
+}
+
+export function getParkingPricingDetails(lot) {
+  if (lot.isFree) return "חניה ללא עלות";
+
+  const details = [];
+  if (lot.freeFirstHours > 0) details.push(`${lot.freeFirstHours} שעות ראשונות חינם`);
+  if (lot.fullDayPriceMinor > 0) details.push(`תקרה יומית ${formatParkingFee(lot.fullDayPriceMinor, lot.currency)}`);
+  return details.join(" · ") || "ללא תנאים מיוחדים";
+}

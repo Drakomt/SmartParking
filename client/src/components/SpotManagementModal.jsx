@@ -1,9 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
-import { useAuth } from "../contexts/AuthContext";
 
 export default function SpotManagementModal({ spot, onClose, onUpdate }) {
-  const { user } = useAuth();
   const [status, setStatus] = useState(spot.status);
   const [type, setType] = useState(spot.type || 'regular');
   const [isSaving, setIsSaving] = useState(false);
@@ -18,7 +16,7 @@ export default function SpotManagementModal({ spot, onClose, onUpdate }) {
         status: status,
         type: type
       }, {
-        headers: { Authorization: `Bearer ${user.token}` }
+        withCredentials: true,
       });
       
       onUpdate(response.data);

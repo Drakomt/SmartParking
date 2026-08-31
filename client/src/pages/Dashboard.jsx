@@ -37,10 +37,10 @@ export default function Dashboard() {
         setLoading(true);
         const [citiesRes, lotsRes] = await Promise.all([
           axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/parking/authorized/cities`, {
-            headers: { Authorization: `Bearer ${user.token}` },
+            withCredentials: true,
           }),
           axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/parking/authorized/lots`, {
-            headers: { Authorization: `Bearer ${user.token}` },
+            withCredentials: true,
           }),
         ]);
         setCities(citiesRes.data);
@@ -110,7 +110,7 @@ export default function Dashboard() {
       `${import.meta.env.VITE_API_BASE_URL}/api/parking/${lotId}`,
       formData,
       {
-        headers: { Authorization: `Bearer ${user.token}` },
+        withCredentials: true,
       },
     );
     setParkingLots((prev) =>

@@ -8,7 +8,6 @@ export default function LoginForm() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -36,11 +35,12 @@ export default function LoginForm() {
           email: fields.email,
           password: fields.password,
         },
+        { withCredentials: true },
       );
 
       console.log("התחברות בהצלחה:", response.data);
 
-      login(response.data, rememberMe);
+      login(response.data);
       setFields({ email: "", password: "" });
 
       navigate("/dashboard");
@@ -130,19 +130,6 @@ export default function LoginForm() {
                   </span>
                 </button>
               </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-right">
-              <input
-                type="checkbox"
-                id="rememberMe"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 text-primary bg-surface-container-lowest border-outline-variant rounded focus:ring-primary focus:ring-2 cursor-pointer"
-              />
-              <label htmlFor="rememberMe" className="text-body-md text-on-surface cursor-pointer select-none">
-                זכור אותי במחשב זה
-              </label>
             </div>
 
             {error && (

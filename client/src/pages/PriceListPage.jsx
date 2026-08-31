@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { formatParkingFee, getPriceList } from "../data/priceList";
+import { formatParkingRate, getParkingPricingDetails, getPriceList } from "../data/priceList";
 
 export default function PriceListPage() {
   const navigate = useNavigate();
@@ -53,7 +53,7 @@ export default function PriceListPage() {
         <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 id="price-list-heading" className="text-xl font-bold text-primary">מחירים לפי חניון</h2>
-            <p className="mt-1 text-sm leading-6 text-on-surface-variant">המחיר המוצג הוא למחזור חניה אחד, בהתאם לתעריף החניון.</p>
+            <p className="mt-1 text-sm leading-6 text-on-surface-variant">התעריפים ותנאי החניה מתעדכנים ישירות ממערכת החניונים.</p>
           </div>
           <p className="rounded-lg bg-primary/10 px-3 py-2 text-sm font-bold text-primary" aria-live="polite">
             {loading ? "טוען מחירים..." : `${filteredLots.length} חניונים נמצאו`}
@@ -107,8 +107,9 @@ export default function PriceListPage() {
                       <h3 className="font-bold text-on-surface">{lot.lotName}</h3>
                       <p className="mt-1 text-sm text-on-surface-variant">{lot.city} · {lot.address}</p>
                     </div>
-                    <p className="shrink-0 text-lg font-black text-primary">{formatParkingFee(lot.feeMinor, lot.currency)}</p>
+                    <p className="shrink-0 text-lg font-black text-primary">{formatParkingRate(lot)}</p>
                   </div>
+                  <p className="mt-3 border-t border-outline-variant/20 pt-3 text-sm text-on-surface-variant">{getParkingPricingDetails(lot)}</p>
                 </article>
               ))}
             </div>
@@ -122,6 +123,7 @@ export default function PriceListPage() {
                     <th scope="col" className="px-5 py-4 font-bold">עיר</th>
                     <th scope="col" className="px-5 py-4 font-bold">כתובת</th>
                     <th scope="col" className="px-5 py-4 text-left font-bold">מחיר</th>
+                    <th scope="col" className="px-5 py-4 font-bold">תנאי תעריף</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/20">
@@ -130,7 +132,8 @@ export default function PriceListPage() {
                       <th scope="row" className="px-5 py-4 font-bold text-on-surface">{lot.lotName}</th>
                       <td className="px-5 py-4 text-on-surface-variant">{lot.city}</td>
                       <td className="px-5 py-4 text-on-surface-variant">{lot.address}</td>
-                      <td className="px-5 py-4 text-left text-lg font-black text-primary">{formatParkingFee(lot.feeMinor, lot.currency)}</td>
+                      <td className="px-5 py-4 text-left text-lg font-black text-primary">{formatParkingRate(lot)}</td>
+                      <td className="px-5 py-4 text-on-surface-variant">{getParkingPricingDetails(lot)}</td>
                     </tr>
                   ))}
                 </tbody>

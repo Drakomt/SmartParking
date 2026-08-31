@@ -1,42 +1,29 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useContext } from 'react';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    let storedUser = localStorage.getItem('smartParking_user');
-    if (!storedUser) {
-      storedUser = sessionStorage.getItem('smartParking_user');
-    }
-
-    if (storedUser) {
-      try {
-        return JSON.parse(storedUser);
-      } catch (err) {
-        console.error('Failed to parse user data');
-      }
-    }
-    return null;
-  });
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const login = (userData, rememberMe = false) => {
+  const login = (userData) => {
     setUser(userData);
-    if (rememberMe) {
-      localStorage.setItem('smartParking_user', JSON.stringify(userData));
-      sessionStorage.removeItem('smartParking_user');
-    } else {
-      sessionStorage.setItem('smartParking_user', JSON.stringify(userData));
-      localStorage.removeItem('smartParking_user');
-    }
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
-    localStorage.removeItem('smartParking_user');
-    sessionStorage.removeItem('smartParking_user');
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`,
+        {},
+        { withCredentials: true },
+      );
+    } catch {
+      console.error('Failed to clear the authentication cookie');
+    }
   };
 
   if (loading) {

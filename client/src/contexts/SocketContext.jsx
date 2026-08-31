@@ -14,7 +14,7 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     const newSocket = io(import.meta.env.VITE_API_BASE_URL, {
-      auth: { token: user?.token },
+      withCredentials: true,
     });
 
     newSocket.on('connect', () => {
@@ -30,7 +30,7 @@ export const SocketProvider = ({ children }) => {
     return () => {
       newSocket.disconnect();
     };
-  }, [user?.token]);
+  }, [user]);
 
   return (
     <SocketContext.Provider value={socket}>

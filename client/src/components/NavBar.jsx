@@ -61,11 +61,11 @@ export default function NavBar() {
         ) : (
           <button
             onClick={() => navigate("/login")}
-            className="cursor-pointer bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors font-bold border border-primary/30 rounded-lg px-2 sm:px-4 py-2 flex items-center justify-center gap-2"
+            className="flex min-h-10 min-w-10 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-primary/85 px-2.5 py-1.5 text-sm font-bold text-on-primary shadow-sm transition-colors hover:bg-primary/95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:px-3"
             title="כניסה למנהלים"
           >
+            <span className="material-symbols-outlined text-[19px]" aria-hidden="true">login</span>
             <span className="hidden sm:inline">כניסה למורשים</span>
-            <span className="material-symbols-outlined text-[18px] sm:hidden">login</span>
           </button>
         )}
 
