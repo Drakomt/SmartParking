@@ -113,26 +113,6 @@ export default function InvoiceSummary({ licensePlate, sessionData, onPay }) {
             onError={onPayPalError}
           />
         </PayPalScriptProvider>
-
-        {/* Temporary buttons for testing the UI flow while backend is incomplete */}
-        <div className="mt-4 pt-4 border-t border-outline-variant/30">
-          <p className="text-xs text-center text-on-surface-variant mb-2">כפתורי בדיקה זמניים:</p>
-          <button
-            onClick={() => onPay('success')}
-            className="w-full bg-primary hover:bg-primary/90 text-on-primary font-bold py-2 px-6 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer mb-2"
-          >
-            <span className="material-symbols-outlined text-sm">credit_score</span>
-            מעבר אוטומטי להצלחה
-          </button>
-          
-          <button
-            onClick={() => onPay('error')}
-            className="w-full bg-surface-container-high hover:bg-error/10 text-error font-bold py-2 px-6 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer border border-error/30"
-          >
-            <span className="material-symbols-outlined text-sm">error</span>
-            מעבר אוטומטי לשגיאה
-          </button>
-        </div>
       </div>
     </div>
   );
