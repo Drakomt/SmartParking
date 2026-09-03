@@ -29,4 +29,32 @@ const deleteSpot = async (id) => {
   return await ParkingSpot.findByIdAndDelete(id);
 };
 
-export default { findAllSpots, findSpotById, findSpotsByLotAndLevel, findSpotsByLot, createSpot, updateSpot, deleteSpot };
+const renumberSpotsAfterDeletion = async (parkingLotId, level, deletedSpotNumber) => {
+  const deletedNumber = Number(deletedSpotNumber);
+  if (!Number.isFinite(deletedNumber)) return;
+
+  const spots = await ParkingSpot.find({
+    parkingLot: parkingLotId,
+    level: Number(level),
+  });
+
+  const updates = spots
+    .filter((spot) => Number(spot.spotNumber) > deletedNumber)
+    .map((spot) => ParkingSpot.findByIdAndUpdate(
+      spot._id,
+      { spotNumber: String(Number(spot.spotNumber) - 1) },
+    ));
+
+  await Promise.all(updates);
+};
+
+export default {
+  findAllSpots,
+  findSpotById,
+  findSpotsByLotAndLevel,
+  findSpotsByLot,
+  createSpot,
+  updateSpot,
+  deleteSpot,
+  renumberSpotsAfterDeletion,
+};

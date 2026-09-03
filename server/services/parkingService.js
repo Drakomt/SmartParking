@@ -365,6 +365,13 @@ const removeSpot = async (id, user) => {
   }
 
   const deletedSpot = await parkingSpotRepo.deleteSpot(id);
+  if (existingSpot.spotNumber) {
+    await parkingSpotRepo.renumberSpotsAfterDeletion(
+      existingSpot.parkingLot,
+      existingSpot.level,
+      existingSpot.spotNumber,
+    );
+  }
   const updatedLot = await parkingLotRepo.adjustTotalSpots(lot._id, -1);
   await publishSpotUpdate(updatedLot || lot, existingSpot, 'deleted');
   return deletedSpot;
