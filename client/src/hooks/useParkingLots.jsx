@@ -64,11 +64,24 @@ const useParkingLots = (cityName) => {
       setParkingLotsCity((prevLots) => {
         return prevLots.map(lot => {
           if (lot._id === updatedSpot.parkingLot?.id) {
+            let newSpots = lot.spots ? [...lot.spots] : [];
+            
+            if (updatedSpot.action === 'created') {
+              newSpots.push({ ...updatedSpot.spot, _id: updatedSpot.spot.id });
+            } else if (updatedSpot.action === 'deleted') {
+              newSpots = newSpots.filter(s => s._id !== updatedSpot.spot.id);
+            } else {
+              newSpots = newSpots.map(spot => 
+                spot._id === updatedSpot.spot?.id 
+                  ? { ...spot, status: updatedSpot.spot.status, type: updatedSpot.spot.type } 
+                  : spot
+              );
+            }
+
             return {
               ...lot,
-              spots: lot.spots ? lot.spots.map(spot => 
-                spot._id === updatedSpot.spot?.id ? { ...spot, status: updatedSpot.spot.status, type: updatedSpot.spot.type } : spot
-              ) : []
+              totalSpots: updatedSpot.parkingLot.totalSpots ?? lot.totalSpots,
+              spots: newSpots
             };
           }
           return lot;
@@ -83,7 +96,19 @@ const useParkingLots = (cityName) => {
     };
   }, [cityName, socket]);
 
-  return { parkingLotsCity, loading, error };
+  const refreshLots = async () => {
+    if (!cityName) return;
+    try {
+      const response = await axios.get(`${API_URL}/lotsbycity`, {
+        params: { city: cityName },
+      });
+      setParkingLotsCity(response.data);
+    } catch (err) {
+      console.error("Failed to refresh lots", err);
+    }
+  };
+
+  return { parkingLotsCity, loading, error, refreshLots };
 };
 
 export default useParkingLots;

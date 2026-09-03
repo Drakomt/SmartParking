@@ -10,7 +10,7 @@ import ParkingLotCard from "../components/ParkingLotCard";
 
 export default function HomePage() {
   const [submittedCity, setSubmittedCity] = useState("");
-  const { parkingLotsCity, loading, error } = useParkingLots(submittedCity);
+  const { parkingLotsCity, loading, error, refreshLots } = useParkingLots(submittedCity);
   const citiesInDatabase = useCities();
 
   const [selectedParkingLotId, setSelectedParkingLotId] = useState(null);
@@ -250,7 +250,13 @@ export default function HomePage() {
               lotLocation={selectedLot?.location}
               isAdmin={location.state?.adminMode || false}
               lotId={selectedParkingLotId}
-              onSpotsChanged={refreshData}
+              onSpotsChanged={() => {
+                refreshData();
+                refreshLots();
+                if (nearbyLots) {
+                  handleFindNearMe(false);
+                }
+              }}
             />
           )}
         </div>

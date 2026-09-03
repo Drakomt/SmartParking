@@ -68,12 +68,25 @@ export default function Dashboard() {
     const handleSpotUpdated = (updatedSpot) => {
       setParkingLots((prevLots) =>
         prevLots.map((lot) => {
-          if (lot._id !== updatedSpot.parkingLot) return lot;
+          if (lot._id !== updatedSpot.parkingLot?.id) return lot;
+
+          let newSpots = lot.spots ? [...lot.spots] : [];
+          if (updatedSpot.action === 'created') {
+            newSpots.push({ ...updatedSpot.spot, _id: updatedSpot.spot.id });
+          } else if (updatedSpot.action === 'deleted') {
+            newSpots = newSpots.filter((s) => s._id !== updatedSpot.spot.id);
+          } else {
+            newSpots = newSpots.map((spot) =>
+              spot._id === updatedSpot.spot?.id
+                ? { ...spot, status: updatedSpot.spot.status, type: updatedSpot.spot.type }
+                : spot,
+            );
+          }
+
           return {
             ...lot,
-            spots: lot.spots.map((spot) =>
-              spot._id === updatedSpot._id ? updatedSpot : spot,
-            ),
+            totalSpots: updatedSpot.parkingLot.totalSpots ?? lot.totalSpots,
+            spots: newSpots,
           };
         }),
       );
@@ -328,7 +341,7 @@ export default function Dashboard() {
                 </h4>
                 <p className="text-on-surface-variant mb-4">{lot.address}</p>
                 <div className="flex justify-between text-sm text-on-surface-variant mb-6">
-                  <span>סך הכל חניות: {lot.spots?.length || lot.totalSpots}</span>
+                  <span>סך הכל חניות: {lot.totalSpots}</span>
                   <span>מפלסים: {lot.levels}</span>
                 </div>
                 <div className="mb-5 rounded-xl bg-primary/5 px-3 py-2 text-sm text-on-surface-variant">
