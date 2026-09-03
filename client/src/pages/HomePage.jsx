@@ -201,8 +201,8 @@ export default function HomePage() {
     totalLevels,
     isLoading: isLoadingSlots,
     error: slotsError,
+    refreshData,
   } = useParkingData(selectedParkingLotId, currentLevel, submittedCity);
-
 
   const handleUpdateLocation = (lotId) => {
     setSelectedParkingLotId(lotId);
@@ -250,6 +250,7 @@ export default function HomePage() {
               lotLocation={selectedLot?.location}
               isAdmin={location.state?.adminMode || false}
               lotId={selectedParkingLotId}
+              onSpotsChanged={refreshData}
             />
           )}
         </div>

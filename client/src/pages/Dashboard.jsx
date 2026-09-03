@@ -6,6 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import CarsModal from "../components/CarsModal";
 import EditLotModal from "../components/EditLotModal";
 import AuthorizedVehiclesModal from "../components/AuthorizedVehiclesModal";
+import AddParkingLotModal from "../components/AddParkingLotModal";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -20,6 +21,9 @@ export default function Dashboard() {
 
   const [editingLot, setEditingLot] = useState(null);
   const [authorizedVehiclesLot, setAuthorizedVehiclesLot] = useState(null);
+  const [lotToDelete, setLotToDelete] = useState(null);
+  const [isDeletingLot, setIsDeletingLot] = useState(false);
+  const [isAddingLot, setIsAddingLot] = useState(false);
 
   const [showCars, setShowCars] = useState(false);
   const [selectedLotNameForCars, setSelectedLotNameForCars] = useState("");
@@ -100,7 +104,6 @@ export default function Dashboard() {
 
     socket.on("parking-spot-updated", handleSpotUpdated);
     socket.on("parking-session-updated", handleSessionUpdated);
-
     return () => {
       socket.off("parking-spot-updated", handleSpotUpdated);
       socket.off("parking-session-updated", handleSessionUpdated);
@@ -120,6 +123,65 @@ export default function Dashboard() {
         lot._id === lotId ? { ...lot, ...formData } : lot,
       ),
     );
+  };
+
+  const executeDeleteLot = async () => {
+    if (!lotToDelete) return;
+    setIsDeletingLot(true);
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/parking/${lotToDelete._id}`, {
+        withCredentials: true,
+      });
+      setParkingLots(prev => prev.filter(l => l._id !== lotToDelete._id));
+      setLotToDelete(null);
+    } catch (err) {
+      console.error("Failed to delete parking lot", err);
+      alert("שגיאה במחיקת החניון. ייתכן ואין לך הרשאות.");
+    } finally {
+      setIsDeletingLot(false);
+    }
+  };
+
+  const handleCreateLot = async (lotPayload, levelsDistribution) => {
+    // 1. Create the lot
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}/api/parking/`,
+      lotPayload,
+      { withCredentials: true }
+    );
+    const newLot = res.data;
+
+    // 2. Loop through levels and create spots
+    const spotPromises = [];
+    for (const [levelStr, numSpots] of Object.entries(levelsDistribution)) {
+      const levelNum = Number(levelStr);
+      for (let i = 1; i <= numSpots; i++) {
+        spotPromises.push(
+          axios.post(
+            `${import.meta.env.VITE_API_BASE_URL}/api/parking/${newLot._id}/spots`,
+            {
+              spotNumber: i,
+              level: levelNum,
+              isAvailable: true,
+            },
+            { withCredentials: true }
+          )
+        );
+      }
+    }
+
+    // Wait for all spots to be created
+    if (spotPromises.length > 0) {
+      await Promise.all(spotPromises);
+    }
+
+    // Fetch the updated lot with all spots populated
+    const updatedLotRes = await axios.get(
+      `${import.meta.env.VITE_API_BASE_URL}/api/parking/parkinglotbyid?id=${newLot._id}`,
+      { withCredentials: true }
+    );
+
+    setParkingLots(prev => [...prev, updatedLotRes.data]);
   };
 
   const loadCarsForLot = (lot) => {
@@ -159,7 +221,10 @@ export default function Dashboard() {
   };
 
   const lotsToDisplay = selectedCityId
-    ? parkingLots.filter((lot) => lot.city === selectedCityId)
+    ? parkingLots.filter((lot) => {
+        const lotCityId = typeof lot.city === 'object' && lot.city !== null ? lot.city._id : lot.city;
+        return lotCityId === selectedCityId;
+      })
     : [];
 
   const selectedCityName = selectedCityId ? getCityName(selectedCityId) : "";
@@ -185,9 +250,10 @@ export default function Dashboard() {
           <h3 className="text-2xl font-bold mb-4">בחר עיר לניהול</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {cities.map((city) => {
-              const cityLotsCount = parkingLots.filter(
-                (lot) => lot.city === city._id,
-              ).length;
+              const cityLotsCount = parkingLots.filter((lot) => {
+                const lotCityId = typeof lot.city === 'object' && lot.city !== null ? lot.city._id : lot.city;
+                return lotCityId === city._id;
+              }).length;
               return (
                 <div
                   key={city._id}
@@ -226,9 +292,18 @@ export default function Dashboard() {
                 arrow_back
               </span>
             </button>
-            <h3 className="text-2xl font-bold">
-              ניהול חניונים - {selectedCityName}
-            </h3>
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold">
+                ניהול חניונים - {selectedCityName}
+              </h3>
+            </div>
+            <button
+              onClick={() => setIsAddingLot(true)}
+              className="px-4 py-2 bg-primary text-white font-bold rounded-xl shadow hover:bg-primary/90 transition-colors flex items-center gap-2 text-sm whitespace-nowrap"
+            >
+              <span className="material-symbols-outlined">add</span>
+              הוסף חניון
+            </button>
           </div>
 
           {error && <p className="text-error">{error}</p>}
@@ -239,13 +314,15 @@ export default function Dashboard() {
                 key={lot._id}
                 className="bg-surface-container-lowest p-6 rounded-2xl shadow border border-outline-variant/30 hover:border-primary transition-all relative flex flex-col h-full"
               >
-                <button
-                  onClick={() => setEditingLot(lot)}
-                  className="absolute top-4 left-4 text-on-surface-variant hover:text-primary transition-colors"
-                  title="ערוך חניון"
-                >
-                  <span className="material-symbols-outlined">edit</span>
-                </button>
+                <div className="absolute top-4 left-4 flex gap-2">
+                  <button
+                    onClick={() => setEditingLot(lot)}
+                    className="text-on-surface-variant hover:text-primary transition-colors"
+                    title="ערוך חניון"
+                  >
+                    <span className="material-symbols-outlined">edit</span>
+                  </button>
+                </div>
                 <h4 className="text-xl font-bold text-primary mb-1">
                   {lot.name}
                 </h4>
@@ -294,6 +371,13 @@ export default function Dashboard() {
                   >
                     צפה ברכבים חונים
                   </button>
+                  <button
+                    onClick={() => setLotToDelete(lot)}
+                    className="w-full py-2 bg-error/10 text-error font-bold rounded-lg hover:bg-error hover:text-white transition-all flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                    מחק חניון
+                  </button>
                 </div>
               </div>
             ))}
@@ -325,6 +409,46 @@ export default function Dashboard() {
         onClose={() => setShowCars(false)}
         lotName={selectedLotNameForCars}
         sessions={parkingLots.find((l) => l.name === selectedLotNameForCars)?.sessions || []}
+      />
+
+      {lotToDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in zoom-in duration-200" dir="rtl">
+          <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-xl text-center w-full max-w-sm border border-outline-variant/20">
+            <div className="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="material-symbols-outlined text-3xl">warning</span>
+            </div>
+            <h4 className="text-xl font-bold text-on-surface mb-2">מחיקת חניון</h4>
+            <p className="text-sm text-on-surface-variant mb-6">
+              האם אתה בטוח שברצונך למחוק לצמיתות את חניון <strong>{lotToDelete.name}</strong>?<br/>
+              פעולה זו תמחק גם את כל החניות שלו.
+            </p>
+            
+            <div className="flex gap-3 justify-center">
+              <button 
+                onClick={() => setLotToDelete(null)}
+                disabled={isDeletingLot}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold border border-outline-variant hover:bg-surface-container transition-colors disabled:opacity-50"
+              >
+                ביטול
+              </button>
+              <button 
+                onClick={executeDeleteLot}
+                disabled={isDeletingLot}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-error text-white hover:bg-error/90 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isDeletingLot ? "מוחק..." : "כן, מחק חניון"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <AddParkingLotModal
+        isOpen={isAddingLot}
+        onClose={() => setIsAddingLot(false)}
+        cityId={selectedCityId}
+        cityName={selectedCityName}
+        onSave={handleCreateLot}
       />
     </div>
   );

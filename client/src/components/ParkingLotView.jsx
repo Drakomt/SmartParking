@@ -1,7 +1,8 @@
 import LevelNavigation from "./LevelNavigation";
-import ParkingSlot from "./ParkingSlot";
+import DynamicParkingLayout from "./DynamicParkingLayout";
 import { useState } from "react";
 import SpotManagementModal from "./SpotManagementModal";
+import axios from "axios";
 
 export default function ParkingLotView({
   parkings,
@@ -12,8 +13,11 @@ export default function ParkingLotView({
   lotName,
   lotLocation,
   isAdmin,
+  lotId,
+  onSpotsChanged,
 }) {
   const [selectedSpot, setSelectedSpot] = useState(null);
+  const [isAddingSpot, setIsAddingSpot] = useState(false);
 
   const [randomCarIndexes] = useState(() => {
     return Array.from({ length: 16 }).map(
@@ -31,18 +35,48 @@ export default function ParkingLotView({
     setSelectedSpot(spot);
   };
 
+  const handleAddSpot = () => {
+    if (!lotId) return;
+    
+    // Calculate next spot number automatically based on current spots
+    let nextSpotNumber = 1;
+    if (parkings && parkings.length > 0) {
+      const maxNumber = Math.max(...parkings.map(p => Number(p.spotNumber) || 0));
+      nextSpotNumber = maxNumber + 1;
+    }
+
+    setSelectedSpot({ 
+      isNew: true, 
+      status: "free", 
+      type: "regular", 
+      level: currentLevel,
+      spotNumber: nextSpotNumber
+    });
+  };
+
   return (
     <div
-      className={`bg-surface-container-lowest p-6 sm:p-8 rounded-3xl shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] border border-outline-variant/20 w-full mx-auto mt-6 ${isMediatheque ? "max-w-5xl" : "max-w-2xl"}`}
+      className="bg-surface-container-lowest p-6 sm:p-8 rounded-3xl shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] border border-outline-variant/20 w-full mx-auto mt-6 max-w-5xl"
     >
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-        <div className="flex items-center justify-between w-full sm:w-auto">
+        <div className="flex items-center justify-between w-full sm:w-auto gap-4">
           <button
             onClick={onBack}
             className="cursor-pointer px-4 sm:px-5 py-2 bg-transparent border border-outline-variant/50 hover:border-primary hover:bg-primary/10 text-on-surface-variant hover:text-primary rounded-xl transition-all duration-300 font-medium z-10"
           >
             חזור
           </button>
+
+          {isAdmin && isMediatheque && (
+            <button
+              onClick={handleAddSpot}
+              disabled={isAddingSpot}
+              className="cursor-pointer px-4 sm:px-5 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-on-primary border border-primary/20 rounded-xl transition-all duration-300 font-medium z-10 flex items-center gap-2 disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-lg">add</span>
+              הוסף חניה
+            </button>
+          )}
 
           {/* Mobile Waze button (visible only on small screens) */}
           {!isAdmin && lotLocation?.lat && lotLocation?.lng && (
@@ -51,18 +85,12 @@ export default function ParkingLotView({
                 window.open(`https://waze.com/ul?ll=${lotLocation.lat},${lotLocation.lng}&navigate=yes`, '_blank');
               }}
               className="sm:hidden cursor-pointer p-2 bg-primary/10 text-primary hover:bg-primary hover:text-on-primary rounded-xl transition-all duration-300 font-medium z-10 flex items-center justify-center"
-              title="נווט לחניון"
             >
-              <i className="fa-brands fa-waze text-2xl"></i>
+              <i className="fa-brands fa-waze text-lg"></i>
             </button>
           )}
         </div>
 
-        <h2 className="text-xl sm:text-2xl text-primary font-bold tracking-wide text-center flex-grow">
-          {lotName ? `מצב חניון: ${lotName}` : "מצב חניון"}
-        </h2>
-
-        {/* Desktop Waze button */}
         {!isAdmin && lotLocation?.lat && lotLocation?.lng ? (
           <button
             onClick={() => {
@@ -74,7 +102,7 @@ export default function ParkingLotView({
             נווט לחניון
           </button>
         ) : (
-          <div className="hidden sm:block w-[140px]"></div> /* Placeholder to keep title centered if no waze */
+          <div className="hidden sm:block w-[140px]"></div>
         )}
       </div>
 
@@ -202,19 +230,13 @@ export default function ParkingLotView({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-4 sm:gap-6" dir="ltr">
-          {parkings.map((slot) => (
-            <ParkingSlot
-              id={slot.spotNumber}
-              type={slot.type}
-              status={slot.status}
-              isAvilable={slot.status === "free"}
-              key={slot._id}
-              isAdmin={isAdmin}
-              onClick={() => handleSpotClick(slot)}
-            />
-          ))}
-        </div>
+        <DynamicParkingLayout
+          parkings={parkings}
+          isAdmin={isAdmin}
+          onSpotClick={handleSpotClick}
+          onAddSpot={handleAddSpot}
+          isAddingSpot={isAddingSpot}
+        />
       )}
 
       <div
@@ -231,8 +253,11 @@ export default function ParkingLotView({
       {selectedSpot && (
         <SpotManagementModal
           spot={selectedSpot}
+          lotId={lotId}
           onClose={() => setSelectedSpot(null)}
-          onUpdate={() => {}}
+          onUpdate={() => {
+            if (onSpotsChanged) onSpotsChanged();
+          }}
         />
       )}
     </div>

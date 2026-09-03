@@ -13,7 +13,7 @@ export default function NoPaymentRequired({ sessionData, expiresAt, onExpired, o
   const description = isPaidGracePeriod
     ? "ניתן לצאת מהחניון ללא תשלום נוסף כל עוד הטיימר פעיל."
     : isExemptVehicle
-      ? "לוחית הרישוי נמצאת ברשימת הרכבים הפטורים של החניון."
+      ? "אין יתרה לתשלום עבור החניה הנוכחית. ניתן להמשיך ליציאה מהחניון."
       : "לפי נתוני החניון, אין כרגע יתרה לתשלום עבור לוחית זו.";
 
   return (

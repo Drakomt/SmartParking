@@ -9,32 +9,31 @@ const useParkingData = (parkingLotId, currentLevel, cityName) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const fetchParkingData = async () => {
     if (!parkingLotId || parkingLotId === "undefined") return;
-
-    const fetchParkingData = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/parking/${parkingLotId}/spots`, {
-          params: { level: currentLevel }
-        });
-        const data = response.data;
-        console.log("JSON received from Backend for this level:", data);
-        setParkings(data.slots || []);
-        setTotalLevels(data.totalLevels || 1);
-        
-      } catch (err) {
-        console.error("Error:", err);
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchParkingData();
     
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/parking/${parkingLotId}/spots`, {
+        params: { level: currentLevel }
+      });
+      const data = response.data;
+      console.log("JSON received from Backend for this level:", data);
+      setParkings(data.slots || []);
+      setTotalLevels(data.totalLevels || 1);
+      
+    } catch (err) {
+      console.error("Error:", err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchParkingData();
   }, [parkingLotId, currentLevel]); 
 
   useEffect(() => {
@@ -62,7 +61,7 @@ const useParkingData = (parkingLotId, currentLevel, cityName) => {
     };
   }, [cityName, socket]);
 
-  return { parkings, totalLevels, isLoading, error };
+  return { parkings, totalLevels, isLoading, error, refreshData: fetchParkingData };
 };
 
 export default useParkingData;

@@ -9,7 +9,15 @@ export default function InvoiceSummary({ licensePlate, sessionData, onPay }) {
   const entryTime = sessionData?.entryTime ? new Date(sessionData.entryTime).toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'}) : "--:--";
   
   let duration = "- שעות";
-  if (sessionData?.entryTime) {
+  if (sessionData?.graceExpiresAt && new Date(sessionData.graceExpiresAt) < new Date()) {
+      const graceDate = new Date(sessionData.graceExpiresAt);
+      const diffMs = new Date() - graceDate;
+      if (diffMs > 0) {
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        duration = `${diffHours} שעות ו-${diffMins} דקות`;
+      }
+  } else if (sessionData?.entryTime) {
       const entryDate = new Date(sessionData.entryTime);
       const diffMs = new Date() - entryDate;
       if (diffMs > 0) {
