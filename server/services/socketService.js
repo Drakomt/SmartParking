@@ -2,6 +2,7 @@ import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import userRepo from '../repositories/userRepo.js';
 import cityRepo from '../repositories/cityRepo.js';
+import { getAllowedClientOrigins } from '../config/cors.js';
 
 let ioInstance = null;
 
@@ -88,7 +89,7 @@ const registerConnectionHandlers = (socket) => {
 const initializeSocketServer = (httpServer) => {
     ioInstance = new Server(httpServer, {
         cors: {
-            origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+            origin: getAllowedClientOrigins(),
             credentials: true,
             methods: ['GET', 'POST'],
         },
