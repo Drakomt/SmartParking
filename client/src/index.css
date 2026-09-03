@@ -175,6 +175,42 @@ html.theme-colorblind .parking-blocked-label {
   color: #b45309;
 }
 
+/* DynamicParkingLayout specific classes */
+.parking-slot-free-badge {
+  color: #34d399; /* emerald-400 */
+  background-color: rgb(16 185 129 / 0.1); /* emerald-500/10 */
+  border-color: rgb(16 185 129 / 0.3); /* emerald-500/30 */
+}
+
+html.theme-colorblind .parking-slot-free-badge {
+  color: #38bdf8; /* sky-400 */
+  background-color: rgb(14 165 233 / 0.15); /* sky-500/15 */
+  border-color: rgb(14 165 233 / 0.4); /* sky-500/40 */
+}
+
+.parking-blocked-badge-icon {
+  color: #ef4444; /* red-500 */
+}
+.parking-blocked-badge-text {
+  color: #f87171; /* red-400 */
+}
+
+html.theme-colorblind .parking-blocked-badge-icon,
+html.theme-colorblind .parking-blocked-badge-text {
+  color: #f59e0b; /* amber-500 */
+}
+
+/* DynamicParkingLayout Legend */
+.parking-legend-free-dot {
+  background-color: #10b981; /* emerald-500 */
+  box-shadow: 0 0 6px #10b981;
+}
+
+html.theme-colorblind .parking-legend-free-dot {
+  background-color: #38bdf8; /* sky-400 */
+  box-shadow: 0 0 6px #38bdf8;
+}
+
 /* Force override for elements directly using these classes */
 html.theme-colorblind .bg-error-container {
   background-color: var(--color-error-container) !important;

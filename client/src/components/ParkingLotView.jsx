@@ -106,6 +106,12 @@ export default function ParkingLotView({
         )}
       </div>
 
+      {lotName && (
+        <h2 className="text-3xl sm:text-4xl font-black text-center text-primary mb-8 drop-shadow-sm" dir="rtl">
+          {lotName}
+        </h2>
+      )}
+
       {!parkings || parkings.length === 0 ? (
         <div className="flex items-center justify-center min-h-[200px]">
           <p className="text-center text-on-surface-variant text-lg font-bold">

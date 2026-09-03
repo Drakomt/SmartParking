@@ -131,10 +131,10 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
         <div className="flex-1 w-full flex items-center justify-center my-0.5 order-2 relative overflow-hidden">
           {spot.status === "blocked" ? (
             <div className="flex flex-col items-center justify-center">
-              <span className="material-symbols-outlined text-red-500 text-2xl sm:text-3xl drop-shadow">
+              <span className="parking-blocked-badge-icon material-symbols-outlined text-2xl sm:text-3xl drop-shadow">
                 block
               </span>
-              <span className="text-[10px] sm:text-xs font-bold text-red-400 mt-0.5">
+              <span className="parking-blocked-badge-text text-[10px] sm:text-xs font-bold mt-0.5">
                 חסום
               </span>
             </div>
@@ -149,7 +149,7 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
           ) : (
             <div className="flex flex-col items-center justify-center gap-1">
               {typeWatermark}
-              <span className="text-[10px] sm:text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full drop-shadow-sm">
+              <span className="parking-slot-free-badge text-[10px] sm:text-xs font-bold border px-2 py-0.5 rounded-full drop-shadow-sm">
                 פנוי
               </span>
             </div>
@@ -172,23 +172,37 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
         {/* Asphalt Gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/30 via-transparent to-slate-900/30 pointer-events-none" />
 
-        {/* Center Dashed White/Yellow Lane Line */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 border-b-2 border-dashed border-amber-400/80" />
+        {/* Center Dashed Yellow Lane Line */}
+        <div 
+          className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[3px] opacity-80"
+          style={{
+            backgroundImage: "repeating-linear-gradient(to right, #fbbf24 0, #fbbf24 40px, transparent 40px, transparent 90px)"
+          }}
+        />
 
-        {/* Crisp Painted Road Arrows Only - Clean and Realistic */}
-        <div className="w-full flex items-center justify-around z-10">
-          {[1, 2, 3].map((arrowIdx) => (
-            <div
-              key={`arrow-${direction}-${arrowIdx}`}
-              className="flex items-center opacity-70"
-            >
+        {/* Top Lane Arrows (Pointing Left, placed on the Right) */}
+        <div className="absolute top-0 left-0 right-0 bottom-1/2 flex items-center justify-end pr-16 sm:pr-32 z-10">
+          {[1].map((arrowIdx) => (
+            <div key={`arrow-left-${arrowIdx}`} className="flex items-center opacity-95">
               <svg
-                className={`w-9 h-9 sm:w-11 sm:h-11 text-white fill-current drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] ${
-                  isReverse ? "rotate-180" : ""
-                }`}
-                viewBox="0 0 24 24"
+                className="w-12 h-6 sm:w-16 sm:h-8 text-white fill-current drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] rotate-180"
+                viewBox="0 0 100 50"
               >
-                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+                <path d="M 5,20 L 65,20 L 65,5 L 95,25 L 65,45 L 65,30 L 5,30 Z" />
+              </svg>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom Lane Arrows (Pointing Right, placed on the Left) */}
+        <div className="absolute top-1/2 left-0 right-0 bottom-0 flex items-center justify-start pl-16 sm:pl-32 z-10">
+          {[1].map((arrowIdx) => (
+            <div key={`arrow-right-${arrowIdx}`} className="flex items-center opacity-95">
+              <svg
+                className="w-12 h-6 sm:w-16 sm:h-8 text-white fill-current drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]"
+                viewBox="0 0 100 50"
+              >
+                <path d="M 5,20 L 65,20 L 65,5 L 95,25 L 65,45 L 65,30 L 5,30 Z" />
               </svg>
             </div>
           ))}
@@ -254,11 +268,11 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
       >
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]"></span>
+            <span className="w-2.5 h-2.5 rounded-full parking-legend-free-dot"></span>
             <span>פנוי</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-red-500 text-sm">block</span>
+            <span className="parking-blocked-badge-icon material-symbols-outlined text-sm">block</span>
             <span>חסום</span>
           </span>
           <span className="flex items-center gap-1.5">

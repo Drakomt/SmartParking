@@ -11,6 +11,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { SocketProvider } from "./contexts/SocketContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
 import Dashboard from "./pages/Dashboard";
+import CookieConsent from "./components/CookieConsent";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
               </Routes>
             </main>
+            <CookieConsent />
             </div>
           </SocketProvider>
         </AuthProvider>
