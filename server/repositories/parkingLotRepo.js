@@ -28,8 +28,22 @@ const updateLot = async (id, updateData) => {
     .select('+authorizedVehicles').populate('city', 'name');
 };
 
+const adjustTotalSpots = async (id, amount) => {
+  return await ParkingLot.findByIdAndUpdate(
+    id,
+    [{
+      $set: {
+        totalSpots: {
+          $max: [0, { $add: ['$totalSpots', amount] }],
+        },
+      },
+    }],
+    { new: true },
+  ).populate('city', 'name');
+};
+
 const deleteLot = async (id) => {
   return await ParkingLot.findByIdAndDelete(id);
 };
 
-export default { findAllLots, findLotById, findLotForEntry, findOneLot, createLot, updateLot, deleteLot };
+export default { findAllLots, findLotById, findLotForEntry, findOneLot, createLot, updateLot, adjustTotalSpots, deleteLot };
