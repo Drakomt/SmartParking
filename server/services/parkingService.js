@@ -26,7 +26,7 @@ const normalizeAuthorizedVehicles = (lotData) => {
   };
 };
 
-const publishSpotUpdate = async (parkingLot, spot) => {
+const publishSpotUpdate = async (parkingLot, spot, action = 'updated') => {
   if (!parkingLot || !parkingLot.city || !spot) {
     return;
   }
@@ -35,6 +35,7 @@ const publishSpotUpdate = async (parkingLot, spot) => {
     parkingLot: {
       id: parkingLot._id.toString(),
       name: parkingLot.name,
+      totalSpots: parkingLot.totalSpots,
     },
     city: {
       id: parkingLot.city._id.toString(),
@@ -48,6 +49,7 @@ const publishSpotUpdate = async (parkingLot, spot) => {
       spotNumber: spot.spotNumber,
       currentCarLicensePlate: spot.currentCarLicensePlate,
     },
+    action,
   };
 
   emitParkingSpotUpdate(parkingLot.city.name, payload);
@@ -309,7 +311,8 @@ const addSpot = async (spotData, user) => {
   }
 
   const createdSpot = await parkingSpotRepo.createSpot(spotData);
-  await publishSpotUpdate(lot, createdSpot);
+  const updatedLot = await parkingLotRepo.adjustTotalSpots(lot._id, 1);
+  await publishSpotUpdate(updatedLot || lot, createdSpot, 'created');
   return createdSpot;
 };
 
@@ -336,7 +339,16 @@ const editSpot = async (id, updateData, user) => {
   }
 
   const updatedSpot = await parkingSpotRepo.updateSpot(id, updateData);
-  await publishSpotUpdate(lot, updatedSpot);
+  const movedToAnotherLot = updateData.parkingLot
+    && updateData.parkingLot.toString() !== existingSpot.parkingLot.toString();
+
+  if (movedToAnotherLot) {
+    await parkingLotRepo.adjustTotalSpots(existingSpot.parkingLot, -1);
+    const targetLot = await parkingLotRepo.adjustTotalSpots(updateData.parkingLot, 1);
+    await publishSpotUpdate(targetLot, updatedSpot, 'created');
+  } else {
+    await publishSpotUpdate(lot, updatedSpot);
+  }
   return updatedSpot;
 };
 
@@ -353,7 +365,8 @@ const removeSpot = async (id, user) => {
   }
 
   const deletedSpot = await parkingSpotRepo.deleteSpot(id);
-  await publishSpotUpdate(lot, existingSpot);
+  const updatedLot = await parkingLotRepo.adjustTotalSpots(lot._id, -1);
+  await publishSpotUpdate(updatedLot || lot, existingSpot, 'deleted');
   return deletedSpot;
 };
 

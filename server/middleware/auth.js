@@ -33,4 +33,4 @@ const protect = async (req, res, next) => {
   }
 };
 
-export { protect };
+export { getTokenFromCookie, protect };

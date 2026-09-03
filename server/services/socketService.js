@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import userRepo from '../repositories/userRepo.js';
 import cityRepo from '../repositories/cityRepo.js';
 import { getAllowedClientOrigins } from '../config/cors.js';
+import { getTokenFromCookie } from '../middleware/auth.js';
 
 let ioInstance = null;
 
@@ -19,7 +20,9 @@ const getUserRoomName = (userId) => {
 };
 
 const authenticateSocket = async (socket) => {
-    const token = socket.handshake.auth?.token || socket.handshake.query?.token;
+    const token = socket.handshake.auth?.token
+        || socket.handshake.query?.token
+        || getTokenFromCookie(socket.handshake.headers.cookie);
     if (!token) {
         return null;
     }
