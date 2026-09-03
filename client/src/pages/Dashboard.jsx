@@ -328,7 +328,7 @@ export default function Dashboard() {
                 </h4>
                 <p className="text-on-surface-variant mb-4">{lot.address}</p>
                 <div className="flex justify-between text-sm text-on-surface-variant mb-6">
-                  <span>סך הכל חניות: {lot.totalSpots}</span>
+                  <span>סך הכל חניות: {lot.spots?.length || lot.totalSpots}</span>
                   <span>מפלסים: {lot.levels}</span>
                 </div>
                 <div className="mb-5 rounded-xl bg-primary/5 px-3 py-2 text-sm text-on-surface-variant">
