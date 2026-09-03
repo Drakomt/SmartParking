@@ -31,13 +31,7 @@ const updateLot = async (id, updateData) => {
 const adjustTotalSpots = async (id, amount) => {
   return await ParkingLot.findByIdAndUpdate(
     id,
-    [{
-      $set: {
-        totalSpots: {
-          $max: [0, { $add: ['$totalSpots', amount] }],
-        },
-      },
-    }],
+    { $inc: { totalSpots: amount } },
     { new: true },
   ).populate('city', 'name');
 };
