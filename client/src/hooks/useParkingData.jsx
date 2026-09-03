@@ -21,7 +21,10 @@ const useParkingData = (parkingLotId, currentLevel, cityName) => {
       });
       const data = response.data;
       console.log("JSON received from Backend for this level:", data);
-      setParkings(data.slots || []);
+      const sortedSlots = (data.slots || []).sort(
+        (a, b) => (Number(a.spotNumber) || 0) - (Number(b.spotNumber) || 0)
+      );
+      setParkings(sortedSlots);
       setTotalLevels(data.totalLevels || 1);
       
     } catch (err) {

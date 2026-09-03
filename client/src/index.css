@@ -215,8 +215,12 @@ html.theme-colorblind .parking-legend-free-dot {
 html.theme-colorblind .bg-error-container {
   background-color: var(--color-error-container) !important;
 }
-html.theme-colorblind .text-error {
+html.theme-colorblind .text-error:not(:hover) {
   color: var(--color-error) !important;
+}
+html.theme-colorblind .hover\:text-white:hover,
+html.theme-colorblind .hover\:text-white:hover * {
+  color: #ffffff !important;
 }
 html.theme-colorblind .text-on-error-container {
   color: var(--color-on-error-container) !important;

@@ -156,10 +156,10 @@ export default function Dashboard() {
   };
 
   const handleCreateLot = async (lotPayload, levelsDistribution) => {
-    // 1. Create the lot
+    // 1. Create the lot with initial totalSpots: 0 (backend increments totalSpots on each spot created)
     const res = await axios.post(
       `${import.meta.env.VITE_API_BASE_URL}/api/parking/`,
-      lotPayload,
+      { ...lotPayload, totalSpots: 0 },
       { withCredentials: true }
     );
     const newLot = res.data;
@@ -173,7 +173,7 @@ export default function Dashboard() {
           axios.post(
             `${import.meta.env.VITE_API_BASE_URL}/api/parking/${newLot._id}/spots`,
             {
-              spotNumber: i,
+              spotNumber: levelNum * 100 + i,
               level: levelNum,
               isAvailable: true,
             },
@@ -386,7 +386,7 @@ export default function Dashboard() {
                   </button>
                   <button
                     onClick={() => setLotToDelete(lot)}
-                    className="w-full py-2 bg-error/10 text-error font-bold rounded-lg hover:bg-error hover:text-white transition-all flex items-center justify-center gap-2"
+                    className="w-full py-2 bg-error/10 text-error font-bold rounded-lg hover:bg-error hover:!text-white transition-all flex items-center justify-center gap-2"
                   >
                     <span className="material-symbols-outlined text-[18px]">delete</span>
                     מחק חניון

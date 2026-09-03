@@ -1,8 +1,13 @@
 import React from "react";
 
 export default function DynamicParkingLayout({ parkings = [], isAdmin = false, onSpotClick, onAddSpot, isAddingSpot }) {
+  // Always ensure spots are ordered sequentially by spotNumber
+  const sortedParkings = [...parkings].sort(
+    (a, b) => (Number(a.spotNumber) || 0) - (Number(b.spotNumber) || 0)
+  );
+
   // If admin, push a special "Add Spot" placeholder to the end of the array
-  const displayParkings = [...parkings];
+  const displayParkings = [...sortedParkings];
   if (isAdmin && onAddSpot) {
     displayParkings.push({ isAddButton: true });
   }

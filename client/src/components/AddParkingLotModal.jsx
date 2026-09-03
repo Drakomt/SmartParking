@@ -8,8 +8,9 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
     locationLat: "",
     locationLng: "",
     isFree: false,
-    pricePerMinute: 0,
-    parkingFeeMinor: 0,
+    freeFirstHours: 0,
+    pricePerMinute: 20,
+    fullDayPrice: 30,
     levels: 1,
     totalSpots: 10,
     distributionMode: "equal", // "equal" or "custom"
@@ -30,10 +31,40 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
     }
   }, [error]);
 
+  // Helper to verify that Nominatim actually returned a real street/building and not just the city center
+  const isValidNominatimResult = (item) => {
+    if (!item) return false;
+
+    // Reject if it only matched the city boundary, region or country
+    const invalidTypes = ['administrative', 'city', 'town', 'village', 'municipality', 'county', 'state', 'country'];
+    if (invalidTypes.includes(item.type) || item.class === 'boundary') {
+      return false;
+    }
+
+    // Accept if it matched a road, building, house number, or specific amenity/place
+    if (item.address && (item.address.road || item.address.pedestrian || item.address.building || item.address.house_number || item.address.amenity)) {
+      return true;
+    }
+
+    if (['highway', 'building', 'amenity'].includes(item.class)) {
+      return true;
+    }
+
+    return false;
+  };
+
   // Auto-geocode address when user finishes typing
   useEffect(() => {
+    // Require at least 3 chars and a house number
     if (!formData.address || formData.address.length < 3) {
       setLocationSuccess(false);
+      setFormData(prev => ({ ...prev, locationLat: 0, locationLng: 0 }));
+      return;
+    }
+
+    if (!/\d+/.test(formData.address)) {
+      setLocationSuccess(false);
+      setFormData(prev => ({ ...prev, locationLat: 0, locationLng: 0 }));
       return;
     }
 
@@ -42,11 +73,12 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
       setLocationSuccess(false);
       try {
         const query = `${formData.address}${cityName ? `, ${cityName}` : ''}, Israel`;
-        const res = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+        const res = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(query)}`);
         
-        if (res.data && res.data.length > 0) {
-          const lat = parseFloat(res.data[0].lat);
-          const lon = parseFloat(res.data[0].lon);
+        const validResult = res.data?.find(isValidNominatimResult);
+        if (validResult) {
+          const lat = parseFloat(validResult.lat);
+          const lon = parseFloat(validResult.lon);
           setFormData(prev => ({
             ...prev,
             locationLat: lat,
@@ -54,25 +86,35 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
           }));
           setLocationSuccess(true);
         } else {
-          // If nominatim fails to find, maybe try without city
-          const fallbackRes = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(formData.address + ", Israel")}`);
-          if (fallbackRes.data && fallbackRes.data.length > 0) {
-            const lat = parseFloat(fallbackRes.data[0].lat);
-            const lon = parseFloat(fallbackRes.data[0].lon);
+          // If nominatim fails with city, try without city
+          const fallbackRes = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(formData.address + ", Israel")}`);
+          const fallbackValid = fallbackRes.data?.find(isValidNominatimResult);
+          if (fallbackValid) {
+            const lat = parseFloat(fallbackValid.lat);
+            const lon = parseFloat(fallbackValid.lon);
             setFormData(prev => ({
               ...prev,
               locationLat: lat,
               locationLng: lon
             }));
             setLocationSuccess(true);
+          } else {
+            setFormData(prev => ({
+              ...prev,
+              locationLat: 0,
+              locationLng: 0
+            }));
+            setLocationSuccess(false);
           }
         }
       } catch (err) {
         console.error("Geocoding failed", err);
+        setFormData(prev => ({ ...prev, locationLat: 0, locationLng: 0 }));
+        setLocationSuccess(false);
       } finally {
         setIsFetchingLocation(false);
       }
-    }, 1500); // 1.5 second debounce
+    }, 800); // 0.8 second debounce
 
     return () => clearTimeout(handler);
   }, [formData.address, cityName]);
@@ -117,8 +159,8 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
       return;
     }
 
-    if (!formData.locationLat || !formData.locationLng || Number(formData.locationLat) === 0) {
-      setError("לא זוהה מיקום במפה. אנא בדוק שהכתובת שהזנת חוקית");
+    if (!/\d+/.test(formData.address)) {
+      setError("נא להזין כתובת מלאה הכוללת שם רחוב ומספר בית (לדוגמה: ויצמן 12).");
       return;
     }
 
@@ -162,18 +204,58 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
     try {
       setIsSubmitting(true);
       
+      let lat = Number(formData.locationLat) || 0;
+      let lng = Number(formData.locationLng) || 0;
+
+      // If coordinates weren't resolved yet (e.g. user submitted immediately before debounce), try geocode now
+      if (lat === 0 || lng === 0) {
+        try {
+          const query = `${formData.address}${cityName ? `, ${cityName}` : ''}, Israel`;
+          const res = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(query)}`);
+          const validResult = res.data?.find(isValidNominatimResult);
+          if (validResult) {
+            lat = parseFloat(validResult.lat);
+            lng = parseFloat(validResult.lon);
+          } else {
+            const fallbackRes = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(formData.address + ", Israel")}`);
+            const fallbackValid = fallbackRes.data?.find(isValidNominatimResult);
+            if (fallbackValid) {
+              lat = parseFloat(fallbackValid.lat);
+              lng = parseFloat(fallbackValid.lon);
+            }
+          }
+        } catch (geoErr) {
+          console.warn("Background geocoding on submit error", geoErr);
+        }
+      }
+
+      // If still not found, block submission and show clear error!
+      if (lat === 0 || lng === 0) {
+        setError("הכתובת שהוזנה לא נמצאה במפה. אנא ודא ששם הרחוב ומספר הבית קיימים ונכונים.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const rawPricePerMinute = Number(formData.pricePerMinute) || 0;
+      // If entered as Agorot (e.g. 20), convert to Shekels (0.20), otherwise if already decimal (0.20) keep it
+      const normalizedPricePerMinute = rawPricePerMinute >= 1 ? rawPricePerMinute / 100 : rawPricePerMinute;
+      const fullDayPriceInShekels = Number(formData.fullDayPrice) || 0;
+      const fullDayPriceMinor = Math.round(fullDayPriceInShekels * 100);
+
       const lotPayload = {
         name: formData.name,
         address: formData.address,
         city: cityId,
         location: {
-          lat: Number(formData.locationLat) || 0,
-          lng: Number(formData.locationLng) || 0,
+          lat: lat,
+          lng: lng,
         },
         pricing: {
           isFree: formData.isFree,
-          pricePerMinute: Number(formData.pricePerMinute),
-          parkingFeeMinor: Number(formData.parkingFeeMinor),
+          freeFirstHours: formData.isFree ? 0 : Number(formData.freeFirstHours) || 0,
+          pricePerMinute: formData.isFree ? 0 : normalizedPricePerMinute,
+          fullDayPriceMinor: formData.isFree ? 0 : fullDayPriceMinor,
+          parkingFeeMinor: formData.isFree ? 0 : fullDayPriceMinor,
         },
         levels: Number(formData.levels),
         totalSpots: Number(formData.totalSpots),
@@ -231,13 +313,25 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
                     {isFetchingLocation && (
                       <span className="text-xs text-primary flex items-center gap-1">
                         <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
-                        מאתר מיקום...
+                        מאמת כתובת...
                       </span>
                     )}
-                    {!isFetchingLocation && locationSuccess && (
-                      <span className="text-xs text-green-500 flex items-center gap-1">
+                    {!isFetchingLocation && formData.address && formData.address.length >= 2 && !/\d+/.test(formData.address) && (
+                      <span className="text-xs text-amber-600 font-bold flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">info</span>
+                        נא להוסיף מספר בית
+                      </span>
+                    )}
+                    {!isFetchingLocation && locationSuccess && /\d+/.test(formData.address) && (
+                      <span className="text-xs text-green-600 font-bold flex items-center gap-1">
                         <span className="material-symbols-outlined text-[14px]">check_circle</span>
-                        מיקום אותר!
+                        כתובת אומתה במפה!
+                      </span>
+                    )}
+                    {!isFetchingLocation && !locationSuccess && formData.address && formData.address.length >= 3 && /\d+/.test(formData.address) && (
+                      <span className="text-xs text-error font-bold flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">cancel</span>
+                        כתובת לא נמצאה במפה
                       </span>
                     )}
                   </label>
@@ -245,33 +339,10 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
                     type="text"
                     name="address"
                     required
+                    placeholder="לדוגמה: סוקולוב 15"
                     value={formData.address}
                     onChange={handleChange}
                     className="w-full px-4 py-2 rounded-xl border border-outline-variant/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-surface transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-on-surface-variant mb-1">קו רוחב (Latitude)</label>
-                  <input
-                    type="number"
-                    step="any"
-                    name="locationLat"
-                    value={formData.locationLat}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-xl border border-outline-variant/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-surface transition-all"
-                    dir="ltr"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-on-surface-variant mb-1">קו אורך (Longitude)</label>
-                  <input
-                    type="number"
-                    step="any"
-                    name="locationLng"
-                    value={formData.locationLng}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-xl border border-outline-variant/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-surface transition-all"
-                    dir="ltr"
                   />
                 </div>
               </div>
@@ -294,29 +365,66 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
               </div>
               
               {!formData.isFree && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-on-surface-variant mb-1">מחיר לדקה (₪)</label>
+                    <label className="block text-sm font-bold text-on-surface-variant mb-1">
+                      שעות ראשונות חינם
+                    </label>
                     <input
                       type="number"
-                      step="0.1"
+                      step="0.5"
+                      min="0"
+                      name="freeFirstHours"
+                      placeholder="0"
+                      value={formData.freeFirstHours}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 rounded-xl border border-outline-variant/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-surface transition-all"
+                    />
+                    <span className="text-xs text-on-surface-variant mt-1 block">
+                      הזן 0 אם אין שעות בחינם
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-on-surface-variant mb-1">
+                      מחיר לדקה (אגורות)
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
                       min="0"
                       name="pricePerMinute"
+                      placeholder="לדוגמה: 20"
                       value={formData.pricePerMinute}
                       onChange={handleChange}
                       className="w-full px-4 py-2 rounded-xl border border-outline-variant/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-surface transition-all"
                     />
+                    <span className="text-xs text-on-surface-variant mt-1 block">
+                      {Number(formData.pricePerMinute) > 0 ? (
+                        Number(formData.pricePerMinute) >= 1 ? (
+                          `${(Number(formData.pricePerMinute) / 100).toFixed(2)} ₪ לדקה`
+                        ) : (
+                          `${(Number(formData.pricePerMinute) * 100).toFixed(0)} אג' לדקה`
+                        )
+                      ) : "הזן מחיר באגורות"}
+                    </span>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-on-surface-variant mb-1">מחיר יומי (אגורות)</label>
+                    <label className="block text-sm font-bold text-on-surface-variant mb-1">
+                      תקרה יומית (₪)
+                    </label>
                     <input
                       type="number"
+                      step="any"
                       min="0"
-                      name="parkingFeeMinor"
-                      value={formData.parkingFeeMinor}
+                      name="fullDayPrice"
+                      placeholder="לדוגמה: 30"
+                      value={formData.fullDayPrice}
                       onChange={handleChange}
                       className="w-full px-4 py-2 rounded-xl border border-outline-variant/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-surface transition-all"
                     />
+                    <span className="text-xs text-on-surface-variant mt-1 block">
+                      מקסימום ליום (0 אם אין תקרה)
+                    </span>
                   </div>
                 </div>
               )}

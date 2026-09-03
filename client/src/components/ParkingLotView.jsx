@@ -38,11 +38,17 @@ export default function ParkingLotView({
   const handleAddSpot = () => {
     if (!lotId) return;
     
-    // Calculate next spot number automatically based on current spots
-    let nextSpotNumber = 1;
+    // Calculate next spot number automatically based on current level (e.g. 101, 102... or 201, 202...)
+    const baseNumber = currentLevel * 100;
+    let nextSpotNumber = baseNumber + 1;
     if (parkings && parkings.length > 0) {
-      const maxNumber = Math.max(...parkings.map(p => Number(p.spotNumber) || 0));
-      nextSpotNumber = maxNumber + 1;
+      const levelSpots = parkings
+        .map(p => Number(p.spotNumber) || 0)
+        .filter(num => num >= baseNumber && num < (currentLevel + 1) * 100);
+      
+      if (levelSpots.length > 0) {
+        nextSpotNumber = Math.max(...levelSpots) + 1;
+      }
     }
 
     setSelectedSpot({ 
