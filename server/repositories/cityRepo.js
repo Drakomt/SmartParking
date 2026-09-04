@@ -13,7 +13,7 @@ const findCitiesByIds = async (ids) => {
 };
 
 const findAllCities = async () => {
-  return await City.find({}, 'name'); // Return only the name field (along with _id by default)
+  return await City.find({}, 'name');
 };
 
 export default { findCityByName, findCityById, findCitiesByIds, findAllCities };
