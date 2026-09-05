@@ -250,8 +250,13 @@ export default function HomePage() {
               lotLocation={selectedLot?.location}
               isAdmin={location.state?.adminMode || false}
               lotId={selectedParkingLotId}
-              onSpotsChanged={() => {
-                refreshData();
+              onSpotsChanged={(targetLevel) => {
+                if (targetLevel !== undefined) {
+                  setCurrentLevel(targetLevel);
+                  refreshData(targetLevel);
+                } else {
+                  refreshData();
+                }
                 refreshLots();
                 if (nearbyLots) {
                   handleFindNearMe(false);

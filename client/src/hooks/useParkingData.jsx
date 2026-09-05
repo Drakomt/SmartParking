@@ -9,15 +9,16 @@ const useParkingData = (parkingLotId, currentLevel, cityName) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchParkingData = async () => {
+  const fetchParkingData = async (levelOverride) => {
     if (!parkingLotId || parkingLotId === "undefined") return;
     
+    const targetLevel = levelOverride !== undefined ? levelOverride : currentLevel;
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/parking/${parkingLotId}/spots`, {
-        params: { level: currentLevel }
+        params: { level: targetLevel }
       });
       const data = response.data;
       console.log("JSON received from Backend for this level:", data);
