@@ -26,7 +26,8 @@ export default function ParkingSlot({ id, type = "regular", status, isAvilable, 
   let paintedLines = "border-x-4 border-t-4 border-b-0 border-white/60";
   let badge = null;
   
-  const isOccupied = status !== 'blocked' && !isAvilable;
+  const isBlocked = status === 'blocked' || status === 'block';
+  const isOccupied = !isBlocked && !isAvilable;
   
   if (type === "disabled") {
     if (isOccupied) {
@@ -61,9 +62,9 @@ export default function ParkingSlot({ id, type = "regular", status, isAvilable, 
       {badge}
       <span className="text-slate-400 font-bold text-lg">{id}</span>
 
-      {status !== 'blocked' && isAvilable && <span className="mt-2">{roadMarkings[type]}</span>}
+      {!isBlocked && isAvilable && <span className="mt-2">{roadMarkings[type]}</span>}
 
-      {status === 'blocked' ? (
+      {isBlocked ? (
         <>
           <span className="absolute inset-0 flex items-center justify-center text-red-500 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] z-20 pointer-events-none">
             <span className="material-symbols-outlined" style={{ fontSize: '48px' }}>block</span>

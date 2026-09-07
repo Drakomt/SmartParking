@@ -23,15 +23,12 @@ export default function AboutPage() {
           ברוכים הבאים למערכת החניות החכמה שלנו. המערכת נועדה לעזור לכם למצוא חניה פנויה בקלות, 
           לנווט ישירות לחניון הקרוב אליכם, ולחסוך זמן יקר בחיפוש חניה.
         </p>
-        <div className="bg-primary/5 p-6 rounded-2xl mt-8 border border-primary/10">
-          <h3 className="font-bold text-primary mb-2 flex items-center gap-2">
-            <span className="material-symbols-outlined">info</span>
-            מידע נוסף יגיע בקרוב
-          </h3>
-          <p className="text-on-surface-variant">
-            דף האודות נמצא כרגע בבנייה. בהמשך נפרט כאן על צוות המפתחים, מטרת הפרויקט וכיצד נוצר.
-          </p>
-        </div>
+        <p className="text-on-surface-variant text-lg mb-4 leading-relaxed" dir="rtl">
+          Smart Parking משלבת מידע בזמן אמת, נגישות וניהול חכם כדי לשפר את חוויית החניה בעיר.
+        </p>
+        <p className="text-on-surface-variant text-lg leading-relaxed" dir="rtl">
+          האתר נבנה על ידי דולב חלבי, ליאור כוהן, ישר פשאי ומתי ציפלקוב במסגרת פרויקט במכללת HIT.
+        </p>
       </div>
     </main>
   );

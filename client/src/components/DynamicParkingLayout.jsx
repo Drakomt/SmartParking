@@ -60,46 +60,26 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
       );
     }
 
-    const isOccupied = spot.status !== "free" && spot.status !== "blocked";
+    const isBlocked = spot.status === "blocked" || spot.status === "block";
+    const isOccupied = spot.status !== "free" && !isBlocked;
     // Stable car image index based on spotNumber or spot index (1 to 8)
     const carImageIndex = (Math.abs(Number(spot.spotNumber) || index + 1) % 8) + 1;
 
-    // Dedicated badge for disabled or dean spot (neatly aligned next to spot number, never overlapping)
-    let typeBadge = null;
-    let typeWatermark = null;
+    // Painted asphalt marking for disabled or dean spots.
+    let typeMarking = null;
 
-    if (spot.type === "disabled") {
-      typeBadge = (
-        <div
-          className="bg-blue-600 text-white p-[2px] rounded-sm flex items-center justify-center shadow-sm"
-          title="חניית נכה"
-        >
-          <span className="material-symbols-outlined text-[11px] leading-none block">accessible</span>
-        </div>
+    if (!isOccupied && spot.type === "disabled") {
+      typeMarking = (
+        <span className="parking-asphalt-marking parking-asphalt-marking-disabled material-symbols-outlined text-4xl sm:text-5xl">
+          accessible
+        </span>
       );
-      if (!isOccupied) {
-        typeWatermark = (
-          <span className="material-symbols-outlined text-blue-400 text-2xl sm:text-3xl opacity-80">
-            accessible
-          </span>
-        );
-      }
-    } else if (spot.type === "dean") {
-      typeBadge = (
-        <div
-          className="bg-amber-600 text-slate-950 p-[0.5px] rounded-sm flex items-center justify-center shadow-sm font-bold"
-          title="חניית הנהלה"
-        >
-          <span className="material-symbols-outlined text-[11px] leading-none block">school</span>
-        </div>
+    } else if (!isOccupied && spot.type === "dean") {
+      typeMarking = (
+        <span className="parking-asphalt-marking parking-asphalt-marking-dean material-symbols-outlined text-4xl sm:text-5xl">
+          school
+        </span>
       );
-      if (!isOccupied) {
-        typeWatermark = (
-          <span className="material-symbols-outlined text-amber-300 text-2xl sm:text-3xl opacity-80">
-            school
-          </span>
-        );
-      }
     }
 
     return (
@@ -112,7 +92,7 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
             : ""
         }`}
       >
-        {/* Header at the curb end: Spot Number centered, Badge absolute right */}
+        {/* Header at the curb end: spot number only. */}
         <div
           className={`w-full flex flex-col items-center gap-0.5 ${
             rowPosition === "top" ? "order-1" : "order-3"
@@ -122,11 +102,6 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
             <span className="text-[11px] sm:text-xs font-black text-slate-200 tracking-wider bg-slate-950/80 px-1 py-0.5 rounded border border-slate-700/60 z-10">
               {spot.spotNumber}
             </span>
-            {typeBadge && (
-              <div className="absolute right-[-6px] top-1/2 -translate-y-1/2 z-0">
-                {typeBadge}
-              </div>
-            )}
           </div>
           {/* Wheel Stopper Bar */}
           <div className="w-10 sm:w-14 h-1 bg-slate-950 rounded-full border border-slate-700/70 opacity-70 mt-0.5" />
@@ -134,8 +109,18 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
 
         {/* Spot Center: Car (with multiply blend mode to eliminate white BG) or Free/Blocked indicator */}
         <div className="flex-1 w-full flex items-center justify-center my-0.5 order-2 relative overflow-hidden">
-          {spot.status === "blocked" ? (
-            <div className="flex flex-col items-center justify-center">
+          {typeMarking && (
+            <div
+              className={`absolute inset-0 z-0 flex items-center justify-center pointer-events-none ${
+                rowPosition === "bottom" ? "rotate-180" : ""
+              }`}
+              aria-hidden="true"
+            >
+              {typeMarking}
+            </div>
+          )}
+          {isBlocked ? (
+            <div className="relative z-10 flex flex-col items-center justify-center">
               <span className="parking-blocked-badge-icon material-symbols-outlined text-2xl sm:text-3xl drop-shadow">
                 block
               </span>
@@ -147,13 +132,12 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
             <img
               src={`/cars/${carImageIndex}.png`}
               alt="Parked car"
-              className={`w-[78%] h-[88%] object-contain drop-shadow-[0_8px_10px_rgba(0,0,0,0.8)] transition-transform duration-300 ${
+              className={`relative z-10 w-[78%] h-[88%] object-contain drop-shadow-[0_8px_10px_rgba(0,0,0,0.8)] transition-transform duration-300 ${
                 rowPosition === "bottom" ? "rotate-180" : ""
               }`}
             />
           ) : (
-            <div className="flex flex-col items-center justify-center gap-1">
-              {typeWatermark}
+            <div className="relative z-10 flex flex-col items-center justify-end h-full gap-1 pb-1">
               <span className="parking-slot-free-badge text-[10px] sm:text-xs font-bold border px-2 py-0.5 rounded-full drop-shadow-sm">
                 פנוי
               </span>

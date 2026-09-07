@@ -2,7 +2,10 @@ import { useState } from "react";
 import axios from "axios";
 
 export default function SpotManagementModal({ spot, lotId, onClose, onUpdate }) {
-  const [status, setStatus] = useState(spot.status || 'free');
+  // The API uses "block" while the UI keeps the clearer "blocked" label/value.
+  const initialStatus =
+    spot.status === "block" ? "blocked" : spot.status || "free";
+  const [status, setStatus] = useState(initialStatus);
   const [type, setType] = useState(spot.type || 'regular');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -14,10 +17,11 @@ export default function SpotManagementModal({ spot, lotId, onClose, onUpdate }) 
     e.preventDefault();
     setIsSaving(true);
     setError(null);
+    const apiStatus = status === "blocked" ? "block" : status;
     try {
       if (spot.isNew) {
         await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/parking/${lotId}/spots`, {
-          status: status,
+          status: apiStatus,
           type: type,
           level: spot.level,
           spotNumber: spot.spotNumber
@@ -27,7 +31,7 @@ export default function SpotManagementModal({ spot, lotId, onClose, onUpdate }) 
         onUpdate();
       } else {
         const response = await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/parking/spots/${spot._id}`, {
-          status: status,
+          status: apiStatus,
           type: type
         }, {
           withCredentials: true,
@@ -126,7 +130,7 @@ export default function SpotManagementModal({ spot, lotId, onClose, onUpdate }) 
                 מחק חניה
               </button>
             )}
-            <button type="submit" disabled={isSaving || isDeleting || (!spot.isNew && status === spot.status && type === spot.type)} className="flex-1 bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 disabled:opacity-50">
+            <button type="submit" disabled={isSaving || isDeleting || (!spot.isNew && status === initialStatus && type === spot.type)} className="flex-1 bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 disabled:opacity-50">
               {isSaving ? "שומר..." : spot.isNew ? "צור חניה" : "עדכן"}
             </button>
           </div>

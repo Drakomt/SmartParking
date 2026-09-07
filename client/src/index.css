@@ -195,9 +195,17 @@ html.theme-colorblind .parking-slot-free-badge {
   color: #f87171; /* red-400 */
 }
 
+.parking-slot-blocked-surface {
+  background-color: rgb(220 38 38 / 0.3);
+}
+
 html.theme-colorblind .parking-blocked-badge-icon,
 html.theme-colorblind .parking-blocked-badge-text {
   color: #f59e0b; /* amber-500 */
+}
+
+html.theme-colorblind .parking-slot-blocked-surface {
+  background-color: rgb(217 119 6 / 0.34);
 }
 
 /* DynamicParkingLayout Legend */
@@ -209,6 +217,83 @@ html.theme-colorblind .parking-blocked-badge-text {
 html.theme-colorblind .parking-legend-free-dot {
   background-color: #38bdf8; /* sky-400 */
   box-shadow: 0 0 6px #38bdf8;
+}
+
+/* Faded, slightly uneven paint used for special-space markings on asphalt. */
+.parking-asphalt-marking {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  opacity: 0.86;
+  mix-blend-mode: screen;
+  font-variation-settings: "FILL" 1, "wght" 520, "GRAD" -25, "opsz" 48;
+  filter: saturate(0.82) contrast(1.08) blur(0.1px)
+    drop-shadow(0 1px 0 rgb(15 23 42 / 0.62));
+  text-shadow:
+    1px 0 rgb(15 23 42 / 0.14),
+    -1px 1px rgb(255 255 255 / 0.12);
+}
+
+.parking-asphalt-marking-disabled {
+  color: #a9e0ee;
+}
+
+.parking-asphalt-marking-dean {
+  color: #eadba8;
+}
+
+/* Slightly weathered road paint for the two open parking-space lines. */
+.mediatheque-painted-stall::before,
+.mediatheque-painted-stall::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgb(248 246 230 / 0.86) 0%,
+    rgb(231 229 214 / 0.68) 14%,
+    rgb(255 253 238 / 0.82) 31%,
+    rgb(218 216 202 / 0.62) 48%,
+    rgb(250 248 232 / 0.8) 67%,
+    rgb(226 223 207 / 0.65) 84%,
+    rgb(248 246 230 / 0.78) 100%
+  );
+  box-shadow:
+    0 0 0.35px rgb(255 255 255 / 0.45),
+    0.7px 0.8px 0.8px rgb(31 41 55 / 0.3);
+  border-radius: 45% 35% 40% 30%;
+}
+
+.mediatheque-painted-stall::before {
+  left: -2px;
+}
+
+.mediatheque-painted-stall::after {
+  right: -2px;
+  opacity: 0.94;
+}
+
+.mediatheque-painted-stall-end-line {
+  position: absolute;
+  right: -2px;
+  left: -2px;
+  z-index: 0;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    rgb(248 246 230 / 0.82) 0%,
+    rgb(224 221 204 / 0.65) 18%,
+    rgb(255 253 238 / 0.84) 47%,
+    rgb(222 219 202 / 0.62) 77%,
+    rgb(248 246 230 / 0.8) 100%
+  );
+  box-shadow: 0 0.7px 0.8px rgb(31 41 55 / 0.3);
+  border-radius: 40% 35% 30% 45%;
 }
 
 /* Force override for elements directly using these classes */
