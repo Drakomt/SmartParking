@@ -10,13 +10,9 @@ dotenv.config();
 const run = async () => {
   await mongoose.connect(process.env.MONGO_URI);
 
-  const adminResult = await User.collection.updateMany(
-    { role: { $exists: false }, 'authorizedCities.0': { $exists: true } },
-    { $set: { role: 'admin' } },
-  );
-  const userResult = await User.collection.updateMany(
-    { role: { $exists: false } },
-    { $set: { role: 'user', authorizedCities: [] } },
+  const removedRoles = await User.collection.updateMany(
+    { role: { $exists: true } },
+    { $unset: { role: '' } },
   );
 
   const totals = await ParkingSpot.aggregate([
@@ -33,8 +29,7 @@ const run = async () => {
   await ParkingSpot.createIndexes();
 
   console.log(JSON.stringify({
-    promotedAdmins: adminResult.modifiedCount,
-    initializedUsers: userResult.modifiedCount,
+    removedRoles: removedRoles.modifiedCount,
     synchronizedLots: totals.length,
     sessionsWithoutSpot,
   }));

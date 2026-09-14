@@ -4,7 +4,6 @@ import bcrypt from 'bcryptjs';
 
 import User from '../models/User.js';
 import { sanitizeRegistrationData } from '../services/authService.js';
-import { requireRole } from '../middleware/auth.js';
 import { requireCsrf } from '../middleware/csrf.js';
 import { requireLoraApiKey } from '../middleware/loraAuth.js';
 import { getAuthCookieOptions } from '../routes/auth.js';
@@ -26,27 +25,21 @@ test('comparePassword validates the bcrypt hash', async () => {
   assert.equal(await user.comparePassword('wrong password'), false);
 });
 
-test('public registration cannot assign role or authorized cities', () => {
+test('public registration cannot assign authorized cities', () => {
   const result = sanitizeRegistrationData({
     fullName: 'User', email: 'user@example.com', password: 'secret',
-    role: 'admin', authorizedCities: ['city-id'],
+    authorizedCities: ['city-id'],
   });
-  assert.equal(result.role, 'user');
   assert.deepEqual(result.authorizedCities, []);
 });
 
-test('admin middleware rejects users and accepts admins', () => {
-  const denied = response();
-  requireRole('admin')({ user: { role: 'user' } }, denied, () => assert.fail('must not continue'));
-  assert.equal(denied.statusCode, 403);
-  let continued = false;
-  requireRole('admin')({ user: { role: 'admin' } }, response(), () => { continued = true; });
-  assert.equal(continued, true);
+test('users do not have an application role field', () => {
+  assert.equal(User.schema.path('role'), undefined);
 });
 
-test('an admin without assigned cities cannot perform parking administration', () => {
+test('a user without assigned cities cannot perform parking administration', () => {
   assert.throws(
-    () => getAuthorizedCityIds({ role: 'admin', authorizedCities: [] }),
+    () => getAuthorizedCityIds({ authorizedCities: [] }),
     (error) => error.statusCode === 403 && error.code === 'FORBIDDEN',
   );
 });

@@ -17,12 +17,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  role: {
-    type: String,
-    enum: ['user', 'admin'],
-    default: 'user',
-    required: true,
-  },
   authorizedCities: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'City',
