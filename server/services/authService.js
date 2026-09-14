@@ -11,7 +11,6 @@ export const sanitizeRegistrationData = (userData = {}) => ({
   fullName: userData.fullName,
   email: userData.email,
   password: userData.password,
-  role: 'user',
   authorizedCities: [],
 });
 
@@ -24,7 +23,6 @@ const loginUser = async (email, password) => {
       _id: user._id,
       fullName: user.fullName,
       email: user.email,
-      role: user.role,
       authorizedCities: user.authorizedCities || (user.authorizedCity ? [user.authorizedCity] : []),
       authorizedCity: user.authorizedCities?.[0] || user.authorizedCity || null,
       token: generateToken(user._id),
@@ -49,7 +47,6 @@ const registerUser = async (userData) => {
     _id: user._id,
     fullName: user.fullName,
     email: user.email,
-    role: user.role,
     authorizedCities: user.authorizedCities || (user.authorizedCity ? [user.authorizedCity] : []),
     authorizedCity: user.authorizedCities?.[0] || user.authorizedCity || null,
     token: generateToken(user._id),

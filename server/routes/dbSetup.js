@@ -421,7 +421,6 @@ router.post('/seed', async (req, res) => {
         fullName: 'central',
         email: 'central@smartparking.com',
         password: 'central',
-        role: 'admin',
         authorizedCities: [
           createdCities['תל אביב']._id,
           createdCities['חולון']._id,
@@ -435,21 +434,18 @@ router.post('/seed', async (req, res) => {
         fullName: 'sharon',
         email: 'sharon@smartparking.com',
         password: 'sharon',
-        role: 'admin',
         authorizedCities: [createdCities['רמת השרון']._id],
       },
       {
         fullName: 'south',
         email: 'south@smartparking.com',
         password: 'south',
-        role: 'admin',
         authorizedCities: [createdCities['באר שבע']._id],
       },
       {
         fullName: 'north',
         email: 'north@smartparking.com',
         password: 'north',
-        role: 'admin',
         authorizedCities: [createdCities['חיפה']._id],
       },
     ];

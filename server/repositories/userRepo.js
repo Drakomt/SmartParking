@@ -9,7 +9,7 @@ const findUserById = async (id) => {
 };
 
 const findUsersByAuthorizedCity = async (cityId) => {
-  return await User.find({ role: 'admin', authorizedCities: cityId }).select('_id');
+  return await User.find({ authorizedCities: cityId }).select('_id');
 };
 
 const createUser = async (userData) => {
