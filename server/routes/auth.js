@@ -28,7 +28,6 @@ const serializeUser = (user) => ({
   _id: user._id,
   fullName: user.fullName,
   email: user.email,
-  role: user.role,
   authorizedCities: user.authorizedCities || (user.authorizedCity ? [user.authorizedCity] : []),
   authorizedCity: user.authorizedCities?.[0] || user.authorizedCity || null,
 });

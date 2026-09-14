@@ -75,8 +75,8 @@ export const validateSpotDefinitions = async (
 };
 
 export const getAuthorizedCityIds = (user) => {
-  if (!user || user.role !== 'admin') {
-    throw new AppError('Administrator access is required', { statusCode: 403, code: 'FORBIDDEN' });
+  if (!user) {
+    throw new AppError('Authentication is required', { statusCode: 401, code: 'UNAUTHORIZED' });
   }
   const cityIds = user.authorizedCities || [];
   if (cityIds.length === 0) {

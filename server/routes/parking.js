@@ -3,7 +3,7 @@ const router = express.Router();
 import parkingService from '../services/parkingService.js';
 import parkingSessionService from '../services/parkingSessionService.js';
 import parkingReceiptService from '../services/parkingReceiptService.js';
-import { protect, requireRole } from '../middleware/auth.js';
+import { protect } from '../middleware/auth.js';
 import { requireCsrf } from '../middleware/csrf.js';
 import { createRateLimiter } from '../middleware/rateLimit.js';
 import AppError from '../errors/AppError.js';
@@ -75,21 +75,20 @@ router.get('/cities', async (req, res) => {
 
 router.route('/')
   // Get all lots for current admin user
-  .get(protect, requireRole('admin'), async (req, res) => {
+  .get(protect, async (req, res) => {
     try {
       const parkingLots = await parkingService.fetchParkingLots(req.user);
       res.json(parkingLots);
     } catch (error) {
-      res.status(500).json({ message: 'Server Error', error: error.message });
+      res.status(error.statusCode || 500).json({ message: error.message, code: error.code });
     }
   })
   // Create new lot
-  .post(protect, requireRole('admin'), requireCsrf, createParkingLotWithSpots);
+  .post(protect, requireCsrf, createParkingLotWithSpots);
 
 router.post(
   '/with-spots',
   protect,
-  requireRole('admin'),
   requireCsrf,
   createParkingLotWithSpots,
 );
@@ -200,33 +199,31 @@ router.get('/parkinglotbyid', async (req, res) => {
     }
 });
 
-router.get('/authorized/cities', protect, requireRole('admin'), async (req, res) => {
+router.get('/authorized/cities', protect, async (req, res) => {
   try {
     const cities = await parkingService.fetchAuthorizedCities(req.user);
     res.json(cities);
   } catch (error) {
-    const statusCode = error.message.includes('authorized') ? 401 : 500;
-    res.status(statusCode).json({ message: error.message });
+    res.status(error.statusCode || 500).json({ message: error.message, code: error.code });
   }
 });
 
-router.get('/authorized/lots', protect, requireRole('admin'), async (req, res) => {
+router.get('/authorized/lots', protect, async (req, res) => {
   try {
     const lots = await parkingService.fetchAuthorizedLotsWithDetails(req.user);
     res.json(lots);
   } catch (error) {
-    const statusCode = error.message.includes('authorized') ? 401 : 500;
-    res.status(statusCode).json({ message: error.message });
+    res.status(error.statusCode || 500).json({ message: error.message, code: error.code });
   }
 });
 
-router.get('/authorized/cities/:cityId', protect, requireRole('admin'), async (req, res) => {
+router.get('/authorized/cities/:cityId', protect, async (req, res) => {
   try {
     const cityDetails = await parkingService.fetchAuthorizedLotsByCity(req.params.cityId, req.user);
     res.json(cityDetails);
   } catch (error) {
-    const statusCode = error.message.includes('authorized') ? 403 : error.message.includes('not found') ? 404 : 500;
-    res.status(statusCode).json({ message: error.message });
+    const statusCode = error.statusCode || (error.message.includes('not found') ? 404 : 500);
+    res.status(statusCode).json({ message: error.message, code: error.code });
   }
 });
 
@@ -238,7 +235,7 @@ router.get('/prices', async (_req, res) => {
   }
 });
 
-router.post('/:lotId/levels', protect, requireRole('admin'), requireCsrf, async (req, res) => {
+router.post('/:lotId/levels', protect, requireCsrf, async (req, res) => {
   try {
     const spotInput = req.body.spots ?? req.body.spotCount;
     const result = await parkingService.addLevel(req.params.lotId, spotInput, req.user);
@@ -248,7 +245,7 @@ router.post('/:lotId/levels', protect, requireRole('admin'), requireCsrf, async 
   }
 });
 
-router.delete('/:lotId/levels/:level', protect, requireRole('admin'), requireCsrf, async (req, res) => {
+router.delete('/:lotId/levels/:level', protect, requireCsrf, async (req, res) => {
   try {
     const result = await parkingService.removeLevel(req.params.lotId, Number(req.params.level), req.user);
     return res.json(result);
@@ -258,7 +255,7 @@ router.delete('/:lotId/levels/:level', protect, requireRole('admin'), requireCsr
 });
 
 router.route('/:id')
-  .put(protect, requireRole('admin'), requireCsrf, async (req, res) => {
+  .put(protect, requireCsrf, async (req, res) => {
     try {
       const updateData = { ...req.body };
       const updatedLot = await parkingService.editParkingLot(req.params.id, updateData, req.user);
@@ -268,7 +265,7 @@ router.route('/:id')
       res.status(statusCode).json({ message: error.message });
     }
   })
-  .delete(protect, requireRole('admin'), requireCsrf, async (req, res) => {
+  .delete(protect, requireCsrf, async (req, res) => {
     try {
       await parkingService.removeParkingLot(req.params.id, req.user);
       res.json({ message: 'Parking Lot removed' });
@@ -300,7 +297,7 @@ router.route('/:id/spots')
       res.status(500).json({ message: 'Server Error', error: error.message });
     }
   })
-  .post(protect, requireRole('admin'), requireCsrf, async (req, res) => {
+  .post(protect, requireCsrf, async (req, res) => {
     try {
       const spot = await parkingService.addSpot({
         parkingLot: req.params.id,
@@ -318,7 +315,7 @@ router.route('/:id/spots')
   });
 
 router.route('/spots/:spotId')
-  .put(protect, requireRole('admin'), requireCsrf, async (req, res) => {
+  .put(protect, requireCsrf, async (req, res) => {
     try {
       const updatedSpot = await parkingService.editSpot(req.params.spotId, req.body, req.user);
       res.json(updatedSpot);
@@ -326,7 +323,7 @@ router.route('/spots/:spotId')
       res.status(error.statusCode || (error.code === 11000 ? 409 : 500)).json({ message: 'Server Error', error: error.message });
     }
   })
-  .delete(protect, requireRole('admin'), requireCsrf, async (req, res) => {
+  .delete(protect, requireCsrf, async (req, res) => {
     try {
       await parkingService.removeSpot(req.params.spotId, req.user);
       res.json({ message: 'Parking Spot removed' });
