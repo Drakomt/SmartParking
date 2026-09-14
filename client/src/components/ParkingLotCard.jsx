@@ -1,5 +1,4 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 
 export default function ParkingLotCard({
@@ -9,7 +8,6 @@ export default function ParkingLotCard({
   onClick,
   fallbackCityName = "",
 }) {
-  const navigate = useNavigate();
   const [isHoveringPrice, setIsHoveringPrice] = React.useState(false);
   const [showFullPriceModal, setShowFullPriceModal] = React.useState(false);
 

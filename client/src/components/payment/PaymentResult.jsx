@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../../lib/api";
 import ExitCountdown from "./ExitCountdown";
 
 export default function PaymentResult({ status, sessionData, graceExpiresAt, onGraceExpired, onReset, onRetry }) {
   const isSuccess = status === 'success';
+  const isPending = status === "pending";
   const [email, setEmail] = useState('');
   const [isSent, setIsSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -17,7 +18,7 @@ export default function PaymentResult({ status, sessionData, graceExpiresAt, onG
     setError('');
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/parking/session/receipt`, {
+      await api.post("/api/parking/session/receipt", {
         email,
         checkoutId: sessionData.checkoutId,
         checkoutToken: sessionData.checkoutToken
@@ -37,20 +38,22 @@ export default function PaymentResult({ status, sessionData, graceExpiresAt, onG
     <div className="flex flex-col items-center justify-center animate-fade-in-up max-w-md mx-auto py-10">
       
       <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-lg ${
-        isSuccess ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+        isSuccess ? 'bg-green-100 text-green-600' : isPending ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'
       }`}>
         <span className="material-symbols-outlined text-6xl">
-          {isSuccess ? 'check_circle' : 'cancel'}
+          {isSuccess ? 'check_circle' : isPending ? 'schedule' : 'cancel'}
         </span>
       </div>
       
-      <h2 className={`text-3xl font-black mb-4 text-center ${isSuccess ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
-        {isSuccess ? 'התשלום בוצע בהצלחה!' : 'שגיאה בביצוע התשלום'}
+      <h2 className={`text-3xl font-black mb-4 text-center ${isSuccess ? 'text-green-600 dark:text-green-500' : isPending ? 'text-amber-700 dark:text-amber-400' : 'text-red-600 dark:text-red-500'}`}>
+        {isSuccess ? 'התשלום בוצע בהצלחה!' : isPending ? 'התשלום ממתין לאישור' : 'שגיאה בביצוע התשלום'}
       </h2>
       
       <p className="text-on-surface-variant text-center mb-10 text-lg">
         {isSuccess 
           ? 'התשלום נקלט בהצלחה. יש לצאת מהחניון לפני סיום הזמן כדי להימנע מחיוב נוסף.'
+          : isPending
+            ? 'פייפאל קיבל את הבקשה ומעבד אותה. בדוק שוב את לוחית הרישוי בעוד כמה רגעים.'
           : 'מצטערים, חלה שגיאה במהלך עיבוד התשלום מול חברת האשראי או פייפאל. אנא נסה שוב.'}
       </p>
 
@@ -97,6 +100,16 @@ export default function PaymentResult({ status, sessionData, graceExpiresAt, onG
           >
             <span className="material-symbols-outlined">home</span>
             סיום וחזרה להתחלה
+          </button>
+        </div>
+      ) : isPending ? (
+        <div className="w-full flex flex-col gap-3">
+          <button
+            onClick={onReset}
+            className="w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold py-4 px-6 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 border border-outline-variant/30 cursor-pointer"
+          >
+            <span className="material-symbols-outlined">search</span>
+            בדיקת לוחית מחדש
           </button>
         </div>
       ) : (

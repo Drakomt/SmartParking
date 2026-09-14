@@ -20,7 +20,6 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
 
   const hasSecondRoad = displayParkings.length > 16;
   const hasRow2 = row2.length > 0;
-  const hasRow3 = row3.length > 0;
   const hasRow4 = row4.length > 0;
 
   // Helper to render a single parking spot slot
@@ -154,8 +153,7 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
   };
 
   // Clean Realistic Road Lane Component (No text, pure painted arrows & asphalt center line)
-  const renderRoadLane = (direction = "right") => {
-    const isReverse = direction === "left";
+  const renderRoadLane = () => {
     return (
       <div className="h-16 sm:h-20 bg-[#161c24] my-2 sm:my-3 relative flex items-center justify-between px-8 sm:px-14 border-y-2 border-white/60 shadow-inner overflow-hidden select-none pointer-events-none">
         {/* Asphalt Gradient */}
@@ -214,7 +212,7 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
           </div>
 
           {/* ================= ROAD 1 (Central Lane) ================= */}
-          {renderRoadLane("right")}
+          {renderRoadLane()}
 
           {/* ================= ROW 2 (Spots 9 - 16) ================= */}
           {hasRow2 && (
@@ -237,7 +235,7 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
               </div>
 
               {/* ROAD 2 (Second Lane - Reverse Direction) */}
-              {renderRoadLane("left")}
+              {renderRoadLane()}
 
               {/* ROW 4 (Spots 25 - 32) */}
               {hasRow4 && (

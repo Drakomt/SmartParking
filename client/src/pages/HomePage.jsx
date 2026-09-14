@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../lib/api";
 import { useLocation, useNavigate } from "react-router-dom";
 import ParkingLotView from "../components/ParkingLotView";
 import useParkingLots from "../hooks/useParkingLots";
@@ -53,9 +53,9 @@ export default function HomePage() {
       async (position) => {
         const { latitude, longitude } = position.coords;
         try {
-          const res = await axios.get(
-            `${import.meta.env.VITE_API_BASE_URL}/api/parking/nearby?lat=${latitude}&lng=${longitude}`
-          );
+          const res = await api.get("/api/parking/nearby", {
+            params: { lat: latitude, lng: longitude },
+          });
           setAllNearbyLots(res.data);
           
           let initialRadius = 2;
@@ -112,14 +112,11 @@ export default function HomePage() {
 
   useEffect(() => {
     if (location.state?.showFavorites) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowFavorites(true);
       navigate(".", { replace: true, state: {} });
     } else if (location.state?.selectedAdminLot) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedParkingLotId(location.state.selectedAdminLot);
       if (location.state.cityName) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSubmittedCity(location.state.cityName);
       }
     }

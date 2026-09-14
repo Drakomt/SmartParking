@@ -3,9 +3,10 @@ import DynamicParkingLayout from "./DynamicParkingLayout";
 import MediathequeParkingLayout from "./parking-maps/MediathequeParkingLayout";
 import HaifaPortParkingLayout from "./parking-maps/HaifaPortParkingLayout";
 import BeershebaCenterParkingLayout from "./parking-maps/BeershebaCenterParkingLayout";
+import { getParkingLayout, PARKING_LAYOUT } from "./parking-maps/parkingLayoutRegistry";
 import { useState } from "react";
 import SpotManagementModal from "./SpotManagementModal";
-import axios from "axios";
+import api from "../lib/api";
 
 export default function ParkingLotView({
   parkings,
@@ -20,27 +21,10 @@ export default function ParkingLotView({
   onSpotsChanged,
 }) {
   const [selectedSpot, setSelectedSpot] = useState(null);
-  const [isAddingSpot, setIsAddingSpot] = useState(false);
+  const isAddingSpot = false;
 
-  const [randomCarIndexes] = useState(() => {
-    return Array.from({ length: 16 }).map(
-      () => Math.floor(Math.random() * 8) + 1,
-    );
-  });
-
-  const isMediatheque =
-    lotName &&
-    (lotName.includes("מדיטק") ||
-      lotName.toLowerCase().includes("mediatheque"));
-  const isHaifaPort =
-    lotName &&
-    (lotName.includes("חניון הנמל") ||
-      lotName.toLowerCase().includes("haifa port"));
-  const isBeershebaCenter =
-    lotName &&
-    (lotName.includes("באר שבע מרכז") ||
-      lotName.toLowerCase().includes("beersheba center"));
-  const isImageMapLot = isMediatheque || isHaifaPort || isBeershebaCenter;
+  const parkingLayout = getParkingLayout(lotName);
+  const isImageMapLot = Boolean(parkingLayout);
 
   const handleSpotClick = (spot) => {
     if (!isAdmin || spot.isDummy) return;
@@ -49,9 +33,7 @@ export default function ParkingLotView({
 
   const handleAddSpot = () => {
     if (!lotId) return;
-    if (isMediatheque && parkings?.length >= 90) return;
-    if (isHaifaPort && parkings?.length >= 59) return;
-    if (isBeershebaCenter && parkings?.length >= 78) return;
+    if (parkingLayout && parkings?.length >= parkingLayout.capacity) return;
     
     // Calculate next spot number automatically based on current level (e.g. 101, 102... or 201, 202...)
     const baseNumber = currentLevel * 100;
@@ -100,32 +82,7 @@ export default function ParkingLotView({
 
     try {
       const nextLevelNum = (totalLevels || 1) + 1;
-
-      // 1. Update parking lot with new level count
-      await axios.put(
-        `${import.meta.env.VITE_API_BASE_URL}/api/parking/${lotId}`,
-        { levels: nextLevelNum },
-        { withCredentials: true }
-      );
-
-      // 2. Create the spots for the new level
-      const spotPromises = [];
-      for (let i = 1; i <= spotsCount; i++) {
-        spotPromises.push(
-          axios.post(
-            `${import.meta.env.VITE_API_BASE_URL}/api/parking/${lotId}/spots`,
-            {
-              spotNumber: nextLevelNum * 100 + i,
-              level: nextLevelNum,
-              status: "free",
-              type: "regular",
-            },
-            { withCredentials: true }
-          )
-        );
-      }
-
-      await Promise.all(spotPromises);
+      await api.post(`/api/parking/${lotId}/levels`, { spotCount: spotsCount });
 
       // 3. Switch to the new level and refresh data
       setIsAddLevelModalOpen(false);
@@ -150,35 +107,8 @@ export default function ParkingLotView({
 
     try {
       const lastLevelNum = totalLevels;
-
-      // 1. Fetch all spots on the LAST level to make sure we delete them all
-      const lastLevelSpotsRes = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/api/parking/${lotId}/spots`,
-        { params: { level: lastLevelNum } }
-      );
-      const spotsToDelete = lastLevelSpotsRes.data?.slots || (currentLevel === lastLevelNum ? parkings : []) || [];
-
-      // 2. Delete each spot on the last level
-      if (spotsToDelete.length > 0) {
-        await Promise.all(
-          spotsToDelete.map((s) =>
-            axios.delete(
-              `${import.meta.env.VITE_API_BASE_URL}/api/parking/spots/${s._id}`,
-              { withCredentials: true }
-            )
-          )
-        );
-      }
-
-      // 3. Update parking lot with decremented levels count
+      await api.delete(`/api/parking/${lotId}/levels/${lastLevelNum}`);
       const updatedTotalLevels = totalLevels - 1;
-      await axios.put(
-        `${import.meta.env.VITE_API_BASE_URL}/api/parking/${lotId}`,
-        { levels: updatedTotalLevels },
-        { withCredentials: true }
-      );
-
-      // 4. Switch to valid level and refresh data immediately
       setIsDeleteLevelModalOpen(false);
       const targetLevel = currentLevel >= lastLevelNum ? updatedTotalLevels : currentLevel;
       if (onSpotsChanged) {
@@ -247,7 +177,7 @@ export default function ParkingLotView({
             אין מידע על חניות במפלס זה
           </p>
         </div>
-      ) : isMediatheque ? (
+      ) : parkingLayout?.layout === PARKING_LAYOUT.MEDIATHEQUE ? (
         <MediathequeParkingLayout
           parkings={parkings}
           isAdmin={isAdmin}
@@ -255,7 +185,7 @@ export default function ParkingLotView({
           onAddSpot={handleAddSpot}
           isAddingSpot={isAddingSpot}
         />
-      ) : isHaifaPort ? (
+      ) : parkingLayout?.layout === PARKING_LAYOUT.HAIFA_PORT ? (
         <HaifaPortParkingLayout
           parkings={parkings}
           isAdmin={isAdmin}
@@ -263,7 +193,7 @@ export default function ParkingLotView({
           onAddSpot={handleAddSpot}
           isAddingSpot={isAddingSpot}
         />
-      ) : isBeershebaCenter ? (
+      ) : parkingLayout?.layout === PARKING_LAYOUT.BEERSHEBA_CENTER ? (
         <BeershebaCenterParkingLayout
           parkings={parkings}
           isAdmin={isAdmin}

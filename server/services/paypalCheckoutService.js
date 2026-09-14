@@ -12,6 +12,7 @@ import {
   parseMajorUnits,
 } from '../utils/money.js';
 import { calculateParkingPriceByLicensePlate } from '../utils/parkingPricing.js';
+import { PAID_EXIT_GRACE_MINUTES } from '../utils/parkingPricing.js';
 import {
   getWebhookHeaders,
   validatePayPalId,
@@ -35,6 +36,11 @@ const paymentResponse = (payment) => ({
   status: payment.paypalPaymentStatus,
   orderId: payment.paypalOrderId,
   ...(payment.paypalCaptureId ? { captureId: payment.paypalCaptureId } : {}),
+  ...(payment.paypalPaymentStatus === 'COMPLETED' && payment.paidAt ? {
+    graceExpiresAt: new Date(
+      new Date(payment.paidAt).getTime() + PAID_EXIT_GRACE_MINUTES * 60_000,
+    ).toISOString(),
+  } : {}),
 });
 
 export const createPayPalCheckoutService = ({

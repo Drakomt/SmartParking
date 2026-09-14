@@ -4,7 +4,7 @@ import LicensePlateSearch from "../components/payment/LicensePlateSearch";
 import InvoiceSummary from "../components/payment/InvoiceSummary";
 import PaymentResult from "../components/payment/PaymentResult";
 import NoPaymentRequired from "../components/payment/NoPaymentRequired";
-import axios from "axios";
+import api from "../lib/api";
 
 const EXIT_GRACE_PERIOD_MS = 15 * 60 * 1000;
 
@@ -66,9 +66,9 @@ export default function PaymentPage() {
   const handleGraceExpired = async () => {
     setGraceExpiresAt(null);
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/api/parking/session/lookup?plate=${encodeURIComponent(licensePlate)}`,
-      );
+      const response = await api.get("/api/parking/session/lookup", {
+        params: { plate: licensePlate },
+      });
       setSessionData(response.data);
       if (response.data?.paymentRequired) {
         setStep(2);

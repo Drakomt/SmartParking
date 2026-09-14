@@ -33,7 +33,7 @@ const MEDIATHEQUE_COORDINATES = (() => {
 })();
 
 // A future image-based parking lot only needs a configuration like this.
-export const MEDIATHEQUE_MAP = {
+const MEDIATHEQUE_MAP = {
   imageSrc: "/mediatheque-rectangular.jpg",
   imageAlt: "חניון המדיטק",
   aspectRatio: "1024 / 686",

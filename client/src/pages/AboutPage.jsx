@@ -27,7 +27,7 @@ export default function AboutPage() {
           Smart Parking משלבת מידע בזמן אמת, נגישות וניהול חכם כדי לשפר את חוויית החניה בעיר.
         </p>
         <p className="text-on-surface-variant text-lg leading-relaxed" dir="rtl">
-          האתר נבנה על ידי דולב חלבי, ליאור כוהן, ישר פשאי ומתי ציפלקוב במסגרת פרויקט במכללת HIT.
+          האתר נבנה על ידי דולב חלבי, ליאור כהן, ישר פשאי ומתי ציפלקוב במסגרת פרויקט במכללת HIT.
         </p>
       </div>
     </main>

@@ -3,7 +3,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "lora-simulator": "node scripts/loraSimulator.js"
+    "lora-simulator": "node scripts/loraSimulator.js",
+    "migrate:security": "node scripts/migrateSecurityAndIntegrity.js",
+    "test": "node --test"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

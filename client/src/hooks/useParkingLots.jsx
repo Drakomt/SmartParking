@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../lib/api";
 import { useSocket } from "../contexts/SocketContext";
 
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/parking`;
+const API_URL = "/api/parking";
 
 const useParkingLots = (cityName) => {
   const socket = useSocket();
@@ -23,12 +23,11 @@ const useParkingLots = (cityName) => {
       setError(null);
 
       try {
-        const response = await axios.get(`${API_URL}/lotsbycity`, {
+        const response = await api.get(`${API_URL}/lotsbycity`, {
           params: { city: cityName },
         });
 
         if (isMounted) {
-          console.log("JSON received from Backend for lotsbycity:", response.data);
           setParkingLotsCity(response.data);
         }
       } catch (fetchError) {
@@ -59,15 +58,15 @@ const useParkingLots = (cityName) => {
     socket.emit("join-city-room", cityName);
 
     const handleSpotUpdate = (updatedSpot) => {
-      console.log("Real-time spot update received in Search Results:", updatedSpot);
-      
       setParkingLotsCity((prevLots) => {
         return prevLots.map(lot => {
           if (lot._id === updatedSpot.parkingLot?.id) {
             let newSpots = lot.spots ? [...lot.spots] : [];
             
             if (updatedSpot.action === 'created') {
-              newSpots.push({ ...updatedSpot.spot, _id: updatedSpot.spot.id });
+              if (!newSpots.some((spot) => spot._id === updatedSpot.spot.id)) {
+                newSpots.push({ ...updatedSpot.spot, _id: updatedSpot.spot.id });
+              }
             } else if (updatedSpot.action === 'deleted') {
               newSpots = newSpots.filter(s => s._id !== updatedSpot.spot.id);
             } else {
@@ -99,12 +98,12 @@ const useParkingLots = (cityName) => {
   const refreshLots = async () => {
     if (!cityName) return;
     try {
-      const response = await axios.get(`${API_URL}/lotsbycity`, {
+      const response = await api.get(`${API_URL}/lotsbycity`, {
         params: { city: cityName },
       });
       setParkingLotsCity(response.data);
     } catch (err) {
-      console.error("Failed to refresh lots", err);
+      if (import.meta.env.DEV) console.error("Failed to refresh lots", err);
     }
   };
 

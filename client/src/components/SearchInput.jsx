@@ -59,7 +59,8 @@ export default function SearchInput({ onSearch, availableCities = [] }) {
 
   const renderHighlightedText = (text, highlight) => {
     if (!highlight.trim()) return text;
-    const regex = new RegExp(`^(${highlight})`, 'i');
+    const escapedHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`^(${escapedHighlight})`, 'i');
     const parts = text.split(regex);
     return (
       <span className="font-body-md text-on-surface">

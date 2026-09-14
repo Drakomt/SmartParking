@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSettings } from "../contexts/SettingsContext";
 import axios from "axios";
+import api from "../lib/api";
 import { MapContainer, TileLayer, Marker, Popup, useMap, GeoJSON } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -58,11 +59,7 @@ export default function AllLotsPage() {
     const fetchBoundary = async () => {
       try {
         const url = `https://nominatim.openstreetmap.org/search.php?q=${encodeURIComponent(openCity + ', ישראל')}&polygon_geojson=1&format=json&limit=1`;
-        const res = await axios.get(url, {
-          headers: {
-            'User-Agent': 'SmartParkingApp/1.0'
-          }
-        });
+        const res = await axios.get(url);
         
         if (res.data && res.data.length > 0 && res.data[0].geojson) {
           const geojsonData = res.data[0].geojson;
@@ -84,8 +81,8 @@ export default function AllLotsPage() {
     const fetchData = async () => {
       try {
         const [lotsRes, citiesRes] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/parking/all`),
-          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/parking/cities`)
+          api.get("/api/parking/all"),
+          api.get("/api/parking/cities")
         ]);
         
         const lotsData = lotsRes.data;
@@ -272,7 +269,7 @@ export default function AllLotsPage() {
               
               {cityBoundary && (
                 <GeoJSON 
-                  key={`${openCity}-${isColorBlindMode ? 'colorblind' : 'normal'}-${Date.now()}`} 
+                  key={`${openCity}-${isColorBlindMode ? 'colorblind' : 'normal'}`}
                   data={cityBoundary} 
                   pathOptions={{ 
                     color: isColorBlindMode ? '#d97706' : '#ef4444', 

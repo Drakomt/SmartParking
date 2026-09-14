@@ -44,7 +44,7 @@ const HAIFA_PORT_COORDINATES = (() => {
   return coordinates;
 })();
 
-export const HAIFA_PORT_MAP = {
+const HAIFA_PORT_MAP = {
   imageSrc: "/haifa-port-parking.jpg",
   imageAlt: "חניון הנמל בחיפה",
   aspectRatio: "1291 / 860",
