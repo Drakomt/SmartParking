@@ -16,4 +16,12 @@ const findAllCities = async () => {
   return await City.find({}, 'name');
 };
 
-export default { findCityByName, findCityById, findCitiesByIds, findAllCities };
+const addParkingLot = async (cityId, parkingLotId, session = null) => (
+  City.findByIdAndUpdate(cityId, { $addToSet: { parkingLots: parkingLotId } }, { session })
+);
+
+const removeParkingLot = async (cityId, parkingLotId, session = null) => (
+  City.findByIdAndUpdate(cityId, { $pull: { parkingLots: parkingLotId } }, { session })
+);
+
+export default { findCityByName, findCityById, findCitiesByIds, findAllCities, addParkingLot, removeParkingLot };

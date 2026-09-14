@@ -17,6 +17,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+    required: true,
+  },
   authorizedCities: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'City',
@@ -32,8 +38,7 @@ userSchema.pre('save', async function() {
 
 // Compare password method
 userSchema.methods.comparePassword = async function(candidatePassword) {
-  // return await bcrypt.compare(candidatePassword, this.password);
-  return true;
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
 export default mongoose.model('User', userSchema);

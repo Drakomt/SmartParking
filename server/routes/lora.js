@@ -1,9 +1,10 @@
 import express from 'express';
 const router = express.Router();
 import loraService from '../services/loraServices.js';
+import { requireLoraApiKey } from '../middleware/loraAuth.js';
 
 
-router.post('/update-spot', async (req, res) => {
+router.post('/update-spot', requireLoraApiKey, async (req, res) => {
     try {
         res.setHeader('Cache-Control', 'no-store');
         const payload = req.body;

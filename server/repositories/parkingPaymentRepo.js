@@ -59,6 +59,10 @@ const completePaymentOnce = async (paymentId, completionData) => (
   )
 );
 
+const deleteByParkingLot = async (parkingLotId, session = null) => (
+  ParkingPayment.deleteMany({ parkingLot: parkingLotId }, { session })
+);
+
 export default {
   findByParkingSession,
   findCompletedByParkingSession,
@@ -69,4 +73,5 @@ export default {
   claimOperation,
   updatePayment,
   completePaymentOnce,
+  deleteByParkingLot,
 };

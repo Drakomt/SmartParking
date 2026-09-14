@@ -6,16 +6,19 @@ const parkingSessionSchema = new mongoose.Schema({
     type: String,
     required: true,
     set: normalizeLicensePlate,
+    index: true,
   },
   parkingLot: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ParkingLot',
     required: true,
+    index: true,
   },
   parkingSpot: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ParkingSpot',
-    default: null, // Nullable if not tracked at spot level during entry
+    required: true,
+    index: true,
   },
   entryTime: {
     type: Date,

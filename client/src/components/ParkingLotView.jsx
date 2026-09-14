@@ -82,27 +82,7 @@ export default function ParkingLotView({
 
     try {
       const nextLevelNum = (totalLevels || 1) + 1;
-
-      // 1. Update parking lot with new level count
-      await api.put(`/api/parking/${lotId}`, { levels: nextLevelNum });
-
-      // 2. Create the spots for the new level
-      const spotPromises = [];
-      for (let i = 1; i <= spotsCount; i++) {
-        spotPromises.push(
-          api.post(
-            `/api/parking/${lotId}/spots`,
-            {
-              spotNumber: nextLevelNum * 100 + i,
-              level: nextLevelNum,
-              status: "free",
-              type: "regular",
-            },
-          )
-        );
-      }
-
-      await Promise.all(spotPromises);
+      await api.post(`/api/parking/${lotId}/levels`, { spotCount: spotsCount });
 
       // 3. Switch to the new level and refresh data
       setIsAddLevelModalOpen(false);
@@ -127,27 +107,8 @@ export default function ParkingLotView({
 
     try {
       const lastLevelNum = totalLevels;
-
-      // 1. Fetch all spots on the LAST level to make sure we delete them all
-      const lastLevelSpotsRes = await api.get(`/api/parking/${lotId}/spots`, {
-        params: { level: lastLevelNum },
-      });
-      const spotsToDelete = lastLevelSpotsRes.data?.slots || (currentLevel === lastLevelNum ? parkings : []) || [];
-
-      // 2. Delete each spot on the last level
-      if (spotsToDelete.length > 0) {
-        await Promise.all(
-          spotsToDelete.map((s) =>
-            api.delete(`/api/parking/spots/${s._id}`)
-          )
-        );
-      }
-
-      // 3. Update parking lot with decremented levels count
+      await api.delete(`/api/parking/${lotId}/levels/${lastLevelNum}`);
       const updatedTotalLevels = totalLevels - 1;
-      await api.put(`/api/parking/${lotId}`, { levels: updatedTotalLevels });
-
-      // 4. Switch to valid level and refresh data immediately
       setIsDeleteLevelModalOpen(false);
       const targetLevel = currentLevel >= lastLevelNum ? updatedTotalLevels : currentLevel;
       if (onSpotsChanged) {

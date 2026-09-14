@@ -130,7 +130,7 @@ export const createParkingSession = async ({ parkingLotId, parkingSpotId, carLic
     const session = await parkingSessionRepo.createSession({
         carLicensePlate,
         parkingLot: parkingLot._id,
-        parkingSpot: null,
+        parkingSpot: parkingSpot._id,
         checkoutId: checkoutCredentials.checkoutId,
         checkoutTokenHash: checkoutCredentials.checkoutTokenHash,
         checkoutExpiresAt: checkoutCredentials.checkoutExpiresAt,

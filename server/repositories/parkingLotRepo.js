@@ -18,26 +18,25 @@ const findOneLot = async (query = {}) => {
   return await ParkingLot.findOne(query).populate('city', 'name');
 };
 
-const createLot = async (lotData) => {
+const createLot = async (lotData, session = null) => {
   const parkingLot = new ParkingLot(lotData);
-  return await parkingLot.save();
+  return await parkingLot.save({ session });
 };
 
-const updateLot = async (id, updateData) => {
-  return await ParkingLot.findByIdAndUpdate(id, updateData, { new: true, runValidators: true })
+const updateLot = async (id, updateData, session = null) => {
+  return await ParkingLot.findByIdAndUpdate(id, updateData, { new: true, runValidators: true, session })
     .select('+authorizedVehicles').populate('city', 'name');
 };
 
-const adjustTotalSpots = async (id, amount) => {
-  return await ParkingLot.findByIdAndUpdate(
-    id,
-    { $inc: { totalSpots: amount } },
-    { new: true },
-  ).populate('city', 'name');
+const deleteLot = async (id, session = null) => {
+  return await ParkingLot.findByIdAndDelete(id, { session });
 };
 
-const deleteLot = async (id) => {
-  return await ParkingLot.findByIdAndDelete(id);
-};
+const findPriceList = async () => (
+  ParkingLot.find({})
+    .select('name city address pricing currency')
+    .populate('city', 'name')
+    .lean()
+);
 
-export default { findAllLots, findLotById, findLotForEntry, findOneLot, createLot, updateLot, adjustTotalSpots, deleteLot };
+export default { findAllLots, findLotById, findLotForEntry, findOneLot, findPriceList, createLot, updateLot, deleteLot };

@@ -23,6 +23,7 @@ const parkingPaymentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ParkingLot',
     required: true,
+    index: true,
     immutable: true,
   },
   checkoutId: {

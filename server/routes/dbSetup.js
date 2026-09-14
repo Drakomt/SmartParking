@@ -4,12 +4,14 @@ import City from '../models/City.js';
 import ParkingLot from '../models/ParkingLot.js';
 import ParkingSpot from '../models/ParkingSpot.js';
 import User from '../models/User.js';
+import { requireSetupApiKey } from '../middleware/setupAuth.js';
 import ParkingSession from '../models/ParkingSession.js';
 import Camera from '../models/Camera.js';
 import ParkingPayment from '../models/ParkingPayment.js';
 import PayPalWebhookEvent from '../models/PayPalWebhookEvent.js';
 
 const router = express.Router();
+router.use(requireSetupApiKey);
 
 const seedCities = [
   {
@@ -419,6 +421,7 @@ router.post('/seed', async (req, res) => {
         fullName: 'central',
         email: 'central@smartparking.com',
         password: 'central',
+        role: 'admin',
         authorizedCities: [
           createdCities['תל אביב']._id,
           createdCities['חולון']._id,
@@ -432,18 +435,21 @@ router.post('/seed', async (req, res) => {
         fullName: 'sharon',
         email: 'sharon@smartparking.com',
         password: 'sharon',
+        role: 'admin',
         authorizedCities: [createdCities['רמת השרון']._id],
       },
       {
         fullName: 'south',
         email: 'south@smartparking.com',
         password: 'south',
+        role: 'admin',
         authorizedCities: [createdCities['באר שבע']._id],
       },
       {
         fullName: 'north',
         email: 'north@smartparking.com',
         password: 'north',
+        role: 'admin',
         authorizedCities: [createdCities['חיפה']._id],
       },
     ];
@@ -503,17 +509,17 @@ router.post('/seed', async (req, res) => {
         cityDoc.parkingLots.push(lot._id);
 
         const spots = createParkingSpots(lot._id, lotSeed.totalSpots, lotSeed.levels, lotSeed.prefix);
-        await ParkingSpot.insertMany(spots);
+        const createdSpots = await ParkingSpot.insertMany(spots);
 
         // count occupied spots in this lot and create that many active sessions
-        const occupiedCount = spots.filter((s) => s.status === 'occupied').length;
-        for (let k = 0; k < occupiedCount; k += 1) {
+        const occupiedSpots = createdSpots.filter((spot) => spot.status === 'occupied');
+        for (const occupiedSpot of occupiedSpots) {
           const plate = String(plateCounter).padStart(8, '0');
           plateCounter += 1;
           sessionsToInsert.push({
             carLicensePlate: plate,
             parkingLot: lot._id,
-            parkingSpot: null,
+            parkingSpot: occupiedSpot._id,
           });
         }
       }

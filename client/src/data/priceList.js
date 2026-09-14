@@ -2,10 +2,9 @@ import api from "../lib/api";
 
 const asNumber = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0);
 
-function normalizePriceItem(lot, cityNames) {
+function normalizePriceItem(lot) {
   const pricing = lot.pricing ?? lot;
-  const cityId = typeof lot.city === "string" ? lot.city : lot.city?._id;
-  const city = lot.city?.name ?? cityNames.get(cityId) ?? "לא צוין";
+  const city = lot.city?.name ?? "לא צוין";
 
   return {
     id: lot._id,
@@ -22,15 +21,8 @@ function normalizePriceItem(lot, cityNames) {
 }
 
 export async function getPriceList() {
-  const [lotsResponse, citiesResponse] = await Promise.all([
-    api.get("/api/parking/all"),
-    api.get("/api/parking/cities"),
-  ]);
-
-  const [lots, cities] = [lotsResponse.data, citiesResponse.data];
-  const cityNames = new Map(cities.map((city) => [city._id, city.name]));
-
-  return lots.map((lot) => normalizePriceItem(lot, cityNames));
+  const response = await api.get("/api/parking/prices");
+  return response.data.map(normalizePriceItem);
 }
 
 export function formatParkingFee(feeMinor, currency = "ILS") {
