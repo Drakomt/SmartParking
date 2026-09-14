@@ -7,6 +7,7 @@ dotenv.config();
 
 const LORA_ENDPOINT = process.env.LORA_ENDPOINT_URL || 'http://localhost:3000/lora/update-spot';
 const INTERVAL_MS = Number(process.env.LORA_SIMULATOR_INTERVAL_MS || 30000);
+const LORA_API_KEY = process.env.LORA_API_KEY;
 
 const pickRandomSpot = (spots) => {
   return spots[Math.floor(Math.random() * spots.length)];
@@ -95,6 +96,7 @@ const sendSpotAndSessionUpdate = async () => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'X-API-Key': LORA_API_KEY,
     },
     body: JSON.stringify(payload),
   });
@@ -113,6 +115,10 @@ const sendSpotAndSessionUpdate = async () => {
 };
 
 const startSimulator = async () => {
+  if (!LORA_API_KEY) {
+    throw new Error('LORA_API_KEY is required to run the LoRa simulator');
+  }
+
   await connectDB();
 
   const runCycle = async () => {

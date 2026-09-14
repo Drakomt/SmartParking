@@ -48,6 +48,7 @@ const parkingLotSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'City',
     required: true,
+    index: true,
   },
   address: {
     type: String,

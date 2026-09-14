@@ -1,24 +1,33 @@
+import { createHash } from 'node:crypto';
+import RateLimitBucket from '../models/RateLimitBucket.js';
+
 const getClientAddress = (req) => req.ip || req.socket?.remoteAddress || 'unknown';
 
 export const createRateLimiter = ({
   windowMs,
   maxRequests,
+  namespace = 'default',
   keyGenerator = (req) => getClientAddress(req),
   now = () => Date.now(),
+  bucketModel = RateLimitBucket,
 }) => {
-  const buckets = new Map();
-
-  return (req, res, next) => {
+  return async (req, res, next) => {
+    try {
     const currentTime = now();
-    const key = String(keyGenerator(req));
-    let bucket = buckets.get(key);
-
-    if (!bucket || bucket.resetAt <= currentTime) {
-      bucket = { count: 0, resetAt: currentTime + windowMs };
-      buckets.set(key, bucket);
-    }
-
-    bucket.count += 1;
+    const currentDate = new Date(currentTime);
+    const nextResetAt = new Date(currentTime + windowMs);
+    const id = createHash('sha256').update(`${namespace}:${keyGenerator(req)}`).digest('hex');
+    const bucket = await bucketModel.findByIdAndUpdate(
+      id,
+      [{
+        $set: {
+          count: { $cond: [{ $gt: ['$resetAt', currentDate] }, { $add: ['$count', 1] }, 1] },
+          resetAt: { $cond: [{ $gt: ['$resetAt', currentDate] }, '$resetAt', nextResetAt] },
+          expiresAt: { $cond: [{ $gt: ['$resetAt', currentDate] }, '$resetAt', nextResetAt] },
+        },
+      }],
+      { upsert: true, new: true },
+    );
     const remaining = Math.max(0, maxRequests - bucket.count);
     res.setHeader('RateLimit-Limit', String(maxRequests));
     res.setHeader('RateLimit-Remaining', String(remaining));
@@ -33,15 +42,9 @@ export const createRateLimiter = ({
       });
     }
 
-    if (buckets.size > 10_000) {
-      for (const [bucketKey, candidate] of buckets) {
-        if (candidate.resetAt <= currentTime) buckets.delete(bucketKey);
-      }
-      while (buckets.size > 10_000) {
-        buckets.delete(buckets.keys().next().value);
-      }
-    }
-
     return next();
+    } catch (error) {
+      return next(error);
+    }
   };
 };

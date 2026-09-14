@@ -13,7 +13,8 @@ const parkingSpotSchema = new mongoose.Schema({
   },
   spotNumber: {
     type: String,
-    default: null,
+    required: true,
+    trim: true,
   },
   status: {
     type: String,
@@ -30,5 +31,10 @@ const parkingSpotSchema = new mongoose.Schema({
     default: null,
   }
 }, { timestamps: true });
+
+parkingSpotSchema.index(
+  { parkingLot: 1, level: 1, spotNumber: 1 },
+  { unique: true },
+);
 
 export default mongoose.model('ParkingSpot', parkingSpotSchema);

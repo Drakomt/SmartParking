@@ -144,38 +144,24 @@ export default function Dashboard() {
   };
 
   const handleCreateLot = async (lotPayload, levelsDistribution) => {
-    // 1. Create the lot with initial totalSpots: 0 (backend increments totalSpots on each spot created)
-    const res = await api.post(
-      "/api/parking/",
-      { ...lotPayload, totalSpots: 0 },
-    );
-    const newLot = res.data;
-
-    // 2. Loop through levels and create spots
-    const spotPromises = [];
+    const spots = [];
     for (const [levelStr, numSpots] of Object.entries(levelsDistribution)) {
-      const levelNum = Number(levelStr);
-      for (let i = 1; i <= numSpots; i++) {
-        spotPromises.push(
-          api.post(
-            `/api/parking/${newLot._id}/spots`,
-            {
-              spotNumber: levelNum * 100 + i,
-              level: levelNum,
-              status: "free",
-              type: "regular",
-            },
-          )
-        );
+      const level = Number(levelStr);
+      for (let index = 1; index <= numSpots; index += 1) {
+        spots.push({
+          spotNumber: level * 100 + index,
+          level,
+          status: "free",
+          type: "regular",
+        });
       }
     }
 
-    // Wait for all spots to be created
-    if (spotPromises.length > 0) {
-      await Promise.all(spotPromises);
-    }
-
-    // Fetch the updated lot with all spots populated
+    const res = await api.post(
+      "/api/parking/",
+      { ...lotPayload, spots },
+    );
+    const newLot = res.data;
     const updatedLotRes = await api.get("/api/parking/parkinglotbyid", {
       params: { id: newLot._id },
     });

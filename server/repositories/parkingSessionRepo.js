@@ -68,6 +68,10 @@ const findSessionsByLot = async (parkingLotId) => {
   return await ParkingSession.find({ parkingLot: parkingLotId });
 };
 
+const findSessionsByLots = async (parkingLotIds) => (
+  ParkingSession.find({ parkingLot: { $in: parkingLotIds } })
+);
+
 const grantPassToAuthorizedVehicles = async (parkingLotId, licensePlates) => {
   if (licensePlates.length === 0) return { modifiedCount: 0 };
 
@@ -115,8 +119,17 @@ const deleteSession = async (sessionId) => {
   return await ParkingSession.findByIdAndDelete(sessionId);
 };
 
+const deleteByParkingLot = async (parkingLotId, session = null) => (
+  ParkingSession.deleteMany({ parkingLot: parkingLotId }, { session })
+);
+
+const countByParkingSpots = async (parkingSpotIds, session = null) => (
+  ParkingSession.countDocuments({ parkingSpot: { $in: parkingSpotIds } }).session(session)
+);
+
 export default {
   findSessionsByLot,
+  findSessionsByLots,
   grantPassToAuthorizedVehicles,
   findSessionByIdWithLot,
   findByCheckoutIdWithLot,
@@ -129,4 +142,6 @@ export default {
   findRandomSession,
   findRandomSessionByLot,
   deleteSession,
+  deleteByParkingLot,
+  countByParkingSpots,
 };
