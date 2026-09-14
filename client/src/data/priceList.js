@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+import api from "../lib/api";
 
 const asNumber = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0);
 
@@ -23,15 +23,11 @@ function normalizePriceItem(lot, cityNames) {
 
 export async function getPriceList() {
   const [lotsResponse, citiesResponse] = await Promise.all([
-    fetch(`${API_BASE_URL}/api/parking/all`),
-    fetch(`${API_BASE_URL}/api/parking/cities`),
+    api.get("/api/parking/all"),
+    api.get("/api/parking/cities"),
   ]);
 
-  if (!lotsResponse.ok || !citiesResponse.ok) {
-    throw new Error("Failed to load parking prices");
-  }
-
-  const [lots, cities] = await Promise.all([lotsResponse.json(), citiesResponse.json()]);
+  const [lots, cities] = [lotsResponse.data, citiesResponse.data];
   const cityNames = new Map(cities.map((city) => [city._id, city.name]));
 
   return lots.map((lot) => normalizePriceItem(lot, cityNames));

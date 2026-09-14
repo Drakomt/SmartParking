@@ -34,7 +34,7 @@ const BEERSHEBA_CENTER_COORDINATES = (() => {
   return coordinates;
 })();
 
-export const BEERSHEBA_CENTER_MAP = {
+const BEERSHEBA_CENTER_MAP = {
   imageSrc: "/beersheba-center-parking.jpg",
   imageAlt: "חניון באר שבע מרכז",
   aspectRatio: "2422 / 1760",

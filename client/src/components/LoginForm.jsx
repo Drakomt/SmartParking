@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../lib/api";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -29,16 +29,13 @@ export default function LoginForm() {
     setError("");
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/auth/login`,
+      const response = await api.post(
+        "/api/auth/login",
         {
           email: fields.email,
           password: fields.password,
         },
-        { withCredentials: true },
       );
-
-      console.log("התחברות בהצלחה:", response.data);
 
       login(response.data);
       setFields({ email: "", password: "" });

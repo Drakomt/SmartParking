@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
 import { useSocket } from "../contexts/SocketContext";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -42,12 +42,8 @@ export default function Dashboard() {
       try {
         setLoading(true);
         const [citiesRes, lotsRes] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/parking/authorized/cities`, {
-            withCredentials: true,
-          }),
-          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/parking/authorized/lots`, {
-            withCredentials: true,
-          }),
+          api.get("/api/parking/authorized/cities"),
+          api.get("/api/parking/authorized/lots"),
         ]);
         setCities(citiesRes.data);
         setParkingLots(lotsRes.data);
@@ -124,13 +120,7 @@ export default function Dashboard() {
   }, [user, socket]);
 
   const handleSaveLotSubmit = async (lotId, formData) => {
-    await axios.put(
-      `${import.meta.env.VITE_API_BASE_URL}/api/parking/${lotId}`,
-      formData,
-      {
-        withCredentials: true,
-      },
-    );
+    await api.put(`/api/parking/${lotId}`, formData);
     setParkingLots((prev) =>
       prev.map((lot) =>
         lot._id === lotId ? { ...lot, ...formData } : lot,
@@ -142,9 +132,7 @@ export default function Dashboard() {
     if (!lotToDelete) return;
     setIsDeletingLot(true);
     try {
-      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/parking/${lotToDelete._id}`, {
-        withCredentials: true,
-      });
+      await api.delete(`/api/parking/${lotToDelete._id}`);
       setParkingLots(prev => prev.filter(l => l._id !== lotToDelete._id));
       setLotToDelete(null);
     } catch (err) {
@@ -157,10 +145,9 @@ export default function Dashboard() {
 
   const handleCreateLot = async (lotPayload, levelsDistribution) => {
     // 1. Create the lot with initial totalSpots: 0 (backend increments totalSpots on each spot created)
-    const res = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}/api/parking/`,
+    const res = await api.post(
+      "/api/parking/",
       { ...lotPayload, totalSpots: 0 },
-      { withCredentials: true }
     );
     const newLot = res.data;
 
@@ -170,14 +157,14 @@ export default function Dashboard() {
       const levelNum = Number(levelStr);
       for (let i = 1; i <= numSpots; i++) {
         spotPromises.push(
-          axios.post(
-            `${import.meta.env.VITE_API_BASE_URL}/api/parking/${newLot._id}/spots`,
+          api.post(
+            `/api/parking/${newLot._id}/spots`,
             {
               spotNumber: levelNum * 100 + i,
               level: levelNum,
-              isAvailable: true,
+              status: "free",
+              type: "regular",
             },
-            { withCredentials: true }
           )
         );
       }
@@ -189,10 +176,9 @@ export default function Dashboard() {
     }
 
     // Fetch the updated lot with all spots populated
-    const updatedLotRes = await axios.get(
-      `${import.meta.env.VITE_API_BASE_URL}/api/parking/parkinglotbyid?id=${newLot._id}`,
-      { withCredentials: true }
-    );
+    const updatedLotRes = await api.get("/api/parking/parkinglotbyid", {
+      params: { id: newLot._id },
+    });
 
     setParkingLots(prev => [...prev, updatedLotRes.data]);
   };

@@ -122,13 +122,17 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
   // Initialize or reset custom spots when levels/totalSpots change
   useEffect(() => {
     if (formData.distributionMode === "custom") {
-      const newCustom = { ...customSpots };
-      for (let i = 1; i <= formData.levels; i++) {
-        if (newCustom[i] === undefined) {
-          newCustom[i] = Math.floor(formData.totalSpots / formData.levels);
+      setCustomSpots((previous) => {
+        const next = { ...previous };
+        let changed = false;
+        for (let i = 1; i <= formData.levels; i++) {
+          if (next[i] === undefined) {
+            next[i] = Math.floor(formData.totalSpots / formData.levels);
+            changed = true;
+          }
         }
-      }
-      setCustomSpots(newCustom);
+        return changed ? next : previous;
+      });
     }
   }, [formData.levels, formData.totalSpots, formData.distributionMode]);
 

@@ -1,10 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import axios from "axios";
+import api from "../../lib/api";
 
 export default function InvoiceSummary({ licensePlate, sessionData, onPay }) {
-  const [error, setError] = useState(null);
-
   const parkingLotName = sessionData?.parkingLotName || "חניון ממתין לנתונים...";
   const entryTime = sessionData?.entryTime ? new Date(sessionData.entryTime).toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'}) : "--:--";
   
@@ -41,7 +39,7 @@ export default function InvoiceSummary({ licensePlate, sessionData, onPay }) {
 
   const createOrder = async () => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/paypal/orders`, {
+      const response = await api.post("/api/paypal/orders", {
         checkoutId: checkoutId,
         checkoutToken: checkoutToken,
       });
@@ -54,13 +52,15 @@ export default function InvoiceSummary({ licensePlate, sessionData, onPay }) {
 
   const onApprove = async (data) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/paypal/orders/${data.orderID}/capture`, {
+      const response = await api.post(`/api/paypal/orders/${data.orderID}/capture`, {
         checkoutId: checkoutId,
         checkoutToken: checkoutToken,
       });
       
-      if (response.data.status === 'COMPLETED' || response.data.status === 'APPROVED') {
+      if (response.data.status === "COMPLETED" || response.data.status === "APPROVED") {
         onPay('success', response.data);
+      } else if (response.data.status === "PENDING") {
+        onPay("pending", response.data);
       } else {
         onPay('error');
       }

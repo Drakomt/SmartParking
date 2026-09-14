@@ -26,4 +26,11 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    files: ['src/contexts/**/*.{js,jsx}'],
+    rules: {
+      // Context providers intentionally export their matching consumer hook.
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

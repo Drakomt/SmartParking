@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 
 const AuthContext = createContext();
 
@@ -12,10 +12,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/auth/me`,
-          { withCredentials: true }
-        );
+        const res = await api.get('/api/auth/me');
         setUser(res.data);
       } catch {
         setUser(null);
@@ -33,11 +30,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     setUser(null);
     try {
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`,
-        {},
-        { withCredentials: true },
-      );
+      await api.post('/api/auth/logout');
     } catch {
       console.error('Failed to clear the authentication cookie');
     }

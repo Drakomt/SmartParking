@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../lib/api";
 
 export default function SpotManagementModal({ spot, lotId, onClose, onUpdate }) {
   // The API uses "block" while the UI keeps the clearer "blocked" label/value.
@@ -20,21 +20,17 @@ export default function SpotManagementModal({ spot, lotId, onClose, onUpdate }) 
     const apiStatus = status === "blocked" ? "block" : status;
     try {
       if (spot.isNew) {
-        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/parking/${lotId}/spots`, {
+        await api.post(`/api/parking/${lotId}/spots`, {
           status: apiStatus,
           type: type,
           level: spot.level,
           spotNumber: spot.spotNumber
-        }, {
-          withCredentials: true,
         });
         onUpdate();
       } else {
-        const response = await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/parking/spots/${spot._id}`, {
+        const response = await api.put(`/api/parking/spots/${spot._id}`, {
           status: apiStatus,
           type: type
-        }, {
-          withCredentials: true,
         });
         onUpdate(response.data);
       }
@@ -52,9 +48,7 @@ export default function SpotManagementModal({ spot, lotId, onClose, onUpdate }) 
     setIsDeleting(true);
     setError(null);
     try {
-      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/parking/spots/${spot._id}`, {
-        withCredentials: true,
-      });
+      await api.delete(`/api/parking/spots/${spot._id}`);
       
       onUpdate(null);
       onClose();

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../../lib/api";
 
 export default function LicensePlateSearch({ onSearch }) {
   const [plate, setPlate] = useState("");
@@ -16,7 +16,7 @@ export default function LicensePlateSearch({ onSearch }) {
     setLoading(true);
 
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/parking/session/lookup?plate=${plate}`);
+      const response = await api.get("/api/parking/session/lookup", { params: { plate } });
       onSearch(plate, response.data);
     } catch (err) {
       setError(err.response?.data?.message || "שגיאה באיתור הרכב. ייתכן שאין חוב פעיל או שהרכב לא נמצא.");
