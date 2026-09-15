@@ -35,7 +35,7 @@ export default function PaymentResult({ status, sessionData, graceExpiresAt, onG
   };
 
   return (
-    <div className="flex flex-col items-center justify-center animate-fade-in-up max-w-md mx-auto py-10">
+    <div className="mx-auto flex max-w-md flex-col items-center justify-center py-6 animate-fade-in-up sm:py-10">
       
       <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-lg ${
         isSuccess ? 'bg-green-100 text-green-600' : isPending ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'
@@ -45,11 +45,11 @@ export default function PaymentResult({ status, sessionData, graceExpiresAt, onG
         </span>
       </div>
       
-      <h2 className={`text-3xl font-black mb-4 text-center ${isSuccess ? 'text-green-600 dark:text-green-500' : isPending ? 'text-amber-700 dark:text-amber-400' : 'text-red-600 dark:text-red-500'}`}>
+      <h2 className={`mb-4 text-center text-2xl font-black sm:text-3xl ${isSuccess ? 'text-green-600 dark:text-green-500' : isPending ? 'text-amber-700 dark:text-amber-400' : 'text-red-600 dark:text-red-500'}`}>
         {isSuccess ? 'התשלום בוצע בהצלחה!' : isPending ? 'התשלום ממתין לאישור' : 'שגיאה בביצוע התשלום'}
       </h2>
       
-      <p className="text-on-surface-variant text-center mb-10 text-lg">
+      <p className="mb-7 text-center leading-7 text-on-surface-variant sm:mb-10 sm:text-lg">
         {isSuccess 
           ? 'התשלום נקלט בהצלחה. יש לצאת מהחניון לפני סיום הזמן כדי להימנע מחיוב נוסף.'
           : isPending
@@ -67,20 +67,20 @@ export default function PaymentResult({ status, sessionData, graceExpiresAt, onG
               <label htmlFor="receiptEmail" className="text-sm font-medium text-on-surface">
                 קבלת חשבונית למייל (אופציונלי)
               </label>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <input
                   type="email"
                   id="receiptEmail"
                   placeholder="כתובת דואר אלקטרוני"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 bg-surface border border-outline-variant/50 rounded-lg px-4 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm"
+                  className="min-h-12 flex-1 rounded-lg border border-outline-variant/50 bg-surface px-4 py-2 text-on-surface transition-all focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   dir="ltr"
                 />
                 <button
                   type="submit"
                   disabled={!email || loading}
-                  className="bg-primary hover:bg-primary/90 text-on-primary font-bold px-4 py-2 rounded-lg transition-all text-sm disabled:opacity-50 cursor-pointer flex items-center justify-center min-w-[70px]"
+                  className="flex min-h-12 min-w-[70px] cursor-pointer items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loading ? <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span> : "שלח"}
                 </button>

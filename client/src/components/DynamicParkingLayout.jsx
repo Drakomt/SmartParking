@@ -1,4 +1,5 @@
 import React from "react";
+import ZoomableParkingCanvas from "./ZoomableParkingCanvas";
 
 export default function DynamicParkingLayout({ parkings = [], isAdmin = false, onSpotClick, onAddSpot, isAddingSpot }) {
   // Always ensure spots are ordered sequentially by spotNumber
@@ -29,7 +30,7 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
       return (
         <div
           key={`placeholder-${rowPosition}-${index}`}
-          className="h-28 sm:h-36 rounded-md bg-[#131820]/50 border border-dashed border-slate-700/30 flex items-center justify-center opacity-30 select-none pointer-events-none"
+          className="flex h-20 select-none items-center justify-center rounded-md border border-dashed border-slate-700/30 bg-[#131820]/50 opacity-30 pointer-events-none sm:h-36"
         >
           <span className="text-[10px] text-slate-600 font-mono">--</span>
         </div>
@@ -46,13 +47,13 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
         <div
           key="add-button-spot"
           onClick={isAddingSpot ? undefined : onAddSpot}
-          className={`relative h-28 sm:h-36 bg-[#252f3d] hover:bg-primary/20 ${borderStyle} flex flex-col items-center justify-center p-1 sm:p-2 transition-all duration-300 shadow-md ${
+          className={`relative flex h-20 flex-col items-center justify-center bg-[#252f3d] p-1 shadow-md transition-all duration-300 hover:bg-primary/20 sm:h-36 sm:p-2 ${borderStyle} ${
             isAddingSpot
               ? "opacity-50 cursor-wait"
               : "cursor-pointer hover:ring-2 hover:ring-white/80 z-20 group"
           }`}
         >
-          <span className={`material-symbols-outlined text-5xl text-white font-bold drop-shadow-md opacity-70 ${isAddingSpot ? "animate-pulse" : "group-hover:opacity-100 group-hover:scale-110"} transition-all duration-300`}>
+          <span className={`material-symbols-outlined text-3xl font-bold text-white opacity-70 drop-shadow-md sm:text-5xl ${isAddingSpot ? "animate-pulse" : "group-hover:scale-110 group-hover:opacity-100"} transition-all duration-300`}>
             add
           </span>
         </div>
@@ -69,13 +70,13 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
 
     if (!isOccupied && spot.type === "disabled") {
       typeMarking = (
-        <span className="parking-asphalt-marking parking-asphalt-marking-disabled material-symbols-outlined text-4xl sm:text-5xl">
+        <span className="parking-asphalt-marking parking-spot-relative-symbol parking-asphalt-marking-disabled material-symbols-outlined">
           accessible
         </span>
       );
     } else if (!isOccupied && spot.type === "dean") {
       typeMarking = (
-        <span className="parking-asphalt-marking parking-asphalt-marking-dean material-symbols-outlined text-4xl sm:text-5xl">
+        <span className="parking-asphalt-marking parking-spot-relative-symbol parking-asphalt-marking-dean material-symbols-outlined">
           school
         </span>
       );
@@ -85,7 +86,7 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
       <div
         key={spot._id || `spot-${index}`}
         onClick={() => onSpotClick && onSpotClick(spot)}
-        className={`relative h-28 sm:h-36 bg-[#252f3d] hover:bg-[#2d3848] ${borderStyle} flex flex-col items-center justify-between p-1 sm:p-2 transition-all duration-300 shadow-md ${
+        className={`relative flex h-20 flex-col items-center justify-between bg-[#252f3d] p-0.5 shadow-md transition-all duration-300 hover:bg-[#2d3848] sm:h-36 sm:p-2 ${borderStyle} ${
           isAdmin
             ? "cursor-pointer hover:ring-2 hover:ring-primary z-20"
             : ""
@@ -98,19 +99,19 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
           }`}
         >
           <div className="w-full relative flex items-center justify-center px-1 min-h-[20px]">
-            <span className="text-[11px] sm:text-xs font-black text-slate-200 tracking-wider bg-slate-950/80 px-1 py-0.5 rounded border border-slate-700/60 z-10">
+            <span className="z-10 rounded border border-slate-700/60 bg-slate-950/80 px-0.5 py-0.5 font-mono text-[9px] font-black tracking-tight text-slate-200 sm:px-1 sm:text-xs sm:tracking-wider">
               {spot.spotNumber}
             </span>
           </div>
           {/* Wheel Stopper Bar */}
-          <div className="w-10 sm:w-14 h-1 bg-slate-950 rounded-full border border-slate-700/70 opacity-70 mt-0.5" />
+          <div className="mt-0.5 h-1 w-6 rounded-full border border-slate-700/70 bg-slate-950 opacity-70 sm:w-14" />
         </div>
 
         {/* Spot Center: Car (with multiply blend mode to eliminate white BG) or Free/Blocked indicator */}
         <div className="flex-1 w-full flex items-center justify-center my-0.5 order-2 relative overflow-hidden">
           {typeMarking && (
             <div
-              className={`absolute inset-0 z-0 flex items-center justify-center pointer-events-none ${
+              className={`parking-spot-symbol-container absolute inset-0 z-0 flex items-center justify-center pointer-events-none ${
                 rowPosition === "bottom" ? "rotate-180" : ""
               }`}
               aria-hidden="true"
@@ -120,10 +121,10 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
           )}
           {isBlocked ? (
             <div className="relative z-10 flex flex-col items-center justify-center">
-              <span className="parking-blocked-badge-icon material-symbols-outlined text-2xl sm:text-3xl drop-shadow">
+              <span className="parking-blocked-badge-icon material-symbols-outlined text-lg drop-shadow sm:text-3xl">
                 block
               </span>
-              <span className="parking-blocked-badge-text text-[10px] sm:text-xs font-bold mt-0.5">
+              <span className="parking-blocked-badge-text mt-0.5 hidden text-[10px] font-bold sm:inline sm:text-xs">
                 חסום
               </span>
             </div>
@@ -137,7 +138,7 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
             />
           ) : (
             <div className="relative z-10 flex flex-col items-center justify-end h-full gap-1 pb-1">
-              <span className="parking-slot-free-badge text-[10px] sm:text-xs font-bold border px-2 py-0.5 rounded-full drop-shadow-sm">
+              <span className="parking-slot-free-badge rounded-full border px-1 py-0.5 text-[8px] font-bold drop-shadow-sm sm:px-2 sm:text-xs">
                 פנוי
               </span>
             </div>
@@ -155,7 +156,7 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
   // Clean Realistic Road Lane Component (No text, pure painted arrows & asphalt center line)
   const renderRoadLane = () => {
     return (
-      <div className="h-16 sm:h-20 bg-[#161c24] my-2 sm:my-3 relative flex items-center justify-between px-8 sm:px-14 border-y-2 border-white/60 shadow-inner overflow-hidden select-none pointer-events-none">
+      <div className="relative my-1.5 flex h-12 select-none items-center justify-between overflow-hidden border-y-2 border-white/60 bg-[#161c24] px-8 shadow-inner pointer-events-none sm:my-3 sm:h-20 sm:px-14">
         {/* Asphalt Gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/30 via-transparent to-slate-900/30 pointer-events-none" />
 
@@ -200,14 +201,15 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
 
   return (
     <div className="w-full flex flex-col items-center">
-      {/* Parking Area Container */}
-      <div
-        className="w-full bg-[#0d1117] rounded-2xl p-3 sm:p-5 border-2 border-slate-700/60 shadow-2xl overflow-x-auto"
-        dir="ltr"
-      >
-        <div className="min-w-[620px] flex flex-col">
+      <ZoomableParkingCanvas label="תרשים חניות במפלס">
+        {/* Parking Area Container */}
+        <div
+          className="w-full overflow-hidden rounded-2xl border-2 border-slate-700/60 bg-[#0d1117] p-2 shadow-2xl sm:p-5"
+          dir="ltr"
+        >
+        <div className="flex w-full flex-col">
           {/* ================= ROW 1 (Spots 1 - 8) ================= */}
-          <div className="grid grid-cols-8 gap-2 sm:gap-3">
+          <div className="grid grid-cols-8 gap-1 sm:gap-3">
             {fillRowTo8(row1).map((spot, idx) => renderSpot(spot, idx, "top"))}
           </div>
 
@@ -216,7 +218,7 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
 
           {/* ================= ROW 2 (Spots 9 - 16) ================= */}
           {hasRow2 && (
-            <div className="grid grid-cols-8 gap-2 sm:gap-3">
+            <div className="grid grid-cols-8 gap-1 sm:gap-3">
               {fillRowTo8(row2).map((spot, idx) => renderSpot(spot, idx, "bottom"))}
             </div>
           )}
@@ -230,7 +232,7 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
               </div>
 
               {/* ROW 3 (Spots 17 - 24) */}
-              <div className="grid grid-cols-8 gap-2 sm:gap-3">
+              <div className="grid grid-cols-8 gap-1 sm:gap-3">
                 {fillRowTo8(row3).map((spot, idx) => renderSpot(spot, idx, "top"))}
               </div>
 
@@ -239,7 +241,7 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
 
               {/* ROW 4 (Spots 25 - 32) */}
               {hasRow4 && (
-                <div className="grid grid-cols-8 gap-2 sm:gap-3">
+                <div className="grid grid-cols-8 gap-1 sm:gap-3">
                   {fillRowTo8(row4).map((spot, idx) => renderSpot(spot, idx, "bottom"))}
                 </div>
               )}
@@ -247,6 +249,7 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
           )}
         </div>
       </div>
+      </ZoomableParkingCanvas>
 
       {/* Legend / Status Info */}
       <div

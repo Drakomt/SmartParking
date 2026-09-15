@@ -93,8 +93,8 @@ export default function PaymentPage() {
   };
 
   return (
-    <div className="pt-24 pb-8 px-4 sm:px-8 max-w-4xl mx-auto w-full flex flex-col min-h-[calc(100vh-100px)]">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 w-full">
+    <div className="mx-auto flex min-h-[calc(100dvh-64px)] w-full max-w-4xl flex-col px-3 pb-8 pt-20 sm:px-8 sm:pt-24">
+      <div className="mb-5 flex w-full items-center justify-between gap-3 sm:mb-8">
         <button
           onClick={() => {
             if (step > 1 && step < 3) {
@@ -103,18 +103,20 @@ export default function PaymentPage() {
               navigate("/");
             }
           }}
-          className="self-start sm:self-auto px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface flex items-center gap-2 cursor-pointer font-medium border border-outline-variant/30 shadow-sm"
+          className="flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border border-outline-variant/30 bg-surface-container p-2 font-medium text-on-surface shadow-sm transition-colors hover:bg-surface-container-high sm:px-4"
+          aria-label={step > 1 && step < 3 ? 'חזרה לשלב הקודם' : 'חזרה לדף הבית'}
         >
-          {step > 1 && step < 3 ? 'חזור' : 'חזרה לדף הבית'}
+          <span className="material-symbols-outlined" style={{ transform: 'rotate(180deg)' }} aria-hidden="true">arrow_back</span>
+          <span className="hidden sm:inline">{step > 1 && step < 3 ? 'חזור' : 'חזרה לדף הבית'}</span>
         </button>
-        <h1 className="text-2xl sm:text-3xl font-black text-primary flex items-center justify-center gap-3 flex-grow text-center">
-          <span className="material-symbols-outlined text-3xl sm:text-4xl">payments</span>
+        <h1 className="flex min-w-0 flex-grow items-center justify-center gap-2 text-center text-2xl font-black text-primary sm:gap-3 sm:text-3xl">
+          <span className="material-symbols-outlined text-3xl sm:text-4xl" aria-hidden="true">payments</span>
           תשלום לחניון
         </h1>
-        <div className="hidden sm:block w-[140px]"></div> {/* Spacer for perfect centering */}
+        <div className="w-11 shrink-0 sm:w-[140px]" aria-hidden="true"></div>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-3xl shadow-lg border border-outline-variant/30 overflow-hidden relative min-h-[400px]">
+      <div className="relative min-h-[400px] overflow-hidden rounded-2xl border border-outline-variant/30 bg-surface-container-lowest shadow-lg sm:rounded-3xl">
         {/* Progress Bar */}
         {step < 3 && (
           <div className="w-full bg-surface-container-high h-1.5 flex flex-row-reverse">
@@ -125,7 +127,7 @@ export default function PaymentPage() {
           </div>
         )}
 
-        <div className="p-6 sm:p-10">
+        <div className="p-4 sm:p-10">
           {step === 1 && (
             <LicensePlateSearch onSearch={handleSearchSubmit} />
           )}

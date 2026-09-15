@@ -62,10 +62,10 @@ export default function SpotManagementModal({ spot, lotId, onClose, onUpdate }) 
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" dir="rtl">
-      <div className="bg-surface-container-lowest rounded-3xl p-6 sm:p-8 w-full max-w-sm shadow-2xl relative">
-        <button onClick={onClose} className="absolute top-4 left-4 text-2xl text-on-surface-variant hover:text-error transition-colors">&times;</button>
-        <h3 className="text-2xl font-bold mb-6 text-primary">
+    <div className="mobile-sheet-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" dir="rtl">
+      <section className="mobile-sheet relative max-h-[90dvh] w-full max-w-sm overflow-y-auto rounded-3xl bg-surface-container-lowest p-5 shadow-2xl sm:p-8" role="dialog" aria-modal="true" aria-labelledby="spot-management-title">
+        <button type="button" onClick={onClose} className="absolute left-3 top-3 flex min-h-11 min-w-11 items-center justify-center rounded-full text-2xl text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-error" aria-label="סגירת ניהול החניה">&times;</button>
+        <h3 id="spot-management-title" className="mb-5 pl-10 text-xl font-bold text-primary sm:mb-6 sm:text-2xl">
           {spot.isNew ? "יצירת חניה חדשה" : `ניהול חניה ${spot.spotNumber}`}
         </h3>
         
@@ -118,13 +118,13 @@ export default function SpotManagementModal({ spot, lotId, onClose, onUpdate }) 
             </div>
           </div>
           
-          <div className="flex gap-4 pt-2">
+          <div className="flex flex-col-reverse gap-3 pt-2 min-[360px]:flex-row">
             {!spot.isNew && (
-              <button type="button" onClick={() => setShowDeleteConfirm(true)} disabled={isSaving || isDeleting} className="px-6 bg-error/10 text-error py-3 rounded-xl font-bold hover:bg-error hover:text-white disabled:opacity-50 transition-colors">
+              <button type="button" onClick={() => setShowDeleteConfirm(true)} disabled={isSaving || isDeleting} className="min-h-12 rounded-xl bg-error/10 px-6 py-3 font-bold text-error transition-colors hover:bg-error hover:text-white disabled:opacity-50">
                 מחק חניה
               </button>
             )}
-            <button type="submit" disabled={isSaving || isDeleting || (!spot.isNew && status === initialStatus && type === spot.type)} className="flex-1 bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 disabled:opacity-50">
+            <button type="submit" disabled={isSaving || isDeleting || (!spot.isNew && status === initialStatus && type === spot.type)} className="min-h-12 flex-1 rounded-xl bg-primary py-3 font-bold text-white hover:bg-primary/90 disabled:opacity-50">
               {isSaving ? "שומר..." : spot.isNew ? "צור חניה" : "עדכן"}
             </button>
           </div>
@@ -146,14 +146,14 @@ export default function SpotManagementModal({ spot, lotId, onClose, onUpdate }) 
                 <button 
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={isDeleting}
-                  className="flex-1 py-2 rounded-xl text-sm font-bold border border-outline-variant hover:bg-surface-container transition-colors disabled:opacity-50"
+                  className="min-h-11 flex-1 rounded-xl border border-outline-variant py-2 text-sm font-bold transition-colors hover:bg-surface-container disabled:opacity-50"
                 >
                   ביטול
                 </button>
                 <button 
                   onClick={executeDelete}
                   disabled={isDeleting}
-                  className="flex-1 py-2 rounded-xl text-sm font-bold bg-error text-white hover:bg-error/90 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-error py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-error/90 disabled:opacity-50"
                 >
                   {isDeleting ? "מוחק..." : "כן, מחק"}
                 </button>
@@ -161,7 +161,7 @@ export default function SpotManagementModal({ spot, lotId, onClose, onUpdate }) 
             </div>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

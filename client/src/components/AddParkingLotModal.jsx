@@ -275,19 +275,21 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in" dir="rtl">
-      <div className="bg-surface-container-lowest w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh]">
-        <div className="p-6 border-b border-outline-variant/30 flex items-center justify-between shrink-0">
-          <h2 className="text-2xl font-black text-primary">הוספת חניון חדש</h2>
+    <div className="mobile-sheet-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-in fade-in" dir="rtl">
+      <section className="mobile-sheet flex max-h-[90dvh] w-full max-w-2xl flex-col rounded-3xl bg-surface-container-lowest shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="add-lot-title">
+        <div className="flex shrink-0 items-center justify-between border-b border-outline-variant/30 p-4 sm:p-6">
+          <h2 id="add-lot-title" className="text-xl font-black text-primary sm:text-2xl">הוספת חניון חדש</h2>
           <button
+            type="button"
             onClick={onClose}
-            className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary"
+            aria-label="סגירת חלון הוספת החניון"
           >
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        <div ref={scrollContainerRef} className="p-6 overflow-y-auto">
+        <div ref={scrollContainerRef} className="overflow-y-auto p-4 sm:p-6">
           {error && (
             <div className="mb-6 p-4 bg-error/10 text-error rounded-xl border border-error/20 flex items-start gap-3">
               <span className="material-symbols-outlined shrink-0 mt-0.5">error</span>
@@ -462,10 +464,10 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
                 </div>
               </div>
 
-              <div className="bg-primary/5 p-5 rounded-2xl border border-primary/20">
+              <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
                 <h4 className="font-bold text-primary mb-3">אופן חלוקת החניות במפלסים</h4>
-                <div className="flex gap-6 mb-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                <div className="mb-4 flex flex-col gap-2 min-[360px]:flex-row min-[360px]:gap-6">
+                  <label className="flex min-h-11 cursor-pointer items-center gap-2">
                     <input
                       type="radio"
                       name="distributionMode"
@@ -476,7 +478,7 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
                     />
                     <span className="text-sm font-medium">חלוקה שווה</span>
                   </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex min-h-11 cursor-pointer items-center gap-2">
                     <input
                       type="radio"
                       name="distributionMode"
@@ -515,12 +517,12 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
           </form>
         </div>
 
-        <div className="p-6 border-t border-outline-variant/30 bg-surface-container-lowest shrink-0 flex gap-3 justify-end rounded-b-3xl">
+        <div className="flex shrink-0 flex-col-reverse gap-3 rounded-b-3xl border-t border-outline-variant/30 bg-surface-container-lowest p-4 min-[360px]:flex-row min-[360px]:justify-end sm:p-6">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-6 py-2.5 rounded-xl text-sm font-bold border border-outline-variant hover:bg-surface-container transition-colors disabled:opacity-50"
+            className="min-h-11 rounded-xl border border-outline-variant px-6 py-2.5 text-sm font-bold transition-colors hover:bg-surface-container disabled:opacity-50"
           >
             ביטול
           </button>
@@ -528,7 +530,7 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
             type="submit"
             form="add-lot-form"
             disabled={isSubmitting}
-            className="px-6 py-2.5 rounded-xl text-sm font-bold bg-primary text-white hover:bg-primary/90 shadow transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white shadow transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
             {isSubmitting ? (
               <>
@@ -540,7 +542,7 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
             )}
           </button>
         </div>
-      </div>
+      </section>
 
     </div>
   );

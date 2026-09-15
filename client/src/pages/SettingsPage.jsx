@@ -45,27 +45,27 @@ export default function SettingsPage() {
         <h2 className="text-xl font-bold text-primary mb-6">הגדרות כלליות</h2>
         <div className="space-y-6 mb-10">
           
-          <div 
+          <button
+            type="button"
             onClick={() => setIsDarkMode(!isDarkMode)}
-            className="flex items-center justify-between pb-6 border-b border-outline-variant/20 cursor-pointer group mb-6"
+            className="group mb-6 flex min-h-20 w-full cursor-pointer items-center justify-between gap-4 border-b border-outline-variant/20 pb-6 text-right"
+            aria-pressed={isDarkMode}
           >
-            <div>
+            <div className="min-w-0">
               <h3 className="font-bold text-on-surface text-lg group-hover:text-primary transition-colors">מצב לילה</h3>
               <p className="text-sm text-on-surface-variant">החלף בין תצוגה בהירה לכהה בכל רחבי האתר</p>
             </div>
-            <button 
-              className={`w-14 h-7 rounded-full flex items-center px-1 transition-colors border ${isDarkMode ? 'bg-primary border-primary' : 'bg-surface-container-highest border-outline-variant/30'}`}
-            >
+            <span className={`flex h-8 w-14 shrink-0 items-center rounded-full border px-1 transition-colors ${isDarkMode ? 'bg-primary border-primary' : 'bg-surface-container-highest border-outline-variant/30'}`} aria-hidden="true">
               <div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${isDarkMode ? 'translate-x-[-28px]' : 'translate-x-0'}`}></div>
-            </button>
-          </div>
+            </span>
+          </button>
 
           <div>
             <h3 className="font-bold text-on-surface text-lg mb-4">ערכת נושא (צבעי האתר)</h3>
             <div className="flex flex-col sm:flex-row gap-4">
               <button 
                 onClick={() => setThemeColor('classic')}
-                className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all flex sm:flex-col items-center gap-4 sm:gap-2 ${themeColor === 'classic' ? 'border-[#091426] dark:border-[#3b82f6] bg-surface-container-low shadow-sm' : 'border-outline-variant/30 hover:border-outline/50 cursor-pointer'}`}
+                className={`flex min-h-12 flex-1 items-center gap-4 rounded-xl border-2 px-4 py-3 transition-all sm:flex-col sm:gap-2 ${themeColor === 'classic' ? 'border-[#091426] dark:border-[#3b82f6] bg-surface-container-low shadow-sm' : 'border-outline-variant/30 hover:border-outline/50 cursor-pointer'}`}
               >
                 <div className="w-8 h-8 rounded-full bg-[#091426] dark:bg-[#3b82f6] shrink-0"></div>
                 <span className="font-bold text-sm">קלאסי</span>
@@ -73,7 +73,7 @@ export default function SettingsPage() {
               
               <button 
                 onClick={() => setThemeColor('ocean')}
-                className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all flex sm:flex-col items-center gap-4 sm:gap-2 ${themeColor === 'ocean' ? 'border-[#0284c7] dark:border-[#38bdf8] bg-surface-container-low shadow-sm' : 'border-outline-variant/30 hover:border-outline/50 cursor-pointer'}`}
+                className={`flex min-h-12 flex-1 items-center gap-4 rounded-xl border-2 px-4 py-3 transition-all sm:flex-col sm:gap-2 ${themeColor === 'ocean' ? 'border-[#0284c7] dark:border-[#38bdf8] bg-surface-container-low shadow-sm' : 'border-outline-variant/30 hover:border-outline/50 cursor-pointer'}`}
               >
                 <div className="w-8 h-8 rounded-full bg-[#0284c7] dark:bg-[#38bdf8] shrink-0"></div>
                 <span className="font-bold text-sm">אוקיינוס</span>
@@ -81,7 +81,7 @@ export default function SettingsPage() {
               
               <button 
                 onClick={() => setThemeColor('earth')}
-                className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all flex sm:flex-col items-center gap-4 sm:gap-2 ${themeColor === 'earth' ? 'border-[#ea580c] dark:border-[#f59e0b] bg-surface-container-low shadow-sm' : 'border-outline-variant/30 hover:border-outline/50 cursor-pointer'}`}
+                className={`flex min-h-12 flex-1 items-center gap-4 rounded-xl border-2 px-4 py-3 transition-all sm:flex-col sm:gap-2 ${themeColor === 'earth' ? 'border-[#ea580c] dark:border-[#f59e0b] bg-surface-container-low shadow-sm' : 'border-outline-variant/30 hover:border-outline/50 cursor-pointer'}`}
               >
                 <div className="w-8 h-8 rounded-full bg-[#ea580c] dark:bg-[#f59e0b] shrink-0"></div>
                 <span className="font-bold text-sm">אדמה ושקיעה</span>
