@@ -70,6 +70,92 @@ body {
   font-family: var(--font-sans);
   background-color: var(--color-background);
   color: var(--color-on-background);
+  min-width: 320px;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+html {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.app-navbar {
+  height: calc(4rem + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
+}
+
+.mobile-sheet {
+  overscroll-behavior: contain;
+}
+
+.parking-map-viewport {
+  overscroll-behavior: contain;
+  scrollbar-color: color-mix(in srgb, var(--color-primary) 55%, transparent) transparent;
+  scrollbar-width: thin;
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.parking-map-viewport:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+@media (max-width: 639px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  .mobile-sheet-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .mobile-sheet {
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - env(safe-area-inset-top) - 0.75rem);
+    border-radius: 1.5rem 1.5rem 0 0;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @keyframes fadeInUp {
@@ -235,6 +321,17 @@ html.theme-colorblind .parking-legend-free-dot {
     -1px 1px rgb(255 255 255 / 0.12);
 }
 
+.parking-spot-symbol-container {
+  container-type: size;
+}
+
+.parking-spot-relative-symbol {
+  max-width: 68%;
+  max-height: 68%;
+  overflow: hidden;
+  font-size: min(54cqw, 54cqh);
+}
+
 .parking-asphalt-marking-disabled {
   color: #a9e0ee;
 }
@@ -316,6 +413,15 @@ html.theme-colorblind .text-on-error-container {
 .leaflet-popup-tip {
   background-color: var(--color-surface-container-lowest) !important;
   color: var(--color-on-surface) !important;
+}
+
+@media (max-width: 639px) {
+  .leaflet-control-zoom a {
+    width: 44px !important;
+    height: 44px !important;
+    line-height: 44px !important;
+    font-size: 1.4rem !important;
+  }
 }
 
 /* Color Themes */

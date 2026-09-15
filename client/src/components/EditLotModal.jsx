@@ -94,17 +94,17 @@ export default function EditLotModal({ isOpen, onClose, lot, onSave }) {
   if (!isOpen || !lot) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="relative max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl sm:p-8">
+    <div className="mobile-sheet-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" dir="rtl">
+      <section className="mobile-sheet relative max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-3xl bg-surface-container-lowest p-5 shadow-2xl sm:p-8" role="dialog" aria-modal="true" aria-labelledby="edit-lot-title">
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 left-4 text-2xl text-on-surface-variant hover:text-error transition-colors"
+          className="absolute left-3 top-3 flex min-h-11 min-w-11 items-center justify-center rounded-full text-2xl text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-error sm:left-4 sm:top-4"
           aria-label="סגירת חלון עריכת החניון"
         >
           &times;
         </button>
-        <h3 className="text-2xl font-bold mb-6 text-primary">עריכת חניון ותעריף</h3>
+        <h3 id="edit-lot-title" className="mb-6 pl-10 text-xl font-bold text-primary sm:text-2xl">עריכת חניון ותעריף</h3>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -206,13 +206,13 @@ export default function EditLotModal({ isOpen, onClose, lot, onSave }) {
             <button
               type="submit"
               disabled={isSaving}
-              className="flex-1 bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 disabled:opacity-50"
+              className="min-h-12 flex-1 rounded-xl bg-primary py-3 font-bold text-white hover:bg-primary/90 disabled:opacity-50"
             >
               {isSaving ? "שומר..." : "שמור שינויים"}
             </button>
           </div>
         </form>
-      </div>
+      </section>
     </div>
   );
 }

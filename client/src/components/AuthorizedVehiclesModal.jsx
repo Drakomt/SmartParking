@@ -66,9 +66,9 @@ export default function AuthorizedVehiclesModal({ isOpen, lot, onClose, onSave }
   if (!isOpen || !lot) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" dir="rtl">
+    <div className="mobile-sheet-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" dir="rtl">
       <section
-        className="relative flex max-h-[90dvh] w-full max-w-lg flex-col rounded-3xl bg-surface-container-lowest p-6 shadow-2xl sm:p-8"
+        className="mobile-sheet relative flex max-h-[90dvh] w-full max-w-lg flex-col rounded-3xl bg-surface-container-lowest p-4 shadow-2xl sm:p-8"
         role="dialog"
         aria-modal="true"
         aria-labelledby="authorized-vehicles-title"
@@ -76,7 +76,7 @@ export default function AuthorizedVehiclesModal({ isOpen, lot, onClose, onSave }
         <button
           type="button"
           onClick={onClose}
-          className="absolute left-4 top-4 flex min-h-10 min-w-10 items-center justify-center rounded-full text-2xl text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-error"
+          className="absolute left-3 top-3 flex min-h-11 min-w-11 items-center justify-center rounded-full text-2xl text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-error sm:left-4 sm:top-4"
           aria-label="סגירת רשימת הרכבים הפטורים"
         >
           &times;
@@ -137,7 +137,7 @@ export default function AuthorizedVehiclesModal({ isOpen, lot, onClose, onSave }
                     <button
                       type="button"
                       onClick={() => handleRemovePlate(plate)}
-                      className="flex min-h-10 min-w-10 cursor-pointer items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
+                    className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
                       aria-label={`הסרת לוחית ${displayLicensePlate(plate)} מהרשימה`}
                     >
                       <span className="material-symbols-outlined" aria-hidden="true">delete</span>

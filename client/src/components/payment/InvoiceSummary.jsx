@@ -76,14 +76,14 @@ export default function InvoiceSummary({ licensePlate, sessionData, onPay }) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center animate-fade-in-up max-w-md mx-auto py-4">
+    <div className="mx-auto flex max-w-md flex-col items-center justify-center py-2 animate-fade-in-up sm:py-4">
       <div className="w-16 h-16 bg-secondary-container rounded-full flex items-center justify-center mb-4">
         <span className="material-symbols-outlined text-3xl text-on-secondary-container">receipt_long</span>
       </div>
       
       <h2 className="text-2xl font-bold text-on-surface mb-6 text-center">סיכום תשלום</h2>
       
-      <div className="w-full bg-surface border border-outline-variant/30 rounded-2xl p-6 shadow-sm mb-8 flex flex-col gap-4">
+      <div className="mb-6 flex w-full flex-col gap-4 rounded-2xl border border-outline-variant/30 bg-surface p-4 shadow-sm sm:mb-8 sm:p-6">
         <div className="flex justify-between items-center border-b border-outline-variant/20 pb-4">
           <span className="text-on-surface-variant font-medium">לוחית רישוי:</span>
           <span className="font-bold text-xl text-primary tracking-wider px-3 py-1 bg-primary/10 rounded-lg" dir="ltr">
@@ -91,9 +91,9 @@ export default function InvoiceSummary({ licensePlate, sessionData, onPay }) {
           </span>
         </div>
         
-        <div className="flex justify-between items-center py-2">
+        <div className="flex items-start justify-between gap-4 py-2">
           <span className="text-on-surface-variant font-medium">חניון:</span>
-          <span className="font-bold text-on-surface text-left">{parkingLotName}</span>
+          <span className="min-w-0 text-left font-bold text-on-surface">{parkingLotName}</span>
         </div>
 
         <div className="flex justify-between items-center py-2">
@@ -106,9 +106,9 @@ export default function InvoiceSummary({ licensePlate, sessionData, onPay }) {
           <span className="font-bold text-on-surface">{duration}</span>
         </div>
 
-        <div className="flex justify-between items-center pt-2">
+        <div className="flex flex-wrap items-end justify-between gap-2 pt-2">
           <span className="text-on-surface-variant font-bold text-lg">סך הכל לתשלום:</span>
-          <span className="font-black text-3xl text-primary">{amountToPay} ₪</span>
+          <span className="font-black tabular-nums text-3xl text-primary">{amountToPay} ₪</span>
         </div>
       </div>
 
