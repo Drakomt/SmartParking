@@ -3,7 +3,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "lora-simulator": "node scripts/loraSimulator.js",
+    "lora-simulator": "node scripts/loraSimulator.js --target=local",
+    "lora-simulator:local": "node scripts/loraSimulator.js --target=local",
+    "lora-simulator:production": "node scripts/loraSimulator.js --target=production",
     "migrate:security": "node scripts/migrateSecurityAndIntegrity.js",
     "test": "node --test"
   },
