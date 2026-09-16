@@ -18,7 +18,7 @@ export default function NavBar() {
           className="flex min-h-11 min-w-0 items-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           aria-label="Smart Parking - דף הבית"
         >
-          <span className="whitespace-nowrap text-[clamp(1rem,4.5vw,1.35rem)] font-black tracking-tight text-primary dark:text-primary-fixed sm:text-3xl">
+          <span className="whitespace-nowrap text-[clamp(1rem,4.5vw,1.35rem)] font-black tracking-tight text-primary sm:text-3xl">
             SMART PARKING
           </span>
         </NavLink>
