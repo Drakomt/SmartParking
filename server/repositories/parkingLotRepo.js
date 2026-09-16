@@ -6,6 +6,10 @@ const findAllLots = async (query = {}, { includeAuthorizedVehicles = false } = {
   return await lots;
 };
 
+const findAllLotsWithCity = async () => (
+  ParkingLot.find({}).populate('city', 'name')
+);
+
 const findLotForEntry = async (id) => (
   ParkingLot.findById(id).select('+authorizedVehicles').populate('city', 'name')
 );
@@ -39,4 +43,14 @@ const findPriceList = async () => (
     .lean()
 );
 
-export default { findAllLots, findLotById, findLotForEntry, findOneLot, findPriceList, createLot, updateLot, deleteLot };
+export default {
+  findAllLots,
+  findAllLotsWithCity,
+  findLotById,
+  findLotForEntry,
+  findOneLot,
+  findPriceList,
+  createLot,
+  updateLot,
+  deleteLot,
+};
