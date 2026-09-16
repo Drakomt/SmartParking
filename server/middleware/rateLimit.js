@@ -26,7 +26,7 @@ export const createRateLimiter = ({
           expiresAt: { $cond: [{ $gt: ['$resetAt', currentDate] }, '$resetAt', nextResetAt] },
         },
       }],
-      { upsert: true, new: true },
+      { upsert: true, new: true, updatePipeline: true },
     );
     const remaining = Math.max(0, maxRequests - bucket.count);
     res.setHeader('RateLimit-Limit', String(maxRequests));
