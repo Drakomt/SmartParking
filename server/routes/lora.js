@@ -21,4 +21,19 @@ router.post('/update-spot', requireLoraApiKey, async (req, res) => {
     }
 });
 
+router.post('/simulate', requireLoraApiKey, async (req, res) => {
+    try {
+        res.setHeader('Cache-Control', 'no-store');
+        const result = await loraService.simulateParkingActivity();
+        return res.status(200).json(result);
+    } catch (error) {
+        const statusCode = error.message.includes('No consistent') || error.message.includes('No parking lots')
+            ? 409
+            : error.message.includes('not found')
+                ? 404
+                : 500;
+        return res.status(statusCode).json({ message: error.message });
+    }
+});
+
 export default router;

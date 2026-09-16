@@ -90,6 +90,10 @@ const findSessionByIdWithLot = async (sessionId) => {
   return await ParkingSession.findById(sessionId).populate('parkingLot');
 };
 
+const findSessionById = async (sessionId) => {
+  return await ParkingSession.findById(sessionId);
+};
+
 const findByCheckoutIdWithLot = async (checkoutId) => {
   return await ParkingSession.findOne({ checkoutId })
     .select('+checkoutTokenHash')
@@ -131,6 +135,7 @@ export default {
   findSessionsByLot,
   findSessionsByLots,
   grantPassToAuthorizedVehicles,
+  findSessionById,
   findSessionByIdWithLot,
   findByCheckoutIdWithLot,
   findActiveByLicensePlateWithLot,
