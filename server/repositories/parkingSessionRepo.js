@@ -16,7 +16,7 @@ const findActiveByLicensePlateWithLot = async (carLicensePlate) => {
     checkoutStatus: { $in: ['Payable', 'paid', 'pass'] },
   })
     .sort({ entryTime: -1 })
-    .populate('parkingLot');
+    .populate('parkingLot', '+authorizedVehicles');
 };
 
 const updateCheckoutCredentials = async (sessionId, checkoutCredentials, previousCheckoutId) => {
@@ -72,19 +72,45 @@ const findSessionsByLots = async (parkingLotIds) => (
   ParkingSession.find({ parkingLot: { $in: parkingLotIds } })
 );
 
-const grantPassToAuthorizedVehicles = async (parkingLotId, licensePlates) => {
-  if (licensePlates.length === 0) return { modifiedCount: 0 };
+const reconcileAuthorizedVehicleStatuses = async (parkingLotId, licensePlates) => {
+  const normalizedPlates = Array.isArray(licensePlates) ? licensePlates : [];
 
-  return await ParkingSession.updateMany(
+  const revokeResult = await ParkingSession.updateMany(
     {
       parkingLot: parkingLotId,
-      carLicensePlate: { $in: licensePlates },
-      checkoutStatus: { $in: ['Payable', 'paid'] },
+      checkoutStatus: 'pass',
+      carLicensePlate: { $nin: normalizedPlates },
     },
-    { $set: { checkoutStatus: 'pass' } },
+    { $set: { checkoutStatus: 'Payable' } },
     { runValidators: true },
   );
+
+  let grantResult = { modifiedCount: 0 };
+  if (normalizedPlates.length > 0) {
+    grantResult = await ParkingSession.updateMany(
+      {
+        parkingLot: parkingLotId,
+        carLicensePlate: { $in: normalizedPlates },
+        checkoutStatus: { $in: ['Payable', 'paid'] },
+      },
+      { $set: { checkoutStatus: 'pass' } },
+      { runValidators: true },
+    );
+  }
+
+  return {
+    grantedCount: grantResult.modifiedCount,
+    revokedCount: revokeResult.modifiedCount,
+  };
 };
+
+const updateCheckoutStatus = async (sessionId, checkoutStatus) => (
+  ParkingSession.findByIdAndUpdate(
+    sessionId,
+    { $set: { checkoutStatus } },
+    { new: true, runValidators: true },
+  )
+);
 
 const findSessionByIdWithLot = async (sessionId) => {
   return await ParkingSession.findById(sessionId).populate('parkingLot');
@@ -134,7 +160,8 @@ const countByParkingSpots = async (parkingSpotIds, session = null) => (
 export default {
   findSessionsByLot,
   findSessionsByLots,
-  grantPassToAuthorizedVehicles,
+  reconcileAuthorizedVehicleStatuses,
+  updateCheckoutStatus,
   findSessionById,
   findSessionByIdWithLot,
   findByCheckoutIdWithLot,

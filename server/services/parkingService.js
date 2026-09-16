@@ -371,9 +371,9 @@ const editParkingLot = async (id, updateData, user) => {
   const updatedLot = await parkingLotRepo.updateLot(id, normalizedUpdate);
 
   if (updatedLot && normalizedUpdate.authorizedVehicles !== undefined) {
-    // Reconcile the entire saved list, not only newly added plates, so a retry
-    // also repairs stale sessions. Preserve credentials and payment history.
-    await parkingSessionRepo.grantPassToAuthorizedVehicles(
+    // Reconcile both additions and removals so active sessions always reflect
+    // the complete saved list. Preserve checkout credentials and payment history.
+    await parkingSessionRepo.reconcileAuthorizedVehicleStatuses(
       updatedLot._id,
       updatedLot.authorizedVehicles || [],
     );

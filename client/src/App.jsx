@@ -15,6 +15,7 @@ const PaymentPage = lazy(() => import("./pages/PaymentPage"));
 const PriceListPage = lazy(() => import("./pages/PriceListPage"));
 const LoginForm = lazy(() => import("./components/LoginForm"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
+const ParkingLotPage = lazy(() => import("./pages/ParkingLotPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 const PageLoader = () => (
@@ -43,6 +44,7 @@ function App() {
                       <Route path="/price-list" element={<PriceListPage />} />
                       <Route path="/login" element={<LoginForm />} />
                       <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/parking/:lotId" element={<ParkingLotPage />} />
                       <Route path="*" element={<NotFoundPage />} />
                     </Routes>
                   </Suspense>

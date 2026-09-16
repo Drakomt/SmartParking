@@ -303,10 +303,19 @@ export default function AllLotsPage() {
                             )}
                           </div>
                           <button
-                            onClick={() => window.open(`https://waze.com/ul?ll=${lot.location.lat},${lot.location.lng}&navigate=yes`, '_blank')}
-                            className="mt-2 flex items-center justify-center gap-2 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg transition-colors cursor-pointer w-full"
+                            type="button"
+                            onClick={() => navigate(`/parking/${lot._id}`)}
+                            className="flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 font-bold text-on-primary transition-colors hover:bg-primary/90"
                           >
-                            <i className="fa-brands fa-waze text-lg"></i>
+                            <span className="material-symbols-outlined text-lg" aria-hidden="true">local_parking</span>
+                            צפה בחניון
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => window.open(`https://waze.com/ul?ll=${lot.location.lat},${lot.location.lng}&navigate=yes`, '_blank')}
+                            className="flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary/10 px-4 py-2 text-primary transition-colors hover:bg-primary hover:text-on-primary"
+                          >
+                            <i className="fa-brands fa-waze text-lg" aria-hidden="true"></i>
                             נווט לחניון
                           </button>
                         </div>

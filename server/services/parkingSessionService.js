@@ -4,7 +4,7 @@ import parkingPaymentRepo from '../repositories/parkingPaymentRepo.js';
 import { createCheckoutCredentials } from '../utils/checkoutCredentials.js';
 import { assertSupportedCurrency, formatMinorUnits } from '../utils/money.js';
 import { calculateParkingPriceByLicensePlate, getPaidExitGracePeriod } from '../utils/parkingPricing.js';
-import { normalizeLicensePlate } from '../utils/licensePlate.js';
+import { isAuthorizedVehicle, normalizeLicensePlate } from '../utils/licensePlate.js';
 
 export const createParkingSessionService = ({
   sessionRepo = parkingSessionRepo,
@@ -30,8 +30,28 @@ export const createParkingSessionService = ({
     }
 
     const { currency, name: parkingLotName } = session.parkingLot;
-    const payments = session.checkoutStatus === 'pass'
-      ? [] : await paymentRepo.findCompletedByParkingSession(session._id);
+    const payments = await paymentRepo.findCompletedByParkingSession(session._id);
+    const currentlyAuthorized = isAuthorizedVehicle(session.parkingLot, normalizedPlate);
+    const expectedCheckoutStatus = currentlyAuthorized
+      ? 'pass'
+      : payments.length > 0
+        ? 'paid'
+        : session.checkoutStatus === 'pass' ? 'Payable' : session.checkoutStatus;
+
+    if (session.checkoutStatus !== expectedCheckoutStatus) {
+      const updatedStatus = await sessionRepo.updateCheckoutStatus(
+        session._id,
+        expectedCheckoutStatus,
+      );
+      if (!updatedStatus) {
+        throw new AppError('Parking session changed; please look it up again', {
+          statusCode: 409,
+          code: 'PARKING_SESSION_CHANGED',
+        });
+      }
+      session.checkoutStatus = expectedCheckoutStatus;
+    }
+
     const gracePeriod = getPaidExitGracePeriod({ session, payments });
     const graceExpiresAt = gracePeriod?.graceExpiresAt.toISOString() ?? null;
     const amountMinor = calculateParkingPriceByLicensePlate({ session, payments, now });
