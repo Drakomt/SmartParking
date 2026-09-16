@@ -7,6 +7,13 @@ const generateToken = (id) => {
   });
 };
 
+export const sanitizeRegistrationData = (userData = {}) => ({
+  fullName: userData.fullName,
+  email: userData.email,
+  password: userData.password,
+  authorizedCities: [],
+});
+
 const loginUser = async (email, password) => {
   const user = await userRepo.findUserByEmail(email);
 
@@ -26,17 +33,15 @@ const loginUser = async (email, password) => {
 };
 
 const registerUser = async (userData) => {
-  const userExists = await userRepo.findUserByEmail(userData.email);
+  const registrationData = sanitizeRegistrationData(userData);
+  const { email } = registrationData;
+  const userExists = await userRepo.findUserByEmail(email);
 
   if (userExists) {
     throw new Error('User already exists');
   }
 
-  if (userData.authorizedCity && !userData.authorizedCities) {
-    userData.authorizedCities = [userData.authorizedCity];
-  }
-
-  const user = await userRepo.createUser(userData);
+  const user = await userRepo.createUser(registrationData);
 
   return {
     _id: user._id,

@@ -5,6 +5,7 @@ import { createServer } from 'http';
 import connectDB from './config/db.js';
 import { validatePayPalConfig } from './config/paypal.js';
 import { validateCheckoutConfig } from './config/checkout.js';
+import { createCorsOriginValidator } from './config/cors.js';
 import { initializeSocketServer } from './services/socketService.js';
 
 dotenv.config();
@@ -18,12 +19,16 @@ try {
 }
 
 // Connect to MongoDB
-connectDB();
+await connectDB();
 
 const app = express();
 const port = process.env.PORT || 3000;
+app.set('trust proxy', 1);
 
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173' }));
+app.use(cors({
+  origin: createCorsOriginValidator(),
+  credentials: true,
+}));
 app.use(express.json());
 
 import loraRouter from './routes/lora.js';

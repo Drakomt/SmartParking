@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../lib/api";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -8,7 +8,6 @@ export default function LoginForm() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -30,17 +29,15 @@ export default function LoginForm() {
     setError("");
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/auth/login`,
+      const response = await api.post(
+        "/api/auth/login",
         {
           email: fields.email,
           password: fields.password,
         },
       );
 
-      console.log("התחברות בהצלחה:", response.data);
-
-      login(response.data, rememberMe);
+      login(response.data);
       setFields({ email: "", password: "" });
 
       navigate("/dashboard");
@@ -57,7 +54,7 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen pt-16 w-full overflow-hidden">
+    <div className="relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-hidden px-3 pb-6 pt-20 sm:px-4">
       <div className="absolute inset-0 w-full h-full -z-10">
         <div
           className="bg-cover bg-center w-full h-full opacity-80"
@@ -69,8 +66,8 @@ export default function LoginForm() {
         <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background"></div>
       </div>
 
-      <div className="w-full max-w-md bg-surface/80 backdrop-blur-2xl rounded-3xl shadow-[0_20px_40px_-10px_rgba(30,41,59,0.15)] border border-outline-variant/50 overflow-hidden m-4 relative z-10">
-        <div className="p-6 sm:p-8">
+      <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface/90 shadow-[0_20px_40px_-10px_rgba(30,41,59,0.15)] backdrop-blur-2xl sm:rounded-3xl">
+        <div className="p-5 sm:p-8">
           <div className="mb-6 text-right">
             <h2 className="text-3xl font-headline-lg font-bold text-primary mb-2">
               כניסה למערכת
@@ -97,6 +94,8 @@ export default function LoginForm() {
                 className="w-full bg-surface-container-lowest/50 border border-outline-variant rounded-xl px-4 py-3 text-on-surface placeholder-outline focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
                 placeholder="הזן אימייל"
                 disabled={isLoading}
+                autoComplete="email"
+                inputMode="email"
               />
             </div>
 
@@ -117,32 +116,20 @@ export default function LoginForm() {
                   className="w-full bg-surface-container-lowest/50 border border-outline-variant rounded-xl pr-4 pl-12 py-3 text-on-surface placeholder-outline focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
                   placeholder="הזן סיסמה"
                   disabled={isLoading}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none p-1 flex items-center justify-center"
-                  tabIndex="-1"
+                  className="absolute left-1 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-lg p-2 text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary"
                   title={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
+                  aria-label={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
                 >
                   <span className="material-symbols-outlined text-[20px]">
                     {showPassword ? "visibility_off" : "visibility"}
                   </span>
                 </button>
               </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-right">
-              <input
-                type="checkbox"
-                id="rememberMe"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 text-primary bg-surface-container-lowest border-outline-variant rounded focus:ring-primary focus:ring-2 cursor-pointer"
-              />
-              <label htmlFor="rememberMe" className="text-body-md text-on-surface cursor-pointer select-none">
-                זכור אותי במחשב זה
-              </label>
             </div>
 
             {error && (
@@ -155,7 +142,7 @@ export default function LoginForm() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`flex justify-center items-center w-full sm:w-auto font-headline-sm font-bold py-3 px-8 rounded-xl transition-all duration-300 focus:outline-none shadow-md
+                className={`flex min-h-12 w-full items-center justify-center rounded-xl px-8 py-3 font-bold shadow-md transition-all duration-300 focus:outline-none sm:w-auto
                   ${isLoading ? "bg-primary-container text-on-primary-container cursor-not-allowed opacity-70" : "bg-primary text-on-primary hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5"}`}
               >
                 {isLoading ? (

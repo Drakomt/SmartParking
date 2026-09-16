@@ -4,20 +4,57 @@ import parkingService from '../services/parkingService.js';
 import parkingSessionService from '../services/parkingSessionService.js';
 import parkingReceiptService from '../services/parkingReceiptService.js';
 import { protect } from '../middleware/auth.js';
+import { requireCsrf } from '../middleware/csrf.js';
 import { createRateLimiter } from '../middleware/rateLimit.js';
 import AppError from '../errors/AppError.js';
 import { validateReceiptBody } from '../utils/paymentValidation.js';
 
 const sessionLookupLimiter = createRateLimiter({
+  namespace: 'parking-session-lookup',
   windowMs: 10 * 60_000,
   maxRequests: 30,
 });
 
 const receiptLimiter = createRateLimiter({
+  namespace: 'parking-receipt',
   windowMs: 10 * 60_000,
   maxRequests: 10,
   keyGenerator: (req) => `${req.ip}:${req.body?.checkoutId || 'invalid'}`,
 });
+
+const parkingLotPayload = (body) => ({
+  name: body.name,
+  city: body.city,
+  address: body.address,
+  totalSpots: body.totalSpots,
+  levels: body.levels,
+  location: body.location,
+  pricing: body.pricing,
+  authorizedVehicles: body.authorizedVehicles,
+  isFree: body.isFree,
+  freeFirstHours: body.freeFirstHours,
+  pricePerMinute: body.pricePerMinute,
+  fullDayPriceMinor: body.fullDayPriceMinor,
+  parkingFeeMinor: body.parkingFeeMinor,
+  currency: body.currency,
+});
+
+const createParkingLotWithSpots = async (req, res) => {
+  try {
+    const parkingLot = await parkingService.addParkingLot(
+      parkingLotPayload(req.body),
+      req.user,
+      req.body.spots,
+    );
+    return res.status(201).json(parkingLot);
+  } catch (error) {
+    const statusCode = error.statusCode || (error.code === 11000 ? 409 : 500);
+    return res.status(statusCode).json({
+      message: error.message,
+      code: error.code === 11000 ? 'DUPLICATE_SPOT' : error.code,
+    });
+  }
+};
 
 // ==========================================
 //               CITY ROUTES
@@ -43,27 +80,18 @@ router.route('/')
       const parkingLots = await parkingService.fetchParkingLots(req.user);
       res.json(parkingLots);
     } catch (error) {
-      res.status(500).json({ message: 'Server Error', error: error.message });
+      res.status(error.statusCode || 500).json({ message: error.message, code: error.code });
     }
   })
   // Create new lot
-  .post(protect, async (req, res) => {
-    try {
-      const parkingLot = await parkingService.addParkingLot({
-        name: req.body.name,
-        city: req.body.city,
-        address: req.body.address,
-        totalSpots: req.body.totalSpots,
-        levels: req.body.levels,
-        location: req.body.location,
-        parkingFeeMinor: req.body.parkingFeeMinor,
-        currency: req.body.currency,
-      }, req.user);
-      res.status(201).json(parkingLot);
-    } catch (error) {
-      res.status(500).json({ message: 'Server Error', error: error.message });
-    }
-  });
+  .post(protect, requireCsrf, createParkingLotWithSpots);
+
+router.post(
+  '/with-spots',
+  protect,
+  requireCsrf,
+  createParkingLotWithSpots,
+);
 
 router.get('/lotsbycity', async (req, res) => {
     try {
@@ -176,8 +204,7 @@ router.get('/authorized/cities', protect, async (req, res) => {
     const cities = await parkingService.fetchAuthorizedCities(req.user);
     res.json(cities);
   } catch (error) {
-    const statusCode = error.message.includes('authorized') ? 401 : 500;
-    res.status(statusCode).json({ message: error.message });
+    res.status(error.statusCode || 500).json({ message: error.message, code: error.code });
   }
 });
 
@@ -186,8 +213,7 @@ router.get('/authorized/lots', protect, async (req, res) => {
     const lots = await parkingService.fetchAuthorizedLotsWithDetails(req.user);
     res.json(lots);
   } catch (error) {
-    const statusCode = error.message.includes('authorized') ? 401 : 500;
-    res.status(statusCode).json({ message: error.message });
+    res.status(error.statusCode || 500).json({ message: error.message, code: error.code });
   }
 });
 
@@ -196,28 +222,55 @@ router.get('/authorized/cities/:cityId', protect, async (req, res) => {
     const cityDetails = await parkingService.fetchAuthorizedLotsByCity(req.params.cityId, req.user);
     res.json(cityDetails);
   } catch (error) {
-    const statusCode = error.message.includes('authorized') ? 403 : error.message.includes('not found') ? 404 : 500;
-    res.status(statusCode).json({ message: error.message });
+    const statusCode = error.statusCode || (error.message.includes('not found') ? 404 : 500);
+    res.status(statusCode).json({ message: error.message, code: error.code });
+  }
+});
+
+router.get('/prices', async (_req, res) => {
+  try {
+    return res.json(await parkingService.fetchPriceList());
+  } catch (error) {
+    return res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+router.post('/:lotId/levels', protect, requireCsrf, async (req, res) => {
+  try {
+    const spotInput = req.body.spots ?? req.body.spotCount;
+    const result = await parkingService.addLevel(req.params.lotId, spotInput, req.user);
+    return res.status(201).json(result);
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ message: error.message, code: error.code });
+  }
+});
+
+router.delete('/:lotId/levels/:level', protect, requireCsrf, async (req, res) => {
+  try {
+    const result = await parkingService.removeLevel(req.params.lotId, Number(req.params.level), req.user);
+    return res.json(result);
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ message: error.message, code: error.code });
   }
 });
 
 router.route('/:id')
-  .put(protect, async (req, res) => {
+  .put(protect, requireCsrf, async (req, res) => {
     try {
       const updateData = { ...req.body };
       const updatedLot = await parkingService.editParkingLot(req.params.id, updateData, req.user);
       res.json(updatedLot);
     } catch (error) {
-      const statusCode = error.message.includes('authorized') ? 403 : 404;
+      const statusCode = error.statusCode || 500;
       res.status(statusCode).json({ message: error.message });
     }
   })
-  .delete(protect, async (req, res) => {
+  .delete(protect, requireCsrf, async (req, res) => {
     try {
       await parkingService.removeParkingLot(req.params.id, req.user);
       res.json({ message: 'Parking Lot removed' });
     } catch (error) {
-      const statusCode = error.message.includes('authorized') ? 403 : 404;
+      const statusCode = error.statusCode || 500;
       res.status(statusCode).json({ message: error.message });
     }
   });
@@ -244,7 +297,7 @@ router.route('/:id/spots')
       res.status(500).json({ message: 'Server Error', error: error.message });
     }
   })
-  .post(protect, async (req, res) => {
+  .post(protect, requireCsrf, async (req, res) => {
     try {
       const spot = await parkingService.addSpot({
         parkingLot: req.params.id,
@@ -256,26 +309,26 @@ router.route('/:id/spots')
       }, req.user);
       res.status(201).json(spot);
     } catch (error) {
-      const statusCode = error.message.includes('authorized') ? 403 : 500;
+      const statusCode = error.statusCode || (error.code === 11000 ? 409 : 500);
       res.status(statusCode).json({ message: 'Server Error', error: error.message });
     }
   });
 
 router.route('/spots/:spotId')
-  .put(protect, async (req, res) => {
+  .put(protect, requireCsrf, async (req, res) => {
     try {
       const updatedSpot = await parkingService.editSpot(req.params.spotId, req.body, req.user);
       res.json(updatedSpot);
     } catch (error) {
-      res.status(500).json({ message: 'Server Error', error: error.message });
+      res.status(error.statusCode || (error.code === 11000 ? 409 : 500)).json({ message: 'Server Error', error: error.message });
     }
   })
-  .delete(protect, async (req, res) => {
+  .delete(protect, requireCsrf, async (req, res) => {
     try {
       await parkingService.removeSpot(req.params.spotId, req.user);
       res.json({ message: 'Parking Spot removed' });
     } catch (error) {
-      res.status(500).json({ message: 'Server Error', error: error.message });
+      res.status(error.statusCode || 500).json({ message: 'Server Error', error: error.message });
     }
   });
 

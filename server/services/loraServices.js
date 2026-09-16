@@ -7,6 +7,7 @@ import {
     emitParkingSessionUpdateToAuthorizedUsers,
 } from './socketService.js';
 import { createCheckoutCredentials } from '../utils/checkoutCredentials.js';
+import { isAuthorizedVehicle, normalizeLicensePlate } from '../utils/licensePlate.js';
 
 const generateLicensePlate = async () => {
     const digits = '0123456789';
@@ -58,6 +59,7 @@ const emitUpdate = async (parkingLot, spot, session) => {
                 carLicensePlate: session.carLicensePlate,
                 parkingSpot: session.parkingSpot,
                 entryTime: session.entryTime,
+                checkoutStatus: session.checkoutStatus,
             },
         };
         await emitParkingSessionUpdateToAuthorizedUsers(parkingLot.city._id, sessionPayload);
@@ -95,12 +97,12 @@ const updateParkingSpot = async (spotData) => {
     return updatedSpot;
 };
 
-const createParkingSession = async ({ parkingLotId, parkingSpotId }) => {
+export const createParkingSession = async ({ parkingLotId, parkingSpotId, carLicensePlate: providedPlate }) => {
     if (!parkingLotId || !parkingSpotId) {
         throw new Error('parkingLotId and parkingSpotId are required for session creation');
     }
 
-    const parkingLot = await parkingLotRepo.findLotById(parkingLotId);
+    const parkingLot = await parkingLotRepo.findLotForEntry(parkingLotId);
     if (!parkingLot) {
         throw new Error('Parking lot not found');
     }
@@ -114,16 +116,25 @@ const createParkingSession = async ({ parkingLotId, parkingSpotId }) => {
         throw new Error('Parking spot does not belong to the provided parking lot');
     }
 
-    const carLicensePlate = await generateLicensePlate();
+    if (providedPlate !== undefined && (
+        typeof providedPlate !== 'string' || normalizeLicensePlate(providedPlate) === ''
+    )) {
+        throw new Error('Invalid carLicensePlate');
+    }
+    const carLicensePlate = providedPlate === undefined
+        ? await generateLicensePlate() : normalizeLicensePlate(providedPlate);
+    if (providedPlate !== undefined && await parkingSessionRepo.findByLicensePlate(carLicensePlate)) {
+        throw new Error('Invalid session: vehicle already has an active parking session');
+    }
     const checkoutCredentials = createCheckoutCredentials();
     const session = await parkingSessionRepo.createSession({
         carLicensePlate,
         parkingLot: parkingLot._id,
-        parkingSpot: null,
+        parkingSpot: parkingSpot._id,
         checkoutId: checkoutCredentials.checkoutId,
         checkoutTokenHash: checkoutCredentials.checkoutTokenHash,
         checkoutExpiresAt: checkoutCredentials.checkoutExpiresAt,
-        checkoutStatus: 'PAYABLE',
+        checkoutStatus: isAuthorizedVehicle(parkingLot, carLicensePlate) ? 'pass' : 'Payable',
     });
 
     await emitUpdate(parkingLot, null, session);
@@ -135,6 +146,7 @@ const createParkingSession = async ({ parkingLotId, parkingSpotId }) => {
             parkingLot: session.parkingLot,
             parkingSpot: session.parkingSpot,
             entryTime: session.entryTime,
+            checkoutStatus: session.checkoutStatus,
         },
         checkout: {
             checkoutId: checkoutCredentials.checkoutId,
@@ -179,6 +191,7 @@ const processMessage = async (message) => {
             return await createParkingSession({
                 parkingLotId: data.parkingLotId,
                 parkingSpotId: data.parkingSpotId,
+                carLicensePlate: data.carLicensePlate,
             });
         }
 

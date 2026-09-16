@@ -13,30 +13,39 @@ const findByLicensePlate = async (carLicensePlate) => {
 const findActiveByLicensePlateWithLot = async (carLicensePlate) => {
   return await ParkingSession.findOne({
     carLicensePlate,
-    checkoutStatus: { $nin: ['COMPLETED', 'CANCELLED'] },
+    checkoutStatus: { $in: ['Payable', 'paid', 'pass'] },
   })
     .sort({ entryTime: -1 })
     .populate('parkingLot');
 };
 
-const updateCheckoutCredentials = async (sessionId, checkoutCredentials) => {
+const updateCheckoutCredentials = async (sessionId, checkoutCredentials, previousCheckoutId) => {
   return await ParkingSession.findOneAndUpdate(
     {
       _id: sessionId,
-      checkoutStatus: { $nin: ['COMPLETED', 'CANCELLED'] },
+      checkoutId: previousCheckoutId ?? { $exists: false },
+      checkoutPaymentStarted: { $ne: true },
+      checkoutStatus: { $in: ['Payable', 'paid'] },
     },
     {
       $set: {
         checkoutId: checkoutCredentials.checkoutId,
         checkoutTokenHash: checkoutCredentials.checkoutTokenHash,
         checkoutExpiresAt: checkoutCredentials.checkoutExpiresAt,
-        checkoutStatus: 'PAYABLE',
         checkoutConsumedAt: null,
       },
     },
     { new: true, runValidators: true },
   ).populate('parkingLot');
 };
+
+const claimCheckoutForPayment = async (sessionId, checkoutId) => (
+  ParkingSession.findOneAndUpdate(
+    { _id: sessionId, checkoutId, checkoutConsumedAt: null, checkoutStatus: { $in: ['Payable', 'paid'] } },
+    { $set: { checkoutPaymentStarted: true } },
+    { new: true, runValidators: true },
+  )
+);
 
 const findRandomSession = async () => {
   const result = await ParkingSession.aggregate([{ $sample: { size: 1 } }]);
@@ -59,6 +68,24 @@ const findSessionsByLot = async (parkingLotId) => {
   return await ParkingSession.find({ parkingLot: parkingLotId });
 };
 
+const findSessionsByLots = async (parkingLotIds) => (
+  ParkingSession.find({ parkingLot: { $in: parkingLotIds } })
+);
+
+const grantPassToAuthorizedVehicles = async (parkingLotId, licensePlates) => {
+  if (licensePlates.length === 0) return { modifiedCount: 0 };
+
+  return await ParkingSession.updateMany(
+    {
+      parkingLot: parkingLotId,
+      carLicensePlate: { $in: licensePlates },
+      checkoutStatus: { $in: ['Payable', 'paid'] },
+    },
+    { $set: { checkoutStatus: 'pass' } },
+    { runValidators: true },
+  );
+};
+
 const findSessionByIdWithLot = async (sessionId) => {
   return await ParkingSession.findById(sessionId).populate('parkingLot');
 };
@@ -69,17 +96,19 @@ const findByCheckoutIdWithLot = async (checkoutId) => {
     .populate('parkingLot');
 };
 
-const completeCheckoutOnce = async (sessionId, completedAt) => {
+const completeCheckoutOnce = async (sessionId, completedAt, checkoutId) => {
   return await ParkingSession.findOneAndUpdate(
     {
       _id: sessionId,
-      checkoutStatus: 'PAYABLE',
+      checkoutId,
+      checkoutStatus: { $in: ['Payable', 'paid'] },
       checkoutConsumedAt: null,
     },
     {
       $set: {
-        checkoutStatus: 'COMPLETED',
+        checkoutStatus: 'paid',
         checkoutConsumedAt: completedAt,
+        checkoutPaymentStarted: false,
       },
     },
     { new: true },
@@ -90,16 +119,29 @@ const deleteSession = async (sessionId) => {
   return await ParkingSession.findByIdAndDelete(sessionId);
 };
 
+const deleteByParkingLot = async (parkingLotId, session = null) => (
+  ParkingSession.deleteMany({ parkingLot: parkingLotId }, { session })
+);
+
+const countByParkingSpots = async (parkingSpotIds, session = null) => (
+  ParkingSession.countDocuments({ parkingSpot: { $in: parkingSpotIds } }).session(session)
+);
+
 export default {
   findSessionsByLot,
+  findSessionsByLots,
+  grantPassToAuthorizedVehicles,
   findSessionByIdWithLot,
   findByCheckoutIdWithLot,
   findActiveByLicensePlateWithLot,
   updateCheckoutCredentials,
+  claimCheckoutForPayment,
   completeCheckoutOnce,
   createSession,
   findByLicensePlate,
   findRandomSession,
   findRandomSessionByLot,
   deleteSession,
+  deleteByParkingLot,
+  countByParkingSpots,
 };

@@ -70,6 +70,92 @@ body {
   font-family: var(--font-sans);
   background-color: var(--color-background);
   color: var(--color-on-background);
+  min-width: 320px;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+html {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.app-navbar {
+  height: calc(4rem + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
+}
+
+.mobile-sheet {
+  overscroll-behavior: contain;
+}
+
+.parking-map-viewport {
+  overscroll-behavior: contain;
+  scrollbar-color: color-mix(in srgb, var(--color-primary) 55%, transparent) transparent;
+  scrollbar-width: thin;
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.parking-map-viewport:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+@media (max-width: 639px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  .mobile-sheet-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .mobile-sheet {
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - env(safe-area-inset-top) - 0.75rem);
+    border-radius: 1.5rem 1.5rem 0 0;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @keyframes fadeInUp {
@@ -125,12 +211,198 @@ html.theme-colorblind {
   --color-on-error: #ffffff !important;
 }
 
+/* Parking availability uses high-contrast colors and clear text labels. */
+.parking-status {
+  border: 1px solid transparent;
+}
+
+.parking-status-free {
+  background-color: rgb(34 197 94 / 0.12);
+  border-color: rgb(34 197 94 / 0.35);
+  color: #15803d;
+}
+
+.parking-status-occupied {
+  background-color: rgb(239 68 68 / 0.12);
+  border-color: rgb(239 68 68 / 0.35);
+  color: #dc2626;
+}
+
+.parking-slot-free-label {
+  color: #16a34a;
+}
+
+.parking-blocked-icon {
+  color: #ef4444;
+}
+
+.parking-blocked-label {
+  color: #f97316;
+}
+
+html.theme-colorblind .parking-status-free {
+  background-color: rgb(2 132 199 / 0.15);
+  border-color: rgb(2 132 199 / 0.55);
+  color: #075985;
+}
+
+html.theme-colorblind .parking-status-occupied {
+  background-color: rgb(217 119 6 / 0.15);
+  border-color: rgb(217 119 6 / 0.55);
+  color: #92400e;
+}
+
+html.theme-colorblind .parking-slot-free-label {
+  color: #0369a1;
+}
+
+html.theme-colorblind .parking-blocked-icon,
+html.theme-colorblind .parking-blocked-label {
+  color: #b45309;
+}
+
+/* DynamicParkingLayout specific classes */
+.parking-slot-free-badge {
+  color: #34d399; /* emerald-400 */
+  background-color: rgb(16 185 129 / 0.1); /* emerald-500/10 */
+  border-color: rgb(16 185 129 / 0.3); /* emerald-500/30 */
+}
+
+html.theme-colorblind .parking-slot-free-badge {
+  color: #38bdf8; /* sky-400 */
+  background-color: rgb(14 165 233 / 0.15); /* sky-500/15 */
+  border-color: rgb(14 165 233 / 0.4); /* sky-500/40 */
+}
+
+.parking-blocked-badge-icon {
+  color: #ef4444; /* red-500 */
+}
+.parking-blocked-badge-text {
+  color: #f87171; /* red-400 */
+}
+
+.parking-slot-blocked-surface {
+  background-color: rgb(220 38 38 / 0.3);
+}
+
+html.theme-colorblind .parking-blocked-badge-icon,
+html.theme-colorblind .parking-blocked-badge-text {
+  color: #f59e0b; /* amber-500 */
+}
+
+html.theme-colorblind .parking-slot-blocked-surface {
+  background-color: rgb(217 119 6 / 0.34);
+}
+
+/* DynamicParkingLayout Legend */
+.parking-legend-free-dot {
+  background-color: #10b981; /* emerald-500 */
+  box-shadow: 0 0 6px #10b981;
+}
+
+html.theme-colorblind .parking-legend-free-dot {
+  background-color: #38bdf8; /* sky-400 */
+  box-shadow: 0 0 6px #38bdf8;
+}
+
+/* Faded, slightly uneven paint used for special-space markings on asphalt. */
+.parking-asphalt-marking {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  opacity: 0.86;
+  mix-blend-mode: screen;
+  font-variation-settings: "FILL" 1, "wght" 520, "GRAD" -25, "opsz" 48;
+  filter: saturate(0.82) contrast(1.08) blur(0.1px)
+    drop-shadow(0 1px 0 rgb(15 23 42 / 0.62));
+  text-shadow:
+    1px 0 rgb(15 23 42 / 0.14),
+    -1px 1px rgb(255 255 255 / 0.12);
+}
+
+.parking-spot-symbol-container {
+  container-type: size;
+}
+
+.parking-spot-relative-symbol {
+  max-width: 68%;
+  max-height: 68%;
+  overflow: hidden;
+  font-size: min(54cqw, 54cqh);
+}
+
+.parking-asphalt-marking-disabled {
+  color: #a9e0ee;
+}
+
+.parking-asphalt-marking-dean {
+  color: #eadba8;
+}
+
+/* Slightly weathered road paint for the two open parking-space lines. */
+.mediatheque-painted-stall::before,
+.mediatheque-painted-stall::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgb(248 246 230 / 0.86) 0%,
+    rgb(231 229 214 / 0.68) 14%,
+    rgb(255 253 238 / 0.82) 31%,
+    rgb(218 216 202 / 0.62) 48%,
+    rgb(250 248 232 / 0.8) 67%,
+    rgb(226 223 207 / 0.65) 84%,
+    rgb(248 246 230 / 0.78) 100%
+  );
+  box-shadow:
+    0 0 0.35px rgb(255 255 255 / 0.45),
+    0.7px 0.8px 0.8px rgb(31 41 55 / 0.3);
+  border-radius: 45% 35% 40% 30%;
+}
+
+.mediatheque-painted-stall::before {
+  left: -2px;
+}
+
+.mediatheque-painted-stall::after {
+  right: -2px;
+  opacity: 0.94;
+}
+
+.mediatheque-painted-stall-end-line {
+  position: absolute;
+  right: -2px;
+  left: -2px;
+  z-index: 0;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    rgb(248 246 230 / 0.82) 0%,
+    rgb(224 221 204 / 0.65) 18%,
+    rgb(255 253 238 / 0.84) 47%,
+    rgb(222 219 202 / 0.62) 77%,
+    rgb(248 246 230 / 0.8) 100%
+  );
+  box-shadow: 0 0.7px 0.8px rgb(31 41 55 / 0.3);
+  border-radius: 40% 35% 30% 45%;
+}
+
 /* Force override for elements directly using these classes */
 html.theme-colorblind .bg-error-container {
   background-color: var(--color-error-container) !important;
 }
-html.theme-colorblind .text-error {
+html.theme-colorblind .text-error:not(:hover) {
   color: var(--color-error) !important;
+}
+html.theme-colorblind .hover\:text-white:hover,
+html.theme-colorblind .hover\:text-white:hover * {
+  color: #ffffff !important;
 }
 html.theme-colorblind .text-on-error-container {
   color: var(--color-on-error-container) !important;
@@ -141,6 +413,15 @@ html.theme-colorblind .text-on-error-container {
 .leaflet-popup-tip {
   background-color: var(--color-surface-container-lowest) !important;
   color: var(--color-on-surface) !important;
+}
+
+@media (max-width: 639px) {
+  .leaflet-control-zoom a {
+    width: 44px !important;
+    height: 44px !important;
+    line-height: 44px !important;
+    font-size: 1.4rem !important;
+  }
 }
 
 /* Color Themes */

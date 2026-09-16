@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSettings } from "../contexts/SettingsContext";
 import axios from "axios";
+import api from "../lib/api";
 import { MapContainer, TileLayer, Marker, Popup, useMap, GeoJSON } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -58,11 +59,7 @@ export default function AllLotsPage() {
     const fetchBoundary = async () => {
       try {
         const url = `https://nominatim.openstreetmap.org/search.php?q=${encodeURIComponent(openCity + ', ישראל')}&polygon_geojson=1&format=json&limit=1`;
-        const res = await axios.get(url, {
-          headers: {
-            'User-Agent': 'SmartParkingApp/1.0'
-          }
-        });
+        const res = await axios.get(url);
         
         if (res.data && res.data.length > 0 && res.data[0].geojson) {
           const geojsonData = res.data[0].geojson;
@@ -84,8 +81,8 @@ export default function AllLotsPage() {
     const fetchData = async () => {
       try {
         const [lotsRes, citiesRes] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/parking/all`),
-          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/parking/cities`)
+          api.get("/api/parking/all"),
+          api.get("/api/parking/cities")
         ]);
         
         const lotsData = lotsRes.data;
@@ -174,20 +171,21 @@ export default function AllLotsPage() {
   }, {});
 
   return (
-    <div className="pt-24 pb-8 px-4 sm:px-8 max-w-7xl mx-auto w-full flex flex-col h-[100dvh]">
-      <div className="flex items-center justify-start gap-2 mb-6 shrink-0">
+    <div className="mx-auto flex min-h-[100dvh] w-full max-w-7xl flex-col px-3 pb-6 pt-20 sm:px-8 sm:pb-8 sm:pt-24 md:h-[100dvh]">
+      <div className="mb-4 flex shrink-0 items-center justify-start gap-2 sm:mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant flex items-center justify-center cursor-pointer"
+          className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-high"
+          aria-label="חזרה לעמוד הקודם"
           title="חזור"
         >
           <span className="material-symbols-outlined" style={{ transform: 'rotate(180deg)' }}>arrow_back</span>
         </button>
-        <h1 className="text-3xl font-black text-primary">כל החניונים שלנו</h1>
+        <h1 className="text-2xl font-black text-primary sm:text-3xl">כל החניונים שלנו</h1>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6 flex-grow min-h-0 pb-4">
-        <div className="w-full md:w-1/3 lg:w-1/4 bg-surface-container-lowest rounded-3xl shadow-sm border border-outline-variant/30 flex flex-col overflow-hidden shrink-0 h-[40vh] md:h-full">
+      <div className="flex min-h-0 flex-grow flex-col gap-4 pb-4 sm:gap-6 md:flex-row">
+        <div className="flex min-h-[280px] max-h-[48dvh] w-full shrink-0 flex-col overflow-hidden rounded-2xl border border-outline-variant/30 bg-surface-container-lowest shadow-sm sm:rounded-3xl md:h-full md:max-h-none md:w-1/3 lg:w-1/4">
           <div className="p-4 bg-primary/5 border-b border-outline-variant/20 shadow-sm z-10 flex flex-col gap-3">
             <h2 className="font-bold text-primary text-lg flex items-center gap-2">
               <span className="material-symbols-outlined">location_city</span>
@@ -200,7 +198,7 @@ export default function AllLotsPage() {
                 placeholder="חיפוש עיר או חניון..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-surface border border-outline-variant/30 rounded-xl py-2 pr-9 pl-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                className="min-h-12 w-full rounded-xl border border-outline-variant/30 bg-surface py-2 pl-3 pr-10 text-base transition-all focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
           </div>
@@ -221,7 +219,7 @@ export default function AllLotsPage() {
                   <div key={cityName} className="border border-outline-variant/30 rounded-xl overflow-hidden shadow-sm transition-all duration-300 bg-surface">
                     <button 
                       onClick={() => handleCityClick(cityName, cityLots)}
-                      className={`w-full text-right p-4 flex items-center justify-between transition-colors cursor-pointer ${isOpen ? 'bg-primary text-on-primary' : 'hover:bg-primary/5 text-on-surface'}`}
+                      className={`flex min-h-12 w-full cursor-pointer items-center justify-between p-4 text-right transition-colors ${isOpen ? 'bg-primary text-on-primary' : 'hover:bg-primary/5 text-on-surface'}`}
                     >
                       <span className="font-bold text-lg">{cityName} ({cityLots.length})</span>
                       <span className="material-symbols-outlined transition-transform duration-300" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
@@ -237,7 +235,7 @@ export default function AllLotsPage() {
                             <div 
                               key={lot._id} 
                               onClick={() => handleLotClick(lot)}
-                              className="p-3 border-b border-outline-variant/10 last:border-0 hover:bg-primary/10 cursor-pointer transition-colors group"
+                              className="group min-h-14 cursor-pointer border-b border-outline-variant/10 p-3 transition-colors last:border-0 hover:bg-primary/10"
                             >
                               <div className="flex justify-between items-start">
                                 <h3 className="font-bold text-primary text-[15px]">{lot.name}</h3>
@@ -257,7 +255,7 @@ export default function AllLotsPage() {
             )}
           </div>
         </div>
-        <div className="w-full md:w-2/3 lg:w-3/4 rounded-3xl overflow-hidden shadow-lg border border-outline-variant/30 relative flex-grow min-h-[400px]">
+        <div className="relative h-[46dvh] min-h-[320px] w-full flex-grow overflow-hidden rounded-2xl border border-outline-variant/30 shadow-lg sm:rounded-3xl md:h-auto md:min-h-[400px] md:w-2/3 lg:w-3/4">
           {loading ? (
             <div className="absolute inset-0 flex justify-center items-center bg-surface-container-lowest z-10">
               <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -272,7 +270,7 @@ export default function AllLotsPage() {
               
               {cityBoundary && (
                 <GeoJSON 
-                  key={`${openCity}-${isColorBlindMode ? 'colorblind' : 'normal'}-${Date.now()}`} 
+                  key={`${openCity}-${isColorBlindMode ? 'colorblind' : 'normal'}`}
                   data={cityBoundary} 
                   pathOptions={{ 
                     color: isColorBlindMode ? '#d97706' : '#ef4444', 

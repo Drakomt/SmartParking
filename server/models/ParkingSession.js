@@ -1,19 +1,24 @@
 import mongoose from 'mongoose';
+import { normalizeLicensePlate } from '../utils/licensePlate.js';
 
 const parkingSessionSchema = new mongoose.Schema({
   carLicensePlate: {
     type: String,
     required: true,
+    set: normalizeLicensePlate,
+    index: true,
   },
   parkingLot: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ParkingLot',
     required: true,
+    index: true,
   },
   parkingSpot: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ParkingSpot',
-    default: null, // Nullable if not tracked at spot level during entry
+    required: true,
+    index: true,
   },
   entryTime: {
     type: Date,
@@ -35,8 +40,13 @@ const parkingSessionSchema = new mongoose.Schema({
   },
   checkoutStatus: {
     type: String,
-    enum: ['PAYABLE', 'CANCELLED', 'COMPLETED', 'EXPIRED'],
-    default: 'PAYABLE',
+    enum: ['Payable', 'paid', 'pass'],
+    default: 'Payable',
+  },
+  // Prevent lookup from rotating credentials while an order is being created/captured.
+  checkoutPaymentStarted: {
+    type: Boolean,
+    default: false,
   },
   checkoutConsumedAt: {
     type: Date,

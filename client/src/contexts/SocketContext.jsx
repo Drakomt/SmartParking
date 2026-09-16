@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import api from '../lib/api';
 
 const SocketContext = createContext();
 
@@ -13,24 +14,21 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io(import.meta.env.VITE_API_BASE_URL, {
-      auth: { token: user?.token },
+    const newSocket = io(api.defaults.baseURL || undefined, {
+      withCredentials: true,
     });
 
-    newSocket.on('connect', () => {
-      console.log('Central Socket Connected', newSocket.id);
-    });
-
-    newSocket.on('disconnect', () => {
-      console.log('Central Socket Disconnected');
-    });
-
-    setSocket(newSocket);
+    const handleConnect = () => setSocket(newSocket);
+    const handleDisconnect = () => setSocket(null);
+    newSocket.on('connect', handleConnect);
+    newSocket.on('disconnect', handleDisconnect);
 
     return () => {
+      newSocket.off('connect', handleConnect);
+      newSocket.off('disconnect', handleDisconnect);
       newSocket.disconnect();
     };
-  }, [user?.token]);
+  }, [user]);
 
   return (
     <SocketContext.Provider value={socket}>

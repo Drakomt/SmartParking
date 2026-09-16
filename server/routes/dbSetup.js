@@ -4,12 +4,14 @@ import City from '../models/City.js';
 import ParkingLot from '../models/ParkingLot.js';
 import ParkingSpot from '../models/ParkingSpot.js';
 import User from '../models/User.js';
+import { requireSetupApiKey } from '../middleware/setupAuth.js';
 import ParkingSession from '../models/ParkingSession.js';
 import Camera from '../models/Camera.js';
 import ParkingPayment from '../models/ParkingPayment.js';
 import PayPalWebhookEvent from '../models/PayPalWebhookEvent.js';
 
 const router = express.Router();
+router.use(requireSetupApiKey);
 
 const seedCities = [
   {
@@ -251,6 +253,55 @@ const seedParkingFeesMinor = Object.freeze({
   'RS-H': 2400,
 });
 
+const seedLotPricing = Object.freeze({
+  'H-M': { isFree: false, freeFirstHours: 0, pricePerMinute: 0.2, fullDayPriceMinor: 2000 },
+  'H-C': { isFree: false, freeFirstHours: 1, pricePerMinute: 0.2, fullDayPriceMinor: 1800 },
+  'H-MALL': { isFree: false, freeFirstHours: 0, pricePerMinute: 0.25, fullDayPriceMinor: 2200 },
+  'H-W': { isFree: true, freeFirstHours: 0, pricePerMinute: 0, fullDayPriceMinor: 0 },
+  'TA-AZ': { isFree: false, freeFirstHours: 2, pricePerMinute: 0.35, fullDayPriceMinor: 3500 },
+  'TA-R': { isFree: false, freeFirstHours: 1, pricePerMinute: 0.3, fullDayPriceMinor: 3000 },
+  'TA-D': { isFree: false, freeFirstHours: 0, pricePerMinute: 0.32, fullDayPriceMinor: 3200 },
+  'RZ-1': { isFree: false, freeFirstHours: 0, pricePerMinute: 0.18, fullDayPriceMinor: 1800 },
+  'RZ-GOLD': { isFree: false, freeFirstHours: 1, pricePerMinute: 0.25, fullDayPriceMinor: 2200 },
+  'RG-B': { isFree: false, freeFirstHours: 2, pricePerMinute: 0.3, fullDayPriceMinor: 2800 },
+  'RG-S': { isFree: false, freeFirstHours: 0, pricePerMinute: 0.22, fullDayPriceMinor: 2200 },
+  'BY-T': { isFree: false, freeFirstHours: 1, pricePerMinute: 0.2, fullDayPriceMinor: 1800 },
+  'BY-C': { isFree: true, freeFirstHours: 0, pricePerMinute: 0, fullDayPriceMinor: 0 },
+  'GV-C': { isFree: false, freeFirstHours: 0, pricePerMinute: 0.25, fullDayPriceMinor: 2200 },
+  'GV-W': { isFree: false, freeFirstHours: 2, pricePerMinute: 0.2, fullDayPriceMinor: 2000 },
+  'HF-CN': { isFree: false, freeFirstHours: 0, pricePerMinute: 0.25, fullDayPriceMinor: 2200 },
+  'HF-HR': { isFree: false, freeFirstHours: 1, pricePerMinute: 0.2, fullDayPriceMinor: 1800 },
+  'HF-GR': { isFree: false, freeFirstHours: 0, pricePerMinute: 0.2, fullDayPriceMinor: 2000 },
+  'HF-BG': { isFree: true, freeFirstHours: 0, pricePerMinute: 0, fullDayPriceMinor: 0 },
+  'BS-M': { isFree: false, freeFirstHours: 2, pricePerMinute: 0.15, fullDayPriceMinor: 1500 },
+  'RS-H': { isFree: false, freeFirstHours: 1, pricePerMinute: 0.28, fullDayPriceMinor: 2400 },
+});
+
+const validateSeedLotPricing = (config) => {
+  if (!config) {
+    return false;
+  }
+
+  const hasFreeLot = Boolean(config.isFree);
+  const freeFirstHours = Number(config.freeFirstHours || 0);
+  const pricePerMinute = Number(config.pricePerMinute || 0);
+  const fullDayPriceMinor = Number(config.fullDayPriceMinor || 0);
+
+  if (hasFreeLot && (freeFirstHours !== 0 || pricePerMinute !== 0 || fullDayPriceMinor !== 0)) {
+    return false;
+  }
+
+  if (pricePerMinute !== 0 && (pricePerMinute < 0.1 || pricePerMinute > 0.5)) {
+    return false;
+  }
+
+  if (fullDayPriceMinor < 0 || !Number.isSafeInteger(fullDayPriceMinor)) {
+    return false;
+  }
+
+  return Number.isFinite(freeFirstHours) && freeFirstHours >= 0;
+};
+
 const createParkingSpots = (parkingLotId, totalSpots, levels, prefix) => {
   const spots = [];
   const maxLevel = Math.min(16, Math.max(1, Math.min(levels, totalSpots)));
@@ -426,6 +477,17 @@ router.post('/seed', async (req, res) => {
       const cityDoc = createdCities[citySeed.name];
 
       for (const lotSeed of citySeed.lots) {
+        const pricingConfig = seedLotPricing[lotSeed.prefix] || {
+          isFree: false,
+          freeFirstHours: 0,
+          pricePerMinute: 0,
+          fullDayPriceMinor: 0,
+        };
+
+        if (!validateSeedLotPricing(pricingConfig)) {
+          throw new Error(`Invalid pricing config for lot seed: ${lotSeed.prefix}`);
+        }
+
         const lot = await ParkingLot.create({
           name: lotSeed.name,
           city: cityDoc._id,
@@ -433,24 +495,27 @@ router.post('/seed', async (req, res) => {
           totalSpots: lotSeed.totalSpots,
           levels: lotSeed.levels,
           location: lotSeed.location,
-          parkingFeeMinor: seedParkingFeesMinor[lotSeed.prefix],
+          pricing: {
+            ...pricingConfig,
+            parkingFeeMinor: seedParkingFeesMinor[lotSeed.prefix] || 0,
+          },
           currency: 'ILS',
         });
 
         cityDoc.parkingLots.push(lot._id);
 
         const spots = createParkingSpots(lot._id, lotSeed.totalSpots, lotSeed.levels, lotSeed.prefix);
-        await ParkingSpot.insertMany(spots);
+        const createdSpots = await ParkingSpot.insertMany(spots);
 
         // count occupied spots in this lot and create that many active sessions
-        const occupiedCount = spots.filter((s) => s.status === 'occupied').length;
-        for (let k = 0; k < occupiedCount; k += 1) {
+        const occupiedSpots = createdSpots.filter((spot) => spot.status === 'occupied');
+        for (const occupiedSpot of occupiedSpots) {
           const plate = String(plateCounter).padStart(8, '0');
           plateCounter += 1;
           sessionsToInsert.push({
             carLicensePlate: plate,
             parkingLot: lot._id,
-            parkingSpot: null,
+            parkingSpot: occupiedSpot._id,
           });
         }
       }

@@ -10,18 +10,20 @@ export default function NavBar() {
 
   return (
     <>
-      <nav className="fixed top-0 w-full z-50 bg-surface/70 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm flex flex-row-reverse justify-between items-center px-gutter h-16">
-      <div className="flex items-center gap-4">
+      <nav className="app-navbar fixed top-0 z-50 flex w-full flex-row-reverse items-center justify-between border-b border-outline-variant/30 bg-surface/90 px-3 shadow-sm backdrop-blur-xl sm:px-6">
+      <div className="flex min-w-0 items-center">
         <NavLink
           to="/"
           onClick={() => window.dispatchEvent(new CustomEvent("reset-home"))}
+          className="flex min-h-11 min-w-0 items-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          aria-label="Smart Parking - דף הבית"
         >
-          <span className="text-2xl sm:text-3xl font-black tracking-tight text-primary dark:text-primary-fixed">
+          <span className="whitespace-nowrap text-[clamp(1rem,4.5vw,1.35rem)] font-black tracking-tight text-primary dark:text-primary-fixed sm:text-3xl">
             SMART PARKING
           </span>
         </NavLink>
       </div>
-      <div className="flex flex-row-reverse items-center gap-4 sm:gap-6">
+      <div className="flex shrink-0 flex-row-reverse items-center gap-1 sm:gap-4">
         <button
           onClick={() => {
             if (window.location.pathname !== "/") {
@@ -30,8 +32,9 @@ export default function NavBar() {
               window.dispatchEvent(new CustomEvent("show-favorites"));
             }
           }}
-          className="cursor-pointer text-on-surface hover:bg-yellow-500/10 transition-colors font-headline-sm text-headline-sm rounded-lg px-3 sm:px-4 py-2 flex items-center justify-center gap-1 sm:gap-2"
+          className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-xl p-2 text-on-surface transition-colors hover:bg-yellow-500/10 sm:px-4"
           title="חניונים שמורים"
+          aria-label="חניונים שמורים"
         >
           <span className="material-symbols-outlined text-yellow-500 text-lg sm:text-xl">
             star
@@ -43,9 +46,11 @@ export default function NavBar() {
           <>
             <button
               onClick={() => navigate("/dashboard")}
-              className="cursor-pointer text-primary bg-primary/10 hover:bg-primary/20 transition-colors font-headline-sm text-headline-sm rounded-lg px-3 sm:px-4 py-2 flex items-center justify-center"
+              className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary/10 p-2 font-bold text-primary transition-colors hover:bg-primary/20 sm:px-4"
+              aria-label="אזור אישי"
             >
-              איזור אישי
+              <span className="material-symbols-outlined" aria-hidden="true">account_circle</span>
+              <span className="hidden sm:inline">אזור אישי</span>
             </button>
             <button
               onClick={() => {
@@ -53,24 +58,29 @@ export default function NavBar() {
                 window.dispatchEvent(new CustomEvent("reset-home"));
                 navigate("/", { replace: true, state: {} });
               }}
-              className="cursor-pointer text-error hover:bg-error/10 transition-colors font-headline-sm text-headline-sm border border-error/30 rounded-lg px-3 sm:px-4 py-2 flex items-center justify-center"
+              className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-error/30 p-2 font-bold text-error transition-colors hover:bg-error/10 sm:px-4"
+              aria-label="התנתקות"
             >
-              התנתק
+              <span className="material-symbols-outlined" aria-hidden="true">logout</span>
+              <span className="hidden sm:inline">התנתק</span>
             </button>
           </>
         ) : (
           <button
             onClick={() => navigate("/login")}
-            className="cursor-pointer bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors font-bold border border-primary/30 rounded-lg px-3 sm:px-4 py-2 flex items-center justify-center"
+            className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-primary px-2.5 text-sm font-bold text-on-primary shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:px-3"
+            title="כניסה למנהלים"
           >
-            כניסה למורשים
+            <span className="material-symbols-outlined text-[19px]" aria-hidden="true">login</span>
+            <span className="hidden sm:inline">כניסה למורשים</span>
           </button>
         )}
 
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className="cursor-pointer text-on-surface hover:bg-surface-container-high transition-colors rounded-lg p-2 flex items-center justify-center"
+          className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-xl p-2 text-on-surface transition-colors hover:bg-surface-container-high"
           title="תפריט"
+          aria-label="פתיחת תפריט"
         >
           <span className="material-symbols-outlined text-3xl">menu</span>
         </button>

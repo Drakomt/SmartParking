@@ -23,12 +23,14 @@ const sendError = (res, error, operation) => {
 };
 
 const defaultCreateOrderLimiter = createRateLimiter({
+  namespace: 'paypal-create-order',
   windowMs: 10 * 60_000,
   maxRequests: 20,
   keyGenerator: (req) => `${req.ip}:${req.body?.checkoutId || 'invalid'}`,
 });
 
 const defaultCaptureOrderLimiter = createRateLimiter({
+  namespace: 'paypal-capture-order',
   windowMs: 10 * 60_000,
   maxRequests: 30,
   keyGenerator: (req) => `${req.ip}:${req.params?.paypalOrderId || 'invalid'}`,

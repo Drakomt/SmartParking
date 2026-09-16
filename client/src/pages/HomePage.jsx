@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../lib/api";
 import { useLocation, useNavigate } from "react-router-dom";
 import ParkingLotView from "../components/ParkingLotView";
 import useParkingLots from "../hooks/useParkingLots";
@@ -10,7 +10,7 @@ import ParkingLotCard from "../components/ParkingLotCard";
 
 export default function HomePage() {
   const [submittedCity, setSubmittedCity] = useState("");
-  const { parkingLotsCity, loading, error } = useParkingLots(submittedCity);
+  const { parkingLotsCity, loading, error, refreshLots } = useParkingLots(submittedCity);
   const citiesInDatabase = useCities();
 
   const [selectedParkingLotId, setSelectedParkingLotId] = useState(null);
@@ -53,9 +53,9 @@ export default function HomePage() {
       async (position) => {
         const { latitude, longitude } = position.coords;
         try {
-          const res = await axios.get(
-            `${import.meta.env.VITE_API_BASE_URL}/api/parking/nearby?lat=${latitude}&lng=${longitude}`
-          );
+          const res = await api.get("/api/parking/nearby", {
+            params: { lat: latitude, lng: longitude },
+          });
           setAllNearbyLots(res.data);
           
           let initialRadius = 2;
@@ -112,14 +112,11 @@ export default function HomePage() {
 
   useEffect(() => {
     if (location.state?.showFavorites) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowFavorites(true);
       navigate(".", { replace: true, state: {} });
     } else if (location.state?.selectedAdminLot) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedParkingLotId(location.state.selectedAdminLot);
       if (location.state.cityName) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSubmittedCity(location.state.cityName);
       }
     }
@@ -201,8 +198,8 @@ export default function HomePage() {
     totalLevels,
     isLoading: isLoadingSlots,
     error: slotsError,
+    refreshData,
   } = useParkingData(selectedParkingLotId, currentLevel, submittedCity);
-
 
   const handleUpdateLocation = (lotId) => {
     setSelectedParkingLotId(lotId);
@@ -223,7 +220,7 @@ export default function HomePage() {
   return (
     <main className="flex-grow pt-16">
       {selectedParkingLotId ? (
-        <div className="w-full max-w-7xl mx-auto px-container-padding py-section-margin flex flex-col items-center">
+        <div className="mx-auto flex w-full max-w-7xl flex-col items-center px-3 py-6 sm:px-6 sm:py-10">
           {isLoadingSlots ? (
             <div className="text-center p-8 bg-surface-container-highest rounded-3xl shadow-xl border border-outline-variant/20 w-full max-w-lg mt-6">
               <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -250,14 +247,26 @@ export default function HomePage() {
               lotLocation={selectedLot?.location}
               isAdmin={location.state?.adminMode || false}
               lotId={selectedParkingLotId}
+              onSpotsChanged={(targetLevel) => {
+                if (targetLevel !== undefined) {
+                  setCurrentLevel(targetLevel);
+                  refreshData(targetLevel);
+                } else {
+                  refreshData();
+                }
+                refreshLots();
+                if (nearbyLots) {
+                  handleFindNearMe(false);
+                }
+              }}
             />
           )}
         </div>
       ) : showFavorites ? (
-        <div className="max-w-7xl mx-auto px-container-padding py-section-margin w-full flex flex-col gap-section-margin mt-8">
+        <div className="mx-auto mt-4 flex w-full max-w-7xl flex-col gap-6 px-3 py-6 sm:mt-8 sm:gap-10 sm:px-6 sm:py-10">
           <section className="flex flex-col w-full">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="font-headline-md text-headline-md text-primary flex items-center gap-2">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="flex min-w-0 items-center gap-2 text-xl font-bold text-primary sm:text-2xl">
                 <span className="material-symbols-outlined text-yellow-500">
                   star
                 </span>
@@ -271,7 +280,7 @@ export default function HomePage() {
                       localStorage.removeItem("smartParking_favorites");
                     }
                   }}
-                  className="cursor-pointer px-4 py-2 border border-error/50 text-error hover:bg-error/10 hover:border-error rounded-xl transition-all duration-300 font-medium flex items-center gap-2"
+                  className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-error/50 px-3 py-2 font-medium text-error transition-colors hover:border-error hover:bg-error/10 sm:px-4"
                   title="נקה מועדפים"
                 >
                   <span className="material-symbols-outlined text-sm">delete</span>
@@ -279,7 +288,7 @@ export default function HomePage() {
                 </button>
               )}
             </div>
-            <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] border border-outline-variant/20 flex-grow min-h-[300px]">
+            <div className="min-h-[260px] flex-grow rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4 shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] sm:min-h-[300px] sm:p-6">
               {favoriteLots.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {favoriteLots.map((lot) => {
@@ -326,7 +335,7 @@ export default function HomePage() {
         </div>
       ) : (
         <>
-          <section className="relative w-full h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+          <section className="relative flex min-h-[540px] w-full items-center justify-center overflow-hidden py-12 sm:h-[60vh] sm:min-h-[500px] sm:py-0">
             <div className="absolute inset-0 w-full h-full">
               <div
                 className="bg-cover bg-center w-full h-full opacity-80"
@@ -337,11 +346,11 @@ export default function HomePage() {
               ></div>
               <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background"></div>
             </div>
-            <div className="relative z-10 w-full max-w-4xl px-container-padding text-right">
-              <h1 className="text-4xl sm:text-5xl md:text-3xl font-black text-primary mb-6 drop-shadow-lg tracking-tight">
+            <div className="relative z-10 w-full max-w-4xl px-4 text-right sm:px-6">
+              <h1 className="mb-4 max-w-2xl text-3xl font-black leading-tight tracking-tight text-primary drop-shadow-lg sm:mb-6 sm:text-5xl md:text-4xl">
                 מצא את החניה המושלמת בעיר שלך
               </h1>
-              <p className="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-2xl">
+              <p className="mb-7 max-w-2xl text-base leading-7 text-on-surface-variant sm:mb-10 sm:text-lg">
                 מערכת ניהול חניונים מתקדמת ופשוטה לשימוש. הזן את שם העיר כדי
                 למצוא זמינות בזמן אמת.
               </p>
@@ -351,11 +360,11 @@ export default function HomePage() {
                   availableCities={citiesInDatabase}
                 />
               </div>
-              <div className="mt-12 flex flex-col items-center relative z-0 w-full max-w-3xl mr-0">
+              <div className="relative z-0 mr-0 mt-7 flex w-full max-w-3xl flex-col items-center sm:mt-10">
                 <button
                   onClick={() => handleFindNearMe(true)}
                   disabled={isLocating}
-                  className="bg-surface-container-highest/80 backdrop-blur-sm hover:bg-primary/20 text-primary font-bold py-3 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 border border-primary/30 disabled:opacity-50"
+                  className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-primary/30 bg-surface-container-highest/90 px-5 py-3 font-bold text-primary shadow-lg backdrop-blur-sm transition-colors hover:bg-primary/20 disabled:opacity-50 sm:w-auto sm:px-6"
                 >
                   {isLocating ? (
                     <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -373,10 +382,10 @@ export default function HomePage() {
             </div>
           </section>
 
-          <div className="max-w-7xl mx-auto px-container-padding py-section-margin w-full flex flex-col gap-section-margin">
-            <div className="flex flex-col gap-section-margin w-full">
+          <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-3 py-7 sm:gap-10 sm:px-6 sm:py-10">
+            <div className="flex w-full flex-col gap-6 sm:gap-10">
               <section className="flex flex-col w-full">
-                <h2 className="font-headline-md text-headline-md text-primary mb-4 flex items-center gap-2">
+                <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-primary sm:text-2xl">
                   <span className="material-symbols-outlined text-primary">
                     local_parking
                   </span>
@@ -387,7 +396,7 @@ export default function HomePage() {
                     : "חניונים מומלצים"}
                 </h2>
 
-                <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] border border-outline-variant/20 flex-grow">
+                <div className="flex-grow rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4 shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] sm:p-6">
                   {submittedCity && loading && (
                     <div className="text-primary mb-4 font-body-md">
                       מחפש חניונים...
@@ -455,8 +464,8 @@ export default function HomePage() {
               )}
 
               {recentSearches.length > 0 && (
-                <section className="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] border border-outline-variant/20 flex flex-col w-full">
-                  <h2 className="font-headline-md text-headline-md text-primary mb-4 flex items-center gap-2">
+                <section className="flex w-full flex-col rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4 shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] sm:p-6">
+                  <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-primary sm:text-2xl">
                     <span className="material-symbols-outlined text-primary">
                       history
                     </span>
@@ -467,7 +476,7 @@ export default function HomePage() {
                       <li
                         key={city}
                         onClick={() => handleSearchSubmit(city)}
-                        className="flex items-center gap-2 p-3 rounded-lg bg-surface-container-low hover:bg-outline-variant/30 transition-colors cursor-pointer group"
+                        className="group flex min-h-12 cursor-pointer items-center gap-2 rounded-xl bg-surface-container-low p-3 transition-colors hover:bg-outline-variant/30"
                       >
                         <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-sm">
                           history

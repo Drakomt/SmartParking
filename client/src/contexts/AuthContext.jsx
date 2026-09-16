@@ -1,46 +1,43 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
+import api from '../lib/api';
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    let storedUser = localStorage.getItem('smartParking_user');
-    if (!storedUser) {
-      storedUser = sessionStorage.getItem('smartParking_user');
-    }
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    if (storedUser) {
+  useEffect(() => {
+    const checkAuth = async () => {
       try {
-        return JSON.parse(storedUser);
-      } catch (err) {
-        console.error('Failed to parse user data');
+        const res = await api.get('/api/auth/me');
+        setUser(res.data);
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-    }
-    return null;
-  });
-  const [loading, setLoading] = useState(false);
+    };
+    checkAuth();
+  }, []);
 
-  const login = (userData, rememberMe = false) => {
+  const login = (userData) => {
     setUser(userData);
-    if (rememberMe) {
-      localStorage.setItem('smartParking_user', JSON.stringify(userData));
-      sessionStorage.removeItem('smartParking_user');
-    } else {
-      sessionStorage.setItem('smartParking_user', JSON.stringify(userData));
-      localStorage.removeItem('smartParking_user');
-    }
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
-    localStorage.removeItem('smartParking_user');
-    sessionStorage.removeItem('smartParking_user');
+    try {
+      await api.post('/api/auth/logout');
+    } catch {
+      console.error('Failed to clear the authentication cookie');
+    }
   };
 
   if (loading) {
-    return <div className="flex h-screen items-center justify-center">טוען...</div>;
+    return <div className="flex h-screen items-center justify-center text-primary font-bold">טוען...</div>;
   }
 
   return (
