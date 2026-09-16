@@ -34,7 +34,7 @@ export default function ParkingLotCard({
     <>
       <button
         onClick={onClick}
-        className="cursor-pointer bg-surface-container-lowest hover:bg-primary/5 transition-all duration-300 p-5 rounded-2xl border border-outline-variant/40 hover:border-primary shadow-sm hover:shadow-lg hover:-translate-y-1 text-right flex flex-col gap-3 group relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary w-full"
+        className="group relative flex w-full cursor-pointer flex-col gap-3 overflow-hidden rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-4 text-right shadow-sm transition-[background-color,border-color,box-shadow] duration-200 hover:border-primary hover:bg-primary/5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary sm:p-5"
         aria-label={`הצג את חניון ${lot.name}`}
       >
         <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-l from-primary to-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -65,16 +65,16 @@ export default function ParkingLotCard({
           </div>
         </div>
 
-        <div className="w-full pt-3 mt-1 border-t border-outline-variant/20 flex justify-between items-center gap-1">
-          <div className="flex gap-1.5 sm:gap-2">
+        <div className="mt-1 flex w-full flex-col items-stretch justify-between gap-2 border-t border-outline-variant/20 pt-3 min-[360px]:flex-row min-[360px]:items-center">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {lot.totalSpots && (
-              <span className="bg-surface-container-high px-2 py-1 rounded-md text-[11px] sm:text-sm text-on-surface font-bold group-hover:bg-primary group-hover:text-on-primary transition-colors whitespace-nowrap">
+              <span className="whitespace-nowrap rounded-md bg-surface-container-high px-2 py-1 text-xs font-bold text-on-surface transition-colors group-hover:bg-primary group-hover:text-on-primary sm:text-sm">
                 {lot.totalSpots} סה"כ מקומות
               </span>
             )}
             {lot.spots && (
               <span
-                className={`px-2 py-1 rounded-md text-[11px] sm:text-sm transition-colors whitespace-nowrap ${
+                className={`whitespace-nowrap rounded-md px-2 py-1 text-xs transition-colors sm:text-sm ${
                   lot.spots.filter((s) => s.status === "free").length > 0
                     ? "bg-blue-100/80 text-slate-900 font-extrabold group-hover:bg-blue-200 group-hover:text-black"
                     : "bg-error-container text-on-error-container font-bold"
@@ -84,7 +84,7 @@ export default function ParkingLotCard({
               </span>
             )}
           </div>
-          <div className="flex gap-1 sm:gap-2 items-center">
+          <div className="flex items-center justify-end gap-1 sm:gap-2">
             <div 
               className="relative"
               onMouseEnter={() => setIsHoveringPrice(true)}
@@ -96,7 +96,7 @@ export default function ParkingLotCard({
                   setShowFullPriceModal(true);
                   setIsHoveringPrice(false);
                 }}
-                className={`p-2 rounded-full transition-colors flex items-center justify-center text-primary hover:bg-primary/10 ${isHoveringPrice ? 'bg-primary/10' : ''}`}
+                className={`flex min-h-11 min-w-11 items-center justify-center rounded-full p-2 text-primary transition-colors hover:bg-primary/10 ${isHoveringPrice ? 'bg-primary/10' : ''}`}
                 title="לחץ למחירון המלא"
               >
                 <span className="material-symbols-outlined text-[20px] sm:text-[22px]">payments</span>
@@ -122,14 +122,14 @@ export default function ParkingLotCard({
                   alert('קואורדינטות חסרות לחניון זה');
                 }
               }}
-              className="p-2 rounded-full transition-colors flex items-center justify-center text-primary hover:bg-primary/10"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-full p-2 text-primary transition-colors hover:bg-primary/10"
               title="נווט לחניון ב-Waze"
             >
               <i className="fa-brands fa-waze text-[20px] sm:text-[22px]"></i>
             </div>
             <div
               onClick={(e) => onToggleFavorite(e, lot)}
-              className={`p-2 rounded-full transition-colors flex items-center justify-center hover:bg-yellow-500/10 ${
+              className={`flex min-h-11 min-w-11 items-center justify-center rounded-full p-2 transition-colors hover:bg-yellow-500/10 ${
                 isFavorite
                   ? "text-yellow-500"
                   : "text-outline-variant hover:text-yellow-500"
@@ -152,18 +152,21 @@ export default function ParkingLotCard({
       {/* Full Price Modal via Portal to avoid CSS transform bounding box issues */}
       {showFullPriceModal && createPortal(
         <div 
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200" 
-          dir="rtl" 
+          className="mobile-sheet-backdrop fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+          dir="rtl"
           onClick={(e) => { e.stopPropagation(); setShowFullPriceModal(false); }}
         >
           <div 
-            className="bg-surface-container-lowest p-0 rounded-3xl shadow-2xl w-full max-w-sm text-right flex flex-col border border-outline-variant/20 animate-in zoom-in-95 duration-200 overflow-hidden" 
+          className="mobile-sheet flex w-full max-w-sm flex-col overflow-hidden rounded-3xl border border-outline-variant/20 bg-surface-container-lowest p-0 text-right shadow-2xl"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="lot-price-title"
           >
             {/* Header */}
             <div className="bg-primary/5 px-6 py-5 border-b border-outline-variant/20 flex justify-between items-center relative">
               <div className="flex flex-col">
-                <h3 className="text-xl font-black text-primary">מחירון חניון</h3>
+                <h3 id="lot-price-title" className="text-xl font-black text-primary">מחירון חניון</h3>
                 <span className="text-sm font-bold text-on-surface-variant">{lot.name}</span>
               </div>
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
@@ -172,7 +175,7 @@ export default function ParkingLotCard({
             </div>
 
             {/* Body */}
-            <div className="flex flex-col gap-3 p-6 text-on-surface">
+            <div className="flex flex-col gap-3 p-4 text-on-surface sm:p-6">
                {lot.pricing?.isFree ? (
                  <div className="flex flex-col items-center justify-center gap-2 text-emerald-600 bg-emerald-50 py-6 rounded-2xl border border-emerald-200">
                    <span className="material-symbols-outlined text-5xl drop-shadow-sm">verified</span>
@@ -218,7 +221,7 @@ export default function ParkingLotCard({
             <div className="p-4 pt-0">
               <button 
                 onClick={(e) => { e.stopPropagation(); setShowFullPriceModal(false); }}
-                className="w-full py-3.5 bg-primary text-on-primary font-black rounded-xl hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 font-black text-on-primary shadow-md transition-all hover:bg-primary/90 hover:shadow-lg active:scale-[0.98]"
               >
                 הבנתי, תודה
               </button>

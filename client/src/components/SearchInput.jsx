@@ -72,18 +72,21 @@ export default function SearchInput({ onSearch, availableCities = [] }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="relative w-full mb-6">
-      <div className="bg-white/80 backdrop-blur-2xl rounded-2xl p-2 shadow-[0_20px_40px_-10px_rgba(30,41,59,0.15)] flex items-center gap-2 max-w-3xl border border-white/50 mr-0">
+    <form onSubmit={handleSubmit} className="relative mb-5 w-full sm:mb-6">
+      <div className="mr-0 flex max-w-3xl items-center gap-2 rounded-2xl border border-white/60 bg-white/90 p-2 shadow-[0_20px_40px_-10px_rgba(30,41,59,0.15)] backdrop-blur-2xl transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
         
         <div className="flex-grow relative">
           <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline">search</span>
           <input
+            id="city-search-input"
             type="text"
             placeholder="הזן שם עיר (לדוגמה: חולון)"
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            className="w-full bg-transparent border-none focus:ring-0 text-right pr-12 pl-4 py-4 font-body-lg text-body-lg text-on-surface placeholder-outline-variant outline-none"
+            className="min-h-12 w-full border-none bg-transparent py-3 pl-2 pr-11 text-right text-base text-on-surface outline-none focus:outline-none focus:ring-0 focus:border-transparent placeholder:text-outline sm:py-4 sm:pl-4 sm:pr-12 sm:text-lg"
+            style={{ outline: 'none', boxShadow: 'none' }}
+            aria-label="שם עיר לחיפוש חניה"
           />
 
           {isOpen && (
@@ -97,7 +100,7 @@ export default function SearchInput({ onSearch, availableCities = [] }) {
                       <li
                         key={city._id || index}
                         onClick={() => handleSuggestionClick(city)}
-                        className={`px-4 py-3 cursor-pointer transition-colors border-b border-outline-variant/10 last:border-none
+                        className={`min-h-12 px-4 py-3 cursor-pointer transition-colors border-b border-outline-variant/10 last:border-none
                           ${isActive ? "bg-surface-container-low" : "hover:bg-surface-container-low"}
                         `}
                       >
@@ -120,7 +123,7 @@ export default function SearchInput({ onSearch, availableCities = [] }) {
 
         <button
           type="submit"
-          className="bg-primary text-on-primary rounded-xl px-6 py-4 font-headline-sm text-headline-sm font-bold hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-md shrink-0 cursor-pointer"
+          className="min-h-12 shrink-0 cursor-pointer rounded-xl bg-primary px-4 py-3 font-bold text-on-primary shadow-md transition-colors hover:bg-primary-container hover:text-on-primary-container sm:px-6 sm:py-4"
         >
           חפש
         </button>

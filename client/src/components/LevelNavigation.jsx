@@ -25,27 +25,27 @@ export default function LevelNavigation({ currentLevel, totalLevels, onLevelChan
   });
 
   return (
-    <nav className="flex items-center gap-1" aria-label="Pagination" dir="ltr">
+    <nav className="flex max-w-full items-center justify-center gap-1" aria-label="ניווט בין מפלסים" dir="ltr">
       
       <button
         onClick={() => onLevelChange(currentLevel - 1)}
         disabled={currentLevel === 1}
         aria-label="מפלס קודם"
-        className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-bold
+        className="flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-lg px-2 py-2 text-sm font-bold sm:px-3
                    border border-transparent text-on-surface-variant
                    hover:bg-primary/10 hover:text-primary
                    disabled:opacity-40 disabled:cursor-not-allowed
                    transition-colors"
       >
         <ChevronLeftIcon />
-        הקודם
+        <span className="hidden sm:inline">הקודם</span>
       </button>
 
       <ul className="flex items-center gap-1 list-none m-0 p-0">
         {pages.map((page, i) =>
           typeof page === "string" ? (
             <li key={`ellipsis-${i}`}>
-              <span className="flex items-center justify-center w-9 h-9 text-on-surface-variant opacity-70">
+              <span className="flex h-11 w-8 items-center justify-center text-on-surface-variant opacity-70 sm:w-9">
                 <MoreHorizontalIcon />
               </span>
             </li>
@@ -54,7 +54,7 @@ export default function LevelNavigation({ currentLevel, totalLevels, onLevelChan
               <button
                 onClick={() => onLevelChange(page)}
                 aria-current={page === currentLevel ? "page" : undefined}
-                className={`min-w-9 h-9 px-1.5 rounded-md text-sm font-bold border transition-colors
+                className={`h-11 min-w-11 rounded-lg border px-1.5 text-sm font-bold transition-colors
                   ${page === currentLevel
                     ? "bg-primary text-on-primary border-transparent shadow-md" 
                     : "text-on-surface border-transparent hover:bg-primary/10 hover:text-primary"
@@ -71,13 +71,13 @@ export default function LevelNavigation({ currentLevel, totalLevels, onLevelChan
         onClick={() => onLevelChange(currentLevel + 1)}
         disabled={currentLevel === totalLevels}
         aria-label="מפלס הבא"
-        className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-bold
+        className="flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-lg px-2 py-2 text-sm font-bold sm:px-3
                    border border-transparent text-on-surface-variant
                    hover:bg-primary/10 hover:text-primary
                    disabled:opacity-40 disabled:cursor-not-allowed
                    transition-colors"
       >
-        הבא
+        <span className="hidden sm:inline">הבא</span>
         <ChevronRightIcon />
       </button>
     </nav>

@@ -81,7 +81,7 @@ export default function PriceListPage() {
             <select
               value={selectedCity}
               onChange={(event) => setSelectedCity(event.target.value)}
-              className="min-w-32 flex-1 cursor-pointer bg-transparent font-bold text-on-surface focus:outline-none"
+              className="min-h-11 min-w-32 flex-1 cursor-pointer bg-transparent font-bold text-on-surface focus:outline-none"
             >
               {cities.map((city) => <option key={city} value={city}>{city}</option>)}
             </select>
@@ -105,12 +105,12 @@ export default function PriceListPage() {
             <div className="space-y-3 md:hidden">
               {filteredLots.map((lot) => (
                 <article key={lot.id} className="rounded-xl border border-outline-variant/30 bg-surface-container-low p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
+                  <div className="flex flex-col gap-2 min-[360px]:flex-row min-[360px]:items-start min-[360px]:justify-between min-[360px]:gap-3">
+                    <div className="min-w-0">
                       <h3 className="font-bold text-on-surface">{lot.lotName}</h3>
                       <p className="mt-1 text-sm text-on-surface-variant">{lot.city} · {lot.address}</p>
                     </div>
-                    <p className="shrink-0 text-lg font-black text-primary">{formatParkingRate(lot)}</p>
+                    <p className="shrink-0 text-lg font-black text-primary min-[360px]:text-left">{formatParkingRate(lot)}</p>
                   </div>
                   <p className="mt-3 border-t border-outline-variant/20 pt-3 text-sm text-on-surface-variant">{getParkingPricingDetails(lot)}</p>
                 </article>

@@ -211,14 +211,14 @@ export default function Dashboard() {
   const selectedCityName = selectedCityId ? getCityName(selectedCityId) : "";
 
   return (
-    <div className="pt-24 pb-20 px-4 sm:px-8 max-w-6xl mx-auto" dir="rtl">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-black text-primary">
+    <div className="mx-auto max-w-6xl px-3 pb-16 pt-20 sm:px-8 sm:pb-20 sm:pt-24" dir="rtl">
+      <div className="mb-5 flex items-center justify-between sm:mb-8">
+        <h1 className="text-2xl font-black text-primary sm:text-4xl">
           אזור אישי - מנהל מערכת
         </h1>
       </div>
 
-      <div className="mb-8 p-6 bg-surface-container-lowest rounded-2xl border border-outline-variant/30 shadow-sm">
+      <div className="mb-6 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4 shadow-sm sm:mb-8 sm:p-6">
         <h2 className="text-xl font-bold mb-2">שלום</h2>
         <p className="text-on-surface-variant">
           הערים שבאחריותך:{" "}
@@ -228,18 +228,19 @@ export default function Dashboard() {
 
       {!selectedCityId ? (
         <>
-          <h3 className="text-2xl font-bold mb-4">בחר עיר לניהול</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <h3 className="mb-4 text-xl font-bold sm:text-2xl">בחר עיר לניהול</h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3">
             {cities.map((city) => {
               const cityLotsCount = parkingLots.filter((lot) => {
                 const lotCityId = typeof lot.city === 'object' && lot.city !== null ? lot.city._id : lot.city;
                 return lotCityId === city._id;
               }).length;
               return (
-                <div
+                <button
+                  type="button"
                   key={city._id}
                   onClick={() => setSelectedCityId(city._id)}
-                  className="bg-surface-container-lowest p-8 rounded-2xl shadow border border-outline-variant/30 hover:border-primary hover:shadow-md cursor-pointer transition-all flex flex-col items-center justify-center gap-2"
+                  className="flex min-h-36 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5 text-center shadow transition-all hover:border-primary hover:shadow-md sm:p-8"
                 >
                   <span className="material-symbols-outlined text-4xl text-primary">
                     location_city
@@ -250,7 +251,7 @@ export default function Dashboard() {
                   <p className="text-on-surface-variant">
                     {cityLotsCount} חניונים
                   </p>
-                </div>
+                </button>
               );
             })}
             {cities.length === 0 && (
@@ -260,11 +261,12 @@ export default function Dashboard() {
         </>
       ) : (
         <>
-          <div className="flex items-center gap-4 mb-6">
+          <div className="mb-5 flex flex-wrap items-center gap-3 sm:mb-6 sm:gap-4">
             <button
               onClick={() => setSelectedCityId(null)}
-              className="text-primary hover:bg-primary/10 p-2 rounded-full transition-colors flex items-center justify-center"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-full p-2 text-primary transition-colors hover:bg-primary/10"
               title="חזור לרשימת הערים"
+              aria-label="חזרה לרשימת הערים"
             >
               <span
                 className="material-symbols-outlined"
@@ -274,13 +276,13 @@ export default function Dashboard() {
               </span>
             </button>
             <div className="flex-1">
-              <h3 className="text-2xl font-bold">
+              <h3 className="text-xl font-bold sm:text-2xl">
                 ניהול חניונים - {selectedCityName}
               </h3>
             </div>
             <button
               onClick={() => setIsAddingLot(true)}
-              className="px-4 py-2 bg-primary text-white font-bold rounded-xl shadow hover:bg-primary/90 transition-colors flex items-center gap-2 text-sm whitespace-nowrap"
+              className="flex min-h-11 items-center gap-2 whitespace-nowrap rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white shadow transition-colors hover:bg-primary/90"
             >
               <span className="material-symbols-outlined">add</span>
               הוסף חניון
@@ -289,17 +291,18 @@ export default function Dashboard() {
 
           {error && <p className="text-error">{error}</p>}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
             {lotsToDisplay.map((lot) => (
               <div
                 key={lot._id}
-                className="bg-surface-container-lowest p-6 rounded-2xl shadow border border-outline-variant/30 hover:border-primary transition-all relative flex flex-col h-full"
+                className="relative flex h-full flex-col rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5 shadow transition-all hover:border-primary sm:p-6"
               >
                 <div className="absolute top-4 left-4 flex gap-2">
                   <button
                     onClick={() => setEditingLot(lot)}
-                    className="text-on-surface-variant hover:text-primary transition-colors"
+                    className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary"
                     title="ערוך חניון"
+                    aria-label={`עריכת חניון ${lot.name}`}
                   >
                     <span className="material-symbols-outlined">edit</span>
                   </button>
@@ -318,7 +321,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setAuthorizedVehiclesLot(lot)}
-                  className="mb-3 flex w-full cursor-pointer items-center justify-between rounded-lg border border-outline-variant/30 px-3 py-2 text-sm font-bold text-on-surface transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+                  className="mb-3 flex min-h-12 w-full cursor-pointer items-center justify-between rounded-xl border border-outline-variant/30 px-3 py-2 text-sm font-bold text-on-surface transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
                 >
                   <span className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-lg" aria-hidden="true">no_crash</span>
@@ -342,19 +345,19 @@ export default function Dashboard() {
                         },
                       })
                     }
-                    className="w-full py-2 bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary hover:text-on-primary transition-all"
+                    className="min-h-12 w-full rounded-xl bg-primary/10 py-2 font-bold text-primary transition-colors hover:bg-primary hover:text-on-primary"
                   >
                     נהל סטטוס חניות
                   </button>
                   <button
                     onClick={() => loadCarsForLot(lot)}
-                    className="w-full py-2 bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary hover:text-on-primary transition-all"
+                    className="min-h-12 w-full rounded-xl bg-primary/10 py-2 font-bold text-primary transition-colors hover:bg-primary hover:text-on-primary"
                   >
                     צפה ברכבים חונים
                   </button>
                   <button
                     onClick={() => setLotToDelete(lot)}
-                    className="w-full py-2 bg-error/10 text-error font-bold rounded-lg hover:bg-error hover:!text-white transition-all flex items-center justify-center gap-2"
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-error/10 py-2 font-bold text-error transition-colors hover:bg-error hover:!text-white"
                   >
                     <span className="material-symbols-outlined text-[18px]">delete</span>
                     מחק חניון
@@ -393,8 +396,8 @@ export default function Dashboard() {
       />
 
       {lotToDelete && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in zoom-in duration-200" dir="rtl">
-          <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-xl text-center w-full max-w-sm border border-outline-variant/20">
+        <div className="mobile-sheet-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" dir="rtl">
+          <div className="mobile-sheet w-full max-w-sm rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-5 text-center shadow-xl sm:p-8">
             <div className="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="material-symbols-outlined text-3xl">warning</span>
             </div>
