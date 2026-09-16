@@ -157,16 +157,12 @@ export default function Dashboard() {
       }
     }
 
-    const res = await api.post(
-      "/api/parking/",
+    const { data: newLot } = await api.post(
+      "/api/parking/with-spots",
       { ...lotPayload, spots },
     );
-    const newLot = res.data;
-    const updatedLotRes = await api.get("/api/parking/parkinglotbyid", {
-      params: { id: newLot._id },
-    });
 
-    setParkingLots(prev => [...prev, updatedLotRes.data]);
+    setParkingLots((prev) => [...prev, newLot]);
   };
 
   const loadCarsForLot = (lot) => {
