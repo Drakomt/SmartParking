@@ -33,7 +33,10 @@ export default function PriceListPage() {
   }, [lots, query, selectedCity]);
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-64px)] w-full max-w-6xl flex-col px-3 pt-20 pb-8 sm:px-8 sm:pt-24 sm:pb-12">
+    <main
+      className="mx-auto flex min-h-[calc(100vh-64px)] w-full max-w-6xl flex-col px-3 pt-20 pb-8 sm:px-8 sm:pt-24 sm:pb-12"
+      dir="rtl"
+    >
       <div className="mb-5 flex items-center gap-3 sm:mb-8">
         <button
           type="button"
@@ -115,14 +118,14 @@ export default function PriceListPage() {
             </div>
 
             <div className="hidden overflow-x-auto rounded-xl border border-outline-variant/30 md:block">
-              <table className="w-full min-w-160 text-right">
+              <table className="w-full min-w-160 text-right" dir="rtl">
                 <caption className="sr-only">מחירי חניה לפי חניון</caption>
                 <thead className="bg-surface-container-low text-sm text-on-surface-variant">
                   <tr>
                     <th scope="col" className="px-5 py-4 font-bold">חניון</th>
                     <th scope="col" className="px-5 py-4 font-bold">עיר</th>
                     <th scope="col" className="px-5 py-4 font-bold">כתובת</th>
-                    <th scope="col" className="px-5 py-4 text-left font-bold">מחיר</th>
+                    <th scope="col" className="px-5 py-4 text-right font-bold">מחיר</th>
                     <th scope="col" className="px-5 py-4 font-bold">תנאי תעריף</th>
                   </tr>
                 </thead>
@@ -132,7 +135,7 @@ export default function PriceListPage() {
                       <th scope="row" className="px-5 py-4 font-bold text-on-surface">{lot.lotName}</th>
                       <td className="px-5 py-4 text-on-surface-variant">{lot.city}</td>
                       <td className="px-5 py-4 text-on-surface-variant">{lot.address}</td>
-                      <td className="px-5 py-4 text-left text-lg font-black text-primary">{formatParkingRate(lot)}</td>
+                      <td className="px-5 py-4 text-right text-lg font-black text-primary">{formatParkingRate(lot)}</td>
                       <td className="px-5 py-4 text-on-surface-variant">{getParkingPricingDetails(lot)}</td>
                     </tr>
                   ))}

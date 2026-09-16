@@ -73,17 +73,19 @@ export default function SearchInput({ onSearch, availableCities = [] }) {
 
   return (
     <form onSubmit={handleSubmit} className="relative mb-5 w-full sm:mb-6">
-      <div className="mr-0 flex max-w-3xl items-center gap-2 rounded-2xl border border-white/60 bg-white/90 p-2 shadow-[0_20px_40px_-10px_rgba(30,41,59,0.15)] backdrop-blur-2xl">
+      <div className="mr-0 flex max-w-3xl items-center gap-2 rounded-2xl border border-white/60 bg-white/90 p-2 shadow-[0_20px_40px_-10px_rgba(30,41,59,0.15)] backdrop-blur-2xl transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
         
         <div className="flex-grow relative">
           <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline">search</span>
           <input
+            id="city-search-input"
             type="text"
             placeholder="הזן שם עיר (לדוגמה: חולון)"
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            className="min-h-12 w-full border-none bg-transparent py-3 pl-2 pr-11 text-right text-base text-on-surface outline-none placeholder:text-outline sm:py-4 sm:pl-4 sm:pr-12 sm:text-lg"
+            className="min-h-12 w-full border-none bg-transparent py-3 pl-2 pr-11 text-right text-base text-on-surface outline-none focus:outline-none focus:ring-0 focus:border-transparent placeholder:text-outline sm:py-4 sm:pl-4 sm:pr-12 sm:text-lg"
+            style={{ outline: 'none', boxShadow: 'none' }}
             aria-label="שם עיר לחיפוש חניה"
           />
 
