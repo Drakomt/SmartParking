@@ -4,23 +4,27 @@ export default function Sidebar({ isOpen, onClose }) {
   return (
     <>
       {isOpen && (
-        <div
+        <button
+          type="button"
+          aria-label="סגירת התפריט"
           style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-          className="fixed inset-0 z-40 transition-opacity"
+          className="fixed inset-0 z-[60] cursor-default transition-opacity"
           onClick={onClose}
-        ></div>
+        />
       )}
 
       <div
-        className={`fixed top-0 right-0 h-full w-64 bg-surface-container-lowest shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 z-[70] flex h-[100dvh] w-[min(20rem,88vw)] flex-col bg-surface-container-lowest pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] shadow-2xl transition-transform duration-300 ease-out ${
+          isOpen ? "translate-x-0" : "pointer-events-none translate-x-full"
         }`}
+        aria-hidden={!isOpen}
       >
         <div className="p-6 flex items-center justify-between border-b border-outline-variant/20">
           <h2 className="text-xl font-bold text-primary">תפריט</h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant flex items-center justify-center cursor-pointer"
+            className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-high"
+            aria-label="סגירת התפריט"
           >
             <span className="material-symbols-outlined">close</span>
           </button>
@@ -30,7 +34,7 @@ export default function Sidebar({ isOpen, onClose }) {
           <Link
             to="/all-lots"
             onClick={onClose}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 text-on-surface hover:text-primary transition-colors font-medium cursor-pointer"
+            className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl px-4 py-3 font-medium text-on-surface transition-colors hover:bg-primary/10 hover:text-primary"
           >
             <span className="material-symbols-outlined">local_parking</span>
             כל החניונים שלנו
@@ -38,7 +42,7 @@ export default function Sidebar({ isOpen, onClose }) {
           <Link
             to="/payment"
             onClick={onClose}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 text-on-surface hover:text-primary transition-colors font-medium cursor-pointer mt-1"
+            className="mt-1 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl px-4 py-3 font-medium text-on-surface transition-colors hover:bg-primary/10 hover:text-primary"
           >
             <span className="material-symbols-outlined">credit_card</span>
             תשלום לחניון
@@ -46,7 +50,7 @@ export default function Sidebar({ isOpen, onClose }) {
           <Link
             to="/price-list"
             onClick={onClose}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 text-on-surface hover:text-primary transition-colors font-medium cursor-pointer"
+            className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl px-4 py-3 font-medium text-on-surface transition-colors hover:bg-primary/10 hover:text-primary"
           >
             <span className="material-symbols-outlined">sell</span>
             מחירון חניונים
@@ -57,7 +61,7 @@ export default function Sidebar({ isOpen, onClose }) {
           <Link
             to="/settings"
             onClick={onClose}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-colors font-medium cursor-pointer"
+            className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl px-4 py-3 font-medium text-on-surface-variant transition-colors hover:bg-surface-container-highest hover:text-on-surface"
           >
             <span className="material-symbols-outlined">settings</span>
             הגדרות
@@ -65,7 +69,7 @@ export default function Sidebar({ isOpen, onClose }) {
           <Link
             to="/about"
             onClick={onClose}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-colors font-medium cursor-pointer"
+            className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl px-4 py-3 font-medium text-on-surface-variant transition-colors hover:bg-surface-container-highest hover:text-on-surface"
           >
             <span className="material-symbols-outlined">info</span>
             אודות

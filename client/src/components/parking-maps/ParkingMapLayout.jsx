@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import ZoomableParkingCanvas from "../ZoomableParkingCanvas";
 
 /**
  * Generic image-based parking layout. A parking lot supplies its image and
@@ -30,10 +31,11 @@ export default function ParkingMapLayout({
 
   return (
     <div className="w-full flex flex-col items-center">
-      <div
-        className="relative w-full rounded-3xl overflow-hidden shadow-2xl border-2 border-outline-variant/30 bg-slate-900 select-none"
-        style={{ aspectRatio: map?.aspectRatio ?? "1024 / 686" }}
-      >
+      <ZoomableParkingCanvas label={map?.imageAlt ?? "מפת החניון"}>
+        <div
+          className="relative w-full select-none overflow-hidden rounded-2xl border-2 border-outline-variant/30 bg-slate-900 shadow-2xl sm:rounded-3xl"
+          style={{ aspectRatio: map?.aspectRatio ?? "1024 / 686" }}
+        >
         <img
           src={map?.imageSrc}
           alt={map?.imageAlt ?? "מפת חניון"}
@@ -96,9 +98,9 @@ export default function ParkingMapLayout({
                 <span className="text-[7px] sm:text-[9px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,1)]">{displayedSpotNumber}</span>
               </div>
               {!isOccupied && (spot.type === "disabled" || spot.type === "dean") && (
-                <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden pointer-events-none">
+                <div className="parking-spot-symbol-container absolute inset-0 z-0 flex items-center justify-center overflow-hidden pointer-events-none">
                   <span
-                    className={`parking-asphalt-marking material-symbols-outlined text-[8px] sm:text-[clamp(10px,2vw,24px)] ${spot.type === "disabled" ? "parking-asphalt-marking-disabled" : "parking-asphalt-marking-dean"} ${coord.facing === "down" ? "rotate-180" : ""}`}
+                    className={`parking-asphalt-marking parking-spot-relative-symbol material-symbols-outlined ${spot.type === "disabled" ? "parking-asphalt-marking-disabled" : "parking-asphalt-marking-dean"} ${coord.facing === "down" ? "rotate-180" : ""}`}
                     aria-hidden="true"
                   >
                     {spot.type === "disabled" ? "accessible" : "school"}
@@ -118,7 +120,8 @@ export default function ParkingMapLayout({
             </div>
           );
         })}
-      </div>
+        </div>
+      </ZoomableParkingCanvas>
 
       <div className="w-full mt-4 flex flex-wrap items-center justify-between text-xs text-slate-400 px-2" dir="rtl">
         <div className="flex items-center gap-4">

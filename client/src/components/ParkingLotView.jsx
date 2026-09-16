@@ -126,13 +126,13 @@ export default function ParkingLotView({
 
   return (
     <div
-      className="bg-surface-container-lowest p-6 sm:p-8 rounded-3xl shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] border border-outline-variant/20 w-full mx-auto mt-6 max-w-5xl"
+      className="mx-auto mt-2 w-full max-w-5xl rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-3 shadow-[0_10px_30px_-5px_rgba(30,41,59,0.08)] sm:mt-6 sm:rounded-3xl sm:p-8"
     >
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+      <div className="mb-5 flex items-center justify-between gap-3 sm:mb-8 sm:gap-4">
         <div className="flex items-center justify-between w-full sm:w-auto gap-4">
           <button
             onClick={onBack}
-            className="cursor-pointer px-4 sm:px-5 py-2 bg-transparent border border-outline-variant/50 hover:border-primary hover:bg-primary/10 text-on-surface-variant hover:text-primary rounded-xl transition-all duration-300 font-medium z-10"
+            className="z-10 min-h-11 cursor-pointer rounded-xl border border-outline-variant/50 bg-transparent px-4 py-2 font-medium text-on-surface-variant transition-colors hover:border-primary hover:bg-primary/10 hover:text-primary sm:px-5"
           >
             חזור
           </button>
@@ -143,7 +143,8 @@ export default function ParkingLotView({
               onClick={() => {
                 window.open(`https://waze.com/ul?ll=${lotLocation.lat},${lotLocation.lng}&navigate=yes`, '_blank');
               }}
-              className="sm:hidden cursor-pointer p-2 bg-primary/10 text-primary hover:bg-primary hover:text-on-primary rounded-xl transition-all duration-300 font-medium z-10 flex items-center justify-center"
+              className="z-10 flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-xl bg-primary/10 p-2 font-medium text-primary transition-colors hover:bg-primary hover:text-on-primary sm:hidden"
+              aria-label="ניווט לחניון ב-Waze"
             >
               <i className="fa-brands fa-waze text-lg"></i>
             </button>
@@ -166,7 +167,7 @@ export default function ParkingLotView({
       </div>
 
       {lotName && (
-        <h2 className="text-3xl sm:text-4xl font-black text-center text-primary mb-6 drop-shadow-sm" dir="rtl">
+        <h2 className="mb-5 text-center text-2xl font-black text-primary drop-shadow-sm sm:mb-6 sm:text-4xl" dir="rtl">
           {lotName}
         </h2>
       )}
@@ -212,7 +213,7 @@ export default function ParkingLotView({
       )}
 
       <div
-        className="mt-8 relative flex flex-col md:flex-row items-center justify-center gap-4 w-full border-t border-outline-variant/20 pt-6 min-h-[52px]"
+        className="relative mt-6 flex min-h-[52px] w-full flex-col items-stretch justify-center gap-3 border-t border-outline-variant/20 pt-5 sm:mt-8 md:flex-row md:items-center md:gap-4 md:pt-6"
         dir="rtl"
       >
         {/* Right side: Add Level Button */}
@@ -224,7 +225,7 @@ export default function ParkingLotView({
                 setNewLevelSpotsCount(16);
                 setIsAddLevelModalOpen(true);
               }}
-              className="cursor-pointer px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-on-primary border border-primary/20 rounded-xl transition-all duration-300 font-bold text-sm flex items-center gap-1.5 shadow-sm"
+              className="flex min-h-11 w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-bold text-primary shadow-sm transition-colors hover:bg-primary hover:text-on-primary md:w-auto"
               title="הוסף מפלס חדש לחניון"
             >
               <span className="material-symbols-outlined text-lg">add_circle</span>
@@ -234,7 +235,7 @@ export default function ParkingLotView({
         )}
 
         {/* Center: LevelNavigation */}
-        <div className="flex justify-center">
+          <div className="flex max-w-full justify-center overflow-hidden">
           <LevelNavigation
             currentLevel={currentLevel}
             totalLevels={totalLevels}
@@ -250,7 +251,7 @@ export default function ParkingLotView({
                 setDeleteLevelError(null);
                 setIsDeleteLevelModalOpen(true);
               }}
-              className="cursor-pointer px-4 py-2 bg-error/10 text-error hover:bg-error hover:!text-white border border-error/20 rounded-xl transition-all duration-300 font-bold text-sm flex items-center gap-1.5 shadow-sm"
+              className="flex min-h-11 w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-error/20 bg-error/10 px-4 py-2 text-sm font-bold text-error shadow-sm transition-colors hover:bg-error hover:!text-white md:w-auto"
               title="מחיקת מפלס אחרון"
             >
               <span className="material-symbols-outlined text-lg">delete_sweep</span>
@@ -273,19 +274,21 @@ export default function ParkingLotView({
 
       {/* Add Level Modal */}
       {isAddLevelModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in" dir="rtl">
-          <div className="bg-surface-container-lowest p-6 sm:p-8 rounded-3xl w-full max-w-md shadow-2xl border border-outline-variant/20 relative">
+        <div className="mobile-sheet-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" dir="rtl">
+          <section className="mobile-sheet relative w-full max-w-md rounded-3xl border border-outline-variant/20 bg-surface-container-lowest p-5 shadow-2xl sm:p-8" role="dialog" aria-modal="true" aria-labelledby="add-level-title">
             <button
+              type="button"
               onClick={() => setIsAddLevelModalOpen(false)}
               disabled={isCreatingLevel}
-              className="absolute top-4 left-4 text-2xl text-on-surface-variant hover:text-error transition-colors"
+              className="absolute left-3 top-3 flex min-h-11 min-w-11 items-center justify-center rounded-full text-2xl text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-error"
+              aria-label="סגירת חלון הוספת המפלס"
             >
               &times;
             </button>
 
             <div className="flex items-center gap-3 mb-4 text-primary">
               <span className="material-symbols-outlined text-3xl">add_circle</span>
-              <h3 className="text-2xl font-black">הוספת מפלס חדש</h3>
+              <h3 id="add-level-title" className="text-xl font-black sm:text-2xl">הוספת מפלס חדש</h3>
             </div>
 
             <p className="text-sm text-on-surface-variant mb-6">
@@ -318,19 +321,19 @@ export default function ParkingLotView({
                 </span>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col-reverse gap-3 pt-4 min-[360px]:flex-row">
                 <button
                   type="button"
                   onClick={() => setIsAddLevelModalOpen(false)}
                   disabled={isCreatingLevel}
-                  className="flex-1 py-3 rounded-xl font-bold border border-outline-variant text-on-surface hover:bg-surface-container transition-colors disabled:opacity-50"
+                  className="min-h-12 flex-1 rounded-xl border border-outline-variant py-3 font-bold text-on-surface transition-colors hover:bg-surface-container disabled:opacity-50"
                 >
                   ביטול
                 </button>
                 <button
                   type="submit"
                   disabled={isCreatingLevel}
-                  className="flex-1 py-3 rounded-xl font-bold bg-primary text-on-primary hover:bg-primary/90 transition-colors shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary py-3 font-bold text-on-primary shadow-md transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isCreatingLevel ? (
                     <>
@@ -343,19 +346,19 @@ export default function ParkingLotView({
                 </button>
               </div>
             </form>
-          </div>
+          </section>
         </div>
       )}
 
       {/* Delete Level Modal */}
       {isDeleteLevelModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in" dir="rtl">
-          <div className="bg-surface-container-lowest p-6 sm:p-8 rounded-3xl w-full max-w-md shadow-2xl border border-outline-variant/20 relative text-center">
+        <div className="mobile-sheet-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" dir="rtl">
+          <section className="mobile-sheet relative w-full max-w-md rounded-3xl border border-outline-variant/20 bg-surface-container-lowest p-5 text-center shadow-2xl sm:p-8" role="dialog" aria-modal="true" aria-labelledby="delete-level-title">
             <div className="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="material-symbols-outlined text-3xl">delete_sweep</span>
             </div>
 
-            <h3 className="text-2xl font-black text-on-surface mb-2">
+            <h3 id="delete-level-title" className="mb-2 text-xl font-black text-on-surface sm:text-2xl">
               מחיקת מפלס {totalLevels} (מפלס עליון)
             </h3>
 
@@ -371,12 +374,12 @@ export default function ParkingLotView({
               </div>
             )}
 
-            <div className="flex gap-3 justify-center">
+            <div className="flex flex-col-reverse justify-center gap-3 min-[360px]:flex-row">
               <button
                 type="button"
                 onClick={() => setIsDeleteLevelModalOpen(false)}
                 disabled={isDeletingLevel}
-                className="flex-1 py-3 rounded-xl font-bold border border-outline-variant text-on-surface hover:bg-surface-container transition-colors disabled:opacity-50"
+                className="min-h-12 flex-1 rounded-xl border border-outline-variant py-3 font-bold text-on-surface transition-colors hover:bg-surface-container disabled:opacity-50"
               >
                 ביטול
               </button>
@@ -384,7 +387,7 @@ export default function ParkingLotView({
                 type="button"
                 onClick={handleDeleteLevel}
                 disabled={isDeletingLevel}
-                className="flex-1 py-3 rounded-xl font-bold bg-error text-white hover:bg-error/90 transition-colors shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-error py-3 font-bold text-white shadow-md transition-colors hover:bg-error/90 disabled:opacity-50"
               >
                 {isDeletingLevel ? (
                   <>
@@ -396,7 +399,7 @@ export default function ParkingLotView({
                 )}
               </button>
             </div>
-          </div>
+          </section>
         </div>
       )}
     </div>

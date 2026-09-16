@@ -38,15 +38,17 @@ export default function CarsModal({ isOpen, onClose, lotName, sessions = [] }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-surface-container-lowest rounded-3xl p-6 sm:p-8 w-full max-w-4xl max-h-[90vh] shadow-2xl relative flex flex-col">
+    <div className="mobile-sheet-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <section className="mobile-sheet relative flex max-h-[90dvh] w-full max-w-4xl flex-col rounded-3xl bg-surface-container-lowest p-4 shadow-2xl sm:p-8" role="dialog" aria-modal="true" aria-labelledby="parked-cars-title" dir="rtl">
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 left-4 text-2xl text-on-surface-variant hover:text-error transition-colors"
+          className="absolute left-3 top-3 flex min-h-11 min-w-11 items-center justify-center rounded-full text-2xl text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-error sm:left-4 sm:top-4"
+          aria-label="סגירת רשימת הרכבים"
         >
           &times;
         </button>
-        <h3 className="text-2xl font-bold mb-6 text-primary border-b pb-4">
+        <h3 id="parked-cars-title" className="mb-4 border-b pb-4 pl-10 text-xl font-bold text-primary sm:mb-6 sm:text-2xl">
           רכבים חונים - {lotName}
         </h3>
 
@@ -59,13 +61,53 @@ export default function CarsModal({ isOpen, onClose, lotName, sessions = [] }) {
             placeholder="חיפוש לפי לוחית רישוי..."
             value={carSearchQuery}
             onChange={(e) => setCarSearchQuery(e.target.value)}
-            className="w-full sm:w-1/2 pl-4 pr-10 py-2 rounded-xl border border-outline-variant bg-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+            className="min-h-12 w-full rounded-xl border border-outline-variant bg-surface py-2 pl-4 pr-10 text-base outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary sm:w-1/2"
+            aria-label="חיפוש רכב לפי לוחית רישוי"
             dir="rtl"
           />
         </div>
 
-        <div className="overflow-y-auto flex-1 relative rounded-xl border border-outline-variant/30">
-          <table className="w-full text-right border-collapse">
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="space-y-3 sm:hidden">
+            {filteredCars.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-outline-variant/40 p-6 text-center text-on-surface-variant">
+                {carSearchQuery
+                  ? "לא נמצאו רכבים תואמים לחיפוש."
+                  : "אין רכבים חונים בחניון זה כרגע."}
+              </p>
+            ) : (
+              filteredCars.map((car, idx) => (
+                <article
+                  key={`${car.licensePlate}-${car.entryTime}-${idx}`}
+                  className="rounded-2xl border border-outline-variant/30 bg-surface-container-low p-4"
+                >
+                  <div className="mb-3 flex items-center justify-between gap-3 border-b border-outline-variant/20 pb-3">
+                    <span className="text-sm font-bold text-on-surface-variant">לוחית רישוי</span>
+                    {car.licensePlate === "לא הוזן" ? (
+                      <span className="italic text-on-surface-variant opacity-70">לא הוזן</span>
+                    ) : (
+                      <span className="font-mono text-lg font-black tracking-wide text-primary" dir="ltr">
+                        {car.licensePlate}
+                      </span>
+                    )}
+                  </div>
+                  <dl className="space-y-3 text-sm">
+                    <div className="flex items-start justify-between gap-4">
+                      <dt className="shrink-0 text-on-surface-variant">זמן כניסה</dt>
+                      <dd className="text-left font-bold text-on-surface" dir="ltr">{car.entryTime}</dd>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <dt className="text-on-surface-variant">משך שהייה</dt>
+                      <dd className="font-bold text-primary">{car.duration}</dd>
+                    </div>
+                  </dl>
+                </article>
+              ))
+            )}
+          </div>
+
+          <div className="hidden overflow-auto rounded-xl border border-outline-variant/30 sm:block">
+          <table className="w-full min-w-[36rem] border-collapse text-right">
             <thead className="bg-surface-container-highest text-on-surface font-bold sticky top-0 z-10 shadow-sm">
               <tr>
                 <th className="py-3 px-4 rounded-tr-xl">לוחית רישוי</th>
@@ -116,17 +158,18 @@ export default function CarsModal({ isOpen, onClose, lotName, sessions = [] }) {
               )}
             </tbody>
           </table>
+          </div>
         </div>
 
         <div className="mt-6 flex justify-end">
           <button
             onClick={onClose}
-            className="bg-surface-container-highest px-6 py-3 rounded-xl font-bold text-on-surface hover:bg-surface-container-highest/80 transition-all"
+            className="min-h-11 rounded-xl bg-surface-container-highest px-6 py-3 font-bold text-on-surface transition-all hover:bg-surface-container-highest/80"
           >
             סגור
           </button>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
