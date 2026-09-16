@@ -3,16 +3,21 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 3;
 const ZOOM_STEP = 0.5;
+const DRAG_THRESHOLD = 4;
 
 export default function ZoomableParkingCanvas({ children, label = "מפת החניון" }) {
   const [zoom, setZoom] = useState(MIN_ZOOM);
   const [canvasHeight, setCanvasHeight] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
   const canvasRef = useRef(null);
   const viewportRef = useRef(null);
   const zoomRef = useRef(MIN_ZOOM);
   const pinchRef = useRef(null);
   const zoomFrameRef = useRef(null);
   const scrollFrameRef = useRef(null);
+  const mouseDragRef = useRef(null);
+  const suppressClickRef = useRef(false);
+  const suppressClickTimeoutRef = useRef(null);
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
@@ -101,8 +106,72 @@ export default function ZoomableParkingCanvas({ children, label = "מפת החנ
       viewport.removeEventListener("touchcancel", handleTouchEnd);
       if (zoomFrameRef.current) cancelAnimationFrame(zoomFrameRef.current);
       if (scrollFrameRef.current) cancelAnimationFrame(scrollFrameRef.current);
+      if (suppressClickTimeoutRef.current) clearTimeout(suppressClickTimeoutRef.current);
     };
   }, []);
+
+  const handlePointerDown = (event) => {
+    if (zoom <= MIN_ZOOM || event.pointerType !== "mouse" || event.button !== 0) return;
+
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    mouseDragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      scrollLeft: viewport.scrollLeft,
+      scrollTop: viewport.scrollTop,
+      moved: false,
+    };
+  };
+
+  const handlePointerMove = (event) => {
+    const viewport = viewportRef.current;
+    const drag = mouseDragRef.current;
+    if (!viewport || !drag || drag.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - drag.startX;
+    const deltaY = event.clientY - drag.startY;
+    if (!drag.moved && Math.hypot(deltaX, deltaY) < DRAG_THRESHOLD) return;
+
+    if (!drag.moved) {
+      drag.moved = true;
+      viewport.setPointerCapture(event.pointerId);
+      setIsDragging(true);
+    }
+
+    event.preventDefault();
+    viewport.scrollLeft = drag.scrollLeft - deltaX;
+    viewport.scrollTop = drag.scrollTop - deltaY;
+  };
+
+  const finishPointerDrag = (event) => {
+    const viewport = viewportRef.current;
+    const drag = mouseDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    if (drag.moved) {
+      suppressClickRef.current = true;
+      if (suppressClickTimeoutRef.current) clearTimeout(suppressClickTimeoutRef.current);
+      suppressClickTimeoutRef.current = setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 0);
+    }
+
+    if (viewport?.hasPointerCapture(event.pointerId)) {
+      viewport.releasePointerCapture(event.pointerId);
+    }
+    mouseDragRef.current = null;
+    setIsDragging(false);
+  };
+
+  const handleClickCapture = (event) => {
+    if (!suppressClickRef.current) return;
+    event.preventDefault();
+    event.stopPropagation();
+    suppressClickRef.current = false;
+  };
 
   const updateZoom = (nextZoom) => {
     const normalizedZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, nextZoom));
@@ -154,11 +223,17 @@ export default function ZoomableParkingCanvas({ children, label = "מפת החנ
 
       <div
         ref={viewportRef}
-        className={`parking-map-viewport w-full rounded-2xl ${zoom > MIN_ZOOM ? "overflow-auto" : "overflow-hidden"}`}
+        className={`parking-map-viewport w-full rounded-2xl ${zoom > MIN_ZOOM ? `overflow-auto select-none ${isDragging ? "cursor-grabbing" : "cursor-grab"}` : "overflow-hidden"}`}
         style={canvasHeight ? { height: `${canvasHeight}px` } : undefined}
         dir="ltr"
         tabIndex={zoom > MIN_ZOOM ? 0 : undefined}
-        aria-label={zoom > MIN_ZOOM ? "מפה מוגדלת. ניתן לגלול בתוך אזור המפה." : undefined}
+        aria-label={zoom > MIN_ZOOM ? "מפה מוגדלת. ניתן לגרור בעכבר או לגלול בתוך אזור המפה." : undefined}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={finishPointerDrag}
+        onPointerCancel={finishPointerDrag}
+        onClickCapture={handleClickCapture}
+        onDragStart={(event) => event.preventDefault()}
       >
         <div
           ref={canvasRef}
@@ -171,6 +246,9 @@ export default function ZoomableParkingCanvas({ children, label = "מפת החנ
 
       <p className="mt-2 text-xs leading-5 text-on-surface-variant sm:hidden">
         השתמשו בשתי אצבעות או בכפתורי ההגדלה, ואז גררו בתוך המפה כדי לבחון חניות מקרוב.
+      </p>
+      <p className="mt-2 hidden text-xs leading-5 text-on-surface-variant sm:block">
+        לאחר ההגדלה, לחצו וגררו את המפה בעזרת העכבר כדי לנוע בתוכה.
       </p>
     </section>
   );
