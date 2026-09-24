@@ -7,6 +7,7 @@ import { validatePayPalConfig } from './config/paypal.js';
 import { validateCheckoutConfig } from './config/checkout.js';
 import { createCorsOriginValidator } from './config/cors.js';
 import { initializeSocketServer } from './services/socketService.js';
+import healthRouter from './routes/health.js';
 
 dotenv.config();
 
@@ -24,6 +25,8 @@ await connectDB();
 const app = express();
 const port = process.env.PORT || 3000;
 app.set('trust proxy', 1);
+
+app.use('/health', healthRouter);
 
 app.use(cors({
   origin: createCorsOriginValidator(),
