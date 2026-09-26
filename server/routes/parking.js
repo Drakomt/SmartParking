@@ -15,11 +15,17 @@ const sessionLookupLimiter = createRateLimiter({
   maxRequests: 30,
 });
 
-const receiptLimiter = createRateLimiter({
-  namespace: 'parking-receipt',
+const receiptIpLimiter = createRateLimiter({
+  namespace: 'parking-receipt-ip',
   windowMs: 10 * 60_000,
-  maxRequests: 10,
-  keyGenerator: (req) => `${req.ip}:${req.body?.checkoutId || 'invalid'}`,
+  maxRequests: 20,
+});
+
+const receiptCheckoutLimiter = createRateLimiter({
+  namespace: 'parking-receipt-checkout',
+  windowMs: 10 * 60_000,
+  maxRequests: 5,
+  keyGenerator: (req) => req.body?.checkoutId || 'invalid',
 });
 
 const parkingLotPayload = (body) => ({
@@ -164,7 +170,7 @@ router.get('/session/lookup', sessionLookupLimiter, async (req, res) => {
   }
 });
 
-router.post('/session/receipt', receiptLimiter, async (req, res) => {
+router.post('/session/receipt', receiptIpLimiter, receiptCheckoutLimiter, async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
 
   try {
