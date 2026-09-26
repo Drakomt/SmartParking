@@ -100,14 +100,20 @@ test('database setup endpoint requires its separate API key', () => {
 
 test('shared rate limiter blocks requests over the configured limit', async () => {
   let count = 0;
+  let updateOptions;
   const bucketModel = {
-    findByIdAndUpdate: async () => ({ count: ++count, resetAt: new Date(60_000) }),
+    findByIdAndUpdate: async (_id, update, options) => {
+      assert.ok(Array.isArray(update));
+      updateOptions = options;
+      return { count: ++count, resetAt: new Date(60_000) };
+    },
   };
   const limiter = createRateLimiter({ windowMs: 60_000, maxRequests: 1, bucketModel, now: () => 0 });
   const makeRequest = () => ({ ip: '127.0.0.1' });
   let continued = false;
   await limiter(makeRequest(), { ...response(), setHeader() {} }, () => { continued = true; });
   assert.equal(continued, true);
+  assert.equal(updateOptions.updatePipeline, true);
   const denied = { ...response(), setHeader() {} };
   await limiter(makeRequest(), denied, () => assert.fail('must not continue'));
   assert.equal(denied.statusCode, 429);
