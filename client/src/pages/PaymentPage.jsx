@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LicensePlateSearch from "../components/payment/LicensePlateSearch";
 import InvoiceSummary from "../components/payment/InvoiceSummary";
@@ -25,11 +25,10 @@ const getBackendGraceExpiry = (data) => {
 
 export default function PaymentPage() {
   const navigate = useNavigate();
-  // State to track current step: 1 = search, 2 = invoice, 3 = result
   const [step, setStep] = useState(1);
   const [licensePlate, setLicensePlate] = useState("");
   const [sessionData, setSessionData] = useState(null);
-  const [paymentStatus, setPaymentStatus] = useState(null); // 'success' or 'error'
+  const [paymentStatus, setPaymentStatus] = useState(null);
   const [graceExpiresAt, setGraceExpiresAt] = useState(null);
   const [graceLicensePlate, setGraceLicensePlate] = useState("");
 
@@ -48,7 +47,7 @@ export default function PaymentPage() {
       return;
     }
 
-    setStep(2); // Proceed to invoice
+    setStep(2);
   };
 
   const handlePaymentComplete = (status, paymentData) => {
@@ -60,7 +59,7 @@ export default function PaymentPage() {
       );
       setGraceLicensePlate(licensePlate);
     }
-    setStep(3); // Proceed to result
+    setStep(3);
   };
 
   const handleGraceExpired = async () => {
@@ -89,7 +88,7 @@ export default function PaymentPage() {
 
   const handleRetry = () => {
     setPaymentStatus(null);
-    setStep(2); // Go back to invoice step
+    setStep(2);
   };
 
   return (
@@ -117,7 +116,6 @@ export default function PaymentPage() {
       </div>
 
       <div className="relative min-h-[400px] overflow-hidden rounded-2xl border border-outline-variant/30 bg-surface-container-lowest shadow-lg sm:rounded-3xl">
-        {/* Progress Bar */}
         {step < 3 && (
           <div className="w-full bg-surface-container-high h-1.5 flex flex-row-reverse">
             <div 

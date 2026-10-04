@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import api from "../../lib/api";
 import ExitCountdown from "./ExitCountdown";
 
@@ -26,8 +26,6 @@ export default function PaymentResult({ status, sessionData, graceExpiresAt, onG
       setIsSent(true);
     } catch (err) {
       console.error("Failed to send receipt:", err);
-      // For testing UI flow without backend:
-      // setIsSent(true);
       setError("שגיאה בשליחת המייל. (ודא שהשרת תומך בכך)");
     } finally {
       setLoading(false);

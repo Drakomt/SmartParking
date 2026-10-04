@@ -1,19 +1,15 @@
-import React from "react";
 import ZoomableParkingCanvas from "./ZoomableParkingCanvas";
 
 export default function DynamicParkingLayout({ parkings = [], isAdmin = false, onSpotClick, onAddSpot, isAddingSpot }) {
-  // Always ensure spots are ordered sequentially by spotNumber
   const sortedParkings = [...parkings].sort(
     (a, b) => (Number(a.spotNumber) || 0) - (Number(b.spotNumber) || 0)
   );
 
-  // If admin, push a special "Add Spot" placeholder to the end of the array
   const displayParkings = [...sortedParkings];
   if (isAdmin && onAddSpot) {
     displayParkings.push({ isAddButton: true });
   }
 
-  // Slicing parkings into rows of 8 (up to 32 spots total per level)
   const row1 = displayParkings.slice(0, 8);
   const row2 = displayParkings.slice(8, 16);
   const row3 = displayParkings.slice(16, 24);
@@ -23,10 +19,8 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
   const hasRow2 = row2.length > 0;
   const hasRow4 = row4.length > 0;
 
-  // Helper to render a single parking spot slot
   const renderSpot = (spot, index, rowPosition = "top") => {
     if (!spot) {
-      // Empty placeholder stall to maintain the 8-column grid symmetry
       return (
         <div
           key={`placeholder-${rowPosition}-${index}`}
@@ -92,7 +86,6 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
             : ""
         }`}
       >
-        {/* Header at the curb end: spot number only. */}
         <div
           className={`w-full flex flex-col items-center gap-0.5 ${
             rowPosition === "top" ? "order-1" : "order-3"
@@ -103,11 +96,9 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
               {spot.spotNumber}
             </span>
           </div>
-          {/* Wheel Stopper Bar */}
           <div className="mt-0.5 h-1 w-6 rounded-full border border-slate-700/70 bg-slate-950 opacity-70 sm:w-14" />
         </div>
 
-        {/* Spot Center: Car (with multiply blend mode to eliminate white BG) or Free/Blocked indicator */}
         <div className="flex-1 w-full flex items-center justify-center my-0.5 order-2 relative overflow-hidden">
           {typeMarking && (
             <div
@@ -148,19 +139,15 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
     );
   };
 
-  // Helper to fill a row up to 8 slots for perfect grid alignment
   const fillRowTo8 = (rowArray) => {
     return Array.from({ length: 8 }, (_, i) => rowArray[i] || null);
   };
 
-  // Clean Realistic Road Lane Component (No text, pure painted arrows & asphalt center line)
   const renderRoadLane = () => {
     return (
       <div className="relative my-1.5 flex h-12 select-none items-center justify-between overflow-hidden border-y-2 border-white/60 bg-[#161c24] px-8 shadow-inner pointer-events-none sm:my-3 sm:h-20 sm:px-14">
-        {/* Asphalt Gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/30 via-transparent to-slate-900/30 pointer-events-none" />
 
-        {/* Center Dashed Yellow Lane Line */}
         <div 
           className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[3px] opacity-80"
           style={{
@@ -168,7 +155,6 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
           }}
         />
 
-        {/* Top Lane Arrows (Pointing Left, placed on the Right) */}
         <div className="absolute top-0 left-0 right-0 bottom-1/2 flex items-center justify-end pr-16 sm:pr-32 z-10">
           {[1].map((arrowIdx) => (
             <div key={`arrow-left-${arrowIdx}`} className="flex items-center opacity-95">
@@ -182,7 +168,6 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
           ))}
         </div>
 
-        {/* Bottom Lane Arrows (Pointing Right, placed on the Left) */}
         <div className="absolute top-1/2 left-0 right-0 bottom-0 flex items-center justify-start pl-16 sm:pl-32 z-10">
           {[1].map((arrowIdx) => (
             <div key={`arrow-right-${arrowIdx}`} className="flex items-center opacity-95">
@@ -202,44 +187,35 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
   return (
     <div className="w-full flex flex-col items-center">
       <ZoomableParkingCanvas label="תרשים חניות במפלס">
-        {/* Parking Area Container */}
         <div
           className="w-full overflow-hidden rounded-2xl border-2 border-slate-700/60 bg-[#0d1117] p-2 shadow-2xl sm:p-5"
           dir="ltr"
         >
         <div className="flex w-full flex-col">
-          {/* ================= ROW 1 (Spots 1 - 8) ================= */}
           <div className="grid grid-cols-8 gap-1 sm:gap-3">
             {fillRowTo8(row1).map((spot, idx) => renderSpot(spot, idx, "top"))}
           </div>
 
-          {/* ================= ROAD 1 (Central Lane) ================= */}
           {renderRoadLane()}
 
-          {/* ================= ROW 2 (Spots 9 - 16) ================= */}
           {hasRow2 && (
             <div className="grid grid-cols-8 gap-1 sm:gap-3">
               {fillRowTo8(row2).map((spot, idx) => renderSpot(spot, idx, "bottom"))}
             </div>
           )}
 
-          {/* ================= EXTENDED SECTION (Above 16 spots: Row 3, Road 2, Row 4) ================= */}
           {hasSecondRoad && (
             <>
-              {/* Central Divider / Curb Island between Row 2 and Row 3 */}
               <div className="h-3 bg-slate-900 my-2 rounded-full border-t-2 border-b-2 border-slate-700 flex items-center justify-center">
                 <div className="w-24 h-0.5 bg-slate-700 rounded-full" />
               </div>
 
-              {/* ROW 3 (Spots 17 - 24) */}
               <div className="grid grid-cols-8 gap-1 sm:gap-3">
                 {fillRowTo8(row3).map((spot, idx) => renderSpot(spot, idx, "top"))}
               </div>
 
-              {/* ROAD 2 (Second Lane - Reverse Direction) */}
               {renderRoadLane()}
 
-              {/* ROW 4 (Spots 25 - 32) */}
               {hasRow4 && (
                 <div className="grid grid-cols-8 gap-1 sm:gap-3">
                   {fillRowTo8(row4).map((spot, idx) => renderSpot(spot, idx, "bottom"))}
@@ -251,7 +227,6 @@ export default function DynamicParkingLayout({ parkings = [], isAdmin = false, o
       </div>
       </ZoomableParkingCanvas>
 
-      {/* Legend / Status Info */}
       <div
         className="w-full mt-4 flex flex-wrap items-center justify-between text-xs text-slate-400 px-2"
         dir="rtl"

@@ -13,7 +13,7 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
     fullDayPrice: 30,
     levels: 1,
     totalSpots: 10,
-    distributionMode: "equal", // "equal" or "custom"
+    distributionMode: "equal",
   });
 
   const [customSpots, setCustomSpots] = useState({});
@@ -24,7 +24,6 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
 
   const scrollContainerRef = useRef(null);
 
-  // Auto-scroll to top when error occurs
   useEffect(() => {
     if (error && scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
@@ -157,7 +156,6 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
     e.preventDefault();
     setError(null);
 
-    // Validations
     if (!formData.name || !formData.address) {
       setError("נא למלא שם וכתובת.");
       return;
@@ -298,7 +296,6 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
           )}
 
           <form id="add-lot-form" onSubmit={handleSubmit} className="space-y-8">
-            {/* General Details */}
             <section>
               <h3 className="text-lg font-bold mb-4 text-on-surface border-b border-outline-variant/30 pb-2">פרטים כלליים</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -354,7 +351,6 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
               </div>
             </section>
 
-            {/* Pricing */}
             <section>
               <h3 className="text-lg font-bold mb-4 text-on-surface border-b border-outline-variant/30 pb-2">תמחור</h3>
               <div className="mb-4">
@@ -436,7 +432,6 @@ export default function AddParkingLotModal({ isOpen, onClose, cityId, cityName, 
               )}
             </section>
 
-            {/* Structure & Spots */}
             <section>
               <h3 className="text-lg font-bold mb-4 text-on-surface border-b border-outline-variant/30 pb-2">מבנה וחניות</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">

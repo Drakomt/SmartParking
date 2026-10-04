@@ -1,7 +1,7 @@
 import User from '../models/User.js';
 
 const findUserByEmail = async (email) => {
-  return await User.findOne({ email });
+  return await User.findOne({ email }).select('+password');
 };
 
 const findUserById = async (id) => {

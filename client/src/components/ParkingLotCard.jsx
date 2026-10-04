@@ -102,7 +102,6 @@ export default function ParkingLotCard({
                 <span className="material-symbols-outlined text-[20px] sm:text-[22px]">payments</span>
               </div>
               
-              {/* Price Popup on Hover (Popping Upwards) */}
               {isHoveringPrice && !showFullPriceModal && (
                 <div 
                   className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-surface-container-highest text-on-surface font-bold text-[12px] sm:text-sm px-3 py-2 rounded-lg shadow-lg border border-outline-variant/30 z-20 animate-in fade-in slide-in-from-bottom-2 duration-200"
@@ -149,7 +148,6 @@ export default function ParkingLotCard({
         </div>
       </button>
 
-      {/* Full Price Modal via Portal to avoid CSS transform bounding box issues */}
       {showFullPriceModal && createPortal(
         <div 
           className="mobile-sheet-backdrop fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in duration-200"
@@ -163,7 +161,6 @@ export default function ParkingLotCard({
             aria-modal="true"
             aria-labelledby="lot-price-title"
           >
-            {/* Header */}
             <div className="bg-primary/5 px-6 py-5 border-b border-outline-variant/20 flex justify-between items-center relative">
               <div className="flex flex-col">
                 <h3 id="lot-price-title" className="text-xl font-black text-primary">מחירון חניון</h3>
@@ -174,7 +171,6 @@ export default function ParkingLotCard({
               </div>
             </div>
 
-            {/* Body */}
             <div className="flex flex-col gap-3 p-4 text-on-surface sm:p-6">
                {lot.pricing?.isFree ? (
                  <div className="flex flex-col items-center justify-center gap-2 text-emerald-600 bg-emerald-50 py-6 rounded-2xl border border-emerald-200">
@@ -217,7 +213,6 @@ export default function ParkingLotCard({
                )}
             </div>
 
-            {/* Footer */}
             <div className="p-4 pt-0">
               <button 
                 onClick={(e) => { e.stopPropagation(); setShowFullPriceModal(false); }}

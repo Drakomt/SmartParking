@@ -348,7 +348,6 @@ const createParkingSpots = (parkingLotId, totalSpots, levels, prefix) => {
       spotNumber,
       status,
       type,
-      // keep spot's currentCarLicensePlate null as requested
       currentCarLicensePlate: null,
     });
   }
@@ -356,12 +355,8 @@ const createParkingSpots = (parkingLotId, totalSpots, levels, prefix) => {
   return spots;
 };
 
-// ==========================================
-// 1. INITIALIZE DB (Clear data & create collections)
-// ==========================================
 router.post('/init', async (req, res) => {
   try {
-    // Clear all existing data
     await Promise.all([
       City.deleteMany({}),
       ParkingLot.deleteMany({}),
@@ -373,10 +368,8 @@ router.post('/init', async (req, res) => {
       PayPalWebhookEvent.deleteMany({}),
     ]);
 
-    // Explicitly create collections 
-    // (Mongoose usually does this automatically on first insert, 
-    // but doing it explicitly guarantees they exist even if empty)
-    await City.createCollection().catch(() => {});         // Catch ignores error if already exists
+    // Keep every expected collection available even when initialization leaves it empty.
+    await City.createCollection().catch(() => {});
     await ParkingLot.createCollection().catch(() => {});
     await ParkingSpot.createCollection().catch(() => {});
     await User.createCollection().catch(() => {});
@@ -391,12 +384,8 @@ router.post('/init', async (req, res) => {
   }
 });
 
-// ==========================================
-// 2. SEED DB (Fill with Mock Data)
-// ==========================================
 router.post('/seed', async (req, res) => {
   try {
-    // Make sure we start fresh for the seed
     await Promise.all([
       City.deleteMany({}),
       ParkingLot.deleteMany({}),
@@ -408,14 +397,12 @@ router.post('/seed', async (req, res) => {
       PayPalWebhookEvent.deleteMany({}),
     ]);
 
-    // 1. Mock Cities
     const createdCities = {};
 
     for (const citySeed of seedCities) {
       createdCities[citySeed.name] = await City.create({ name: citySeed.name });
     }
 
-    // 2. Mock Users
     const usersToCreate = [
       {
         fullName: 'central',
@@ -468,9 +455,7 @@ router.post('/seed', async (req, res) => {
       }
     }
 
-    // 3. Mock Parking Lots and Spots
-    // We'll create parking sessions equal to the number of occupied spots per lot.
-    let plateCounter = 10000000; // start to generate 8-digit numeric plates
+    let plateCounter = 10000000;
     const sessionsToInsert = [];
 
     for (const citySeed of seedCities) {
@@ -507,7 +492,6 @@ router.post('/seed', async (req, res) => {
         const spots = createParkingSpots(lot._id, lotSeed.totalSpots, lotSeed.levels, lotSeed.prefix);
         const createdSpots = await ParkingSpot.insertMany(spots);
 
-        // count occupied spots in this lot and create that many active sessions
         const occupiedSpots = createdSpots.filter((spot) => spot.status === 'occupied');
         for (const occupiedSpot of occupiedSpots) {
           const plate = String(plateCounter).padStart(8, '0');
@@ -523,7 +507,6 @@ router.post('/seed', async (req, res) => {
       await cityDoc.save();
     }
 
-    // 4. Mock Parking Sessions: insert all generated active sessions
     if (sessionsToInsert.length > 0) {
       await ParkingSession.insertMany(sessionsToInsert);
     }

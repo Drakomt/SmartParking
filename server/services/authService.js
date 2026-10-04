@@ -17,7 +17,6 @@ export const sanitizeRegistrationData = (userData = {}) => ({
 const loginUser = async (email, password) => {
   const user = await userRepo.findUserByEmail(email);
 
-  // Note: user.comparePassword is a method on the Mongoose document defined in the model
   if (user && (await user.comparePassword(password))) {
     return {
       _id: user._id,
@@ -25,7 +24,6 @@ const loginUser = async (email, password) => {
       email: user.email,
       authorizedCities: user.authorizedCities || (user.authorizedCity ? [user.authorizedCity] : []),
       authorizedCity: user.authorizedCities?.[0] || user.authorizedCity || null,
-      token: generateToken(user._id),
     };
   } else {
     throw new Error('Invalid email or password');
@@ -49,7 +47,6 @@ const registerUser = async (userData) => {
     email: user.email,
     authorizedCities: user.authorizedCities || (user.authorizedCity ? [user.authorizedCity] : []),
     authorizedCity: user.authorizedCities?.[0] || user.authorizedCity || null,
-    token: generateToken(user._id),
   };
 };
 

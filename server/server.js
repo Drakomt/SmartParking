@@ -8,6 +8,11 @@ import { validateCheckoutConfig } from './config/checkout.js';
 import { createCorsOriginValidator } from './config/cors.js';
 import { initializeSocketServer } from './services/socketService.js';
 import healthRouter from './routes/health.js';
+import loraRouter from './routes/lora.js';
+import authRouter from './routes/auth.js';
+import parkingRouter from './routes/parking.js';
+import dbSetupRouter from './routes/dbSetup.js';
+import paypalRouter from './routes/paypal.js';
 
 dotenv.config();
 
@@ -19,7 +24,6 @@ try {
   process.exit(1);
 }
 
-// Connect to MongoDB
 await connectDB();
 
 const app = express();
@@ -33,12 +37,6 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
-
-import loraRouter from './routes/lora.js';
-import authRouter from './routes/auth.js';
-import parkingRouter from './routes/parking.js';
-import dbSetupRouter from './routes/dbSetup.js';
-import paypalRouter from './routes/paypal.js';
 
 app.get("/", (req, res) => {
   res.send("Hello Smart Parking");
