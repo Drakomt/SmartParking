@@ -188,10 +188,6 @@ const publishSpotUpdate = async (parkingLot, spot, action = 'updated') => {
   await emitParkingSpotUpdateToAuthorizedUsers(parkingLot.city._id, authorizedPayload);
 };
 
-// ==========================================
-//               CITY SERVICES
-// ==========================================
-
 const fetchAllCities = async () => {
   return await cityRepo.findAllCities();
 };
@@ -201,10 +197,6 @@ const fetchAuthorizedCities = async (user) => {
 
   return await cityRepo.findCitiesByIds(authorizedCities);
 };
-
-// ==========================================
-//           PARKING LOT SERVICES
-// ==========================================
 
 const fetchParkingLots = async (user) => {
   const authorizedCities = getAuthorizedCityIds(user);
@@ -361,7 +353,6 @@ const editParkingLot = async (id, updateData, user) => {
     throw new Error('Parking Lot not found');
   }
 
-  // Check authorization: User can only update if it's in their city
   assertAuthorizedForCity(user, existingLot.city._id);
 
   const normalizedUpdate = normalizeAuthorizedVehicles(updateData);
@@ -494,10 +485,6 @@ const removeLevel = async (lotId, level, user) => {
   };
 };
 
-// ==========================================
-//          PARKING SPOT SERVICES
-// ==========================================
-
 const fetchSpotsByLotAndLevel = async (lotId, level, includeLot = false) => {
   const spots = await parkingSpotRepo.findPublicSpotsByLot(lotId, level);
   if (includeLot) {
@@ -543,7 +530,6 @@ const editSpot = async (id, updateData, user) => {
 
   assertAuthorizedForCity(user, lot.city._id);
 
-  // If attempting to change parkingLot, verify authorization for the target lot as well
   if (updateData.parkingLot) {
     const targetLot = await parkingLotRepo.findLotById(updateData.parkingLot);
     if (!targetLot) throw new Error('Target parking lot not found');

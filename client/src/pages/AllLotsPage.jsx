@@ -133,7 +133,6 @@ export default function AllLotsPage() {
     }
     
     setOpenCity(cityName);
-    // Calculate average center of the city based on its lots
     const validLots = cityLots.filter(l => l.location?.lat && l.location?.lng);
     if (validLots.length > 0) {
       const avgLat = validLots.reduce((sum, l) => sum + l.location.lat, 0) / validLots.length;

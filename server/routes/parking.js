@@ -62,10 +62,6 @@ const createParkingLotWithSpots = async (req, res) => {
   }
 };
 
-// ==========================================
-//               CITY ROUTES
-// ==========================================
-
 router.get('/cities', async (req, res) => {
   try {
     const cities = await parkingService.fetchAllCities();
@@ -75,12 +71,7 @@ router.get('/cities', async (req, res) => {
   }
 });
 
-// ==========================================
-//           PARKING LOT ROUTES
-// ==========================================
-
 router.route('/')
-  // Get all lots for current admin user
   .get(protect, async (req, res) => {
     try {
       const parkingLots = await parkingService.fetchParkingLots(req.user);
@@ -89,7 +80,6 @@ router.route('/')
       res.status(error.statusCode || 500).json({ message: error.message, code: error.code });
     }
   })
-  // Create new lot
   .post(protect, requireCsrf, createParkingLotWithSpots);
 
 router.post(
@@ -281,16 +271,11 @@ router.route('/:id')
     }
   });
 
-// ==========================================
-//          PARKING SPOT ROUTES
-// ==========================================
-
 router.route('/:id/spots')
   .get(async (req, res) => {
     try {
       const level = req.query.level;
       if (level) {
-        // Always include the lot metadata to return totalLevels for the frontend pagination
         const spotsData = await parkingService.fetchSpotsByLotAndLevel(req.params.id, Number(level), true);
         return res.json({
           slots: spotsData.spots,

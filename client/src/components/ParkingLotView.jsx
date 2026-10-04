@@ -57,7 +57,6 @@ export default function ParkingLotView({
     });
   };
 
-  // Add / Delete Level states
   const [isAddLevelModalOpen, setIsAddLevelModalOpen] = useState(false);
   const [newLevelSpotsCount, setNewLevelSpotsCount] = useState(16);
   const [isCreatingLevel, setIsCreatingLevel] = useState(false);
@@ -84,7 +83,6 @@ export default function ParkingLotView({
       const nextLevelNum = (totalLevels || 1) + 1;
       await api.post(`/api/parking/${lotId}/levels`, { spotCount: spotsCount });
 
-      // 3. Switch to the new level and refresh data
       setIsAddLevelModalOpen(false);
       if (onSpotsChanged) {
         onSpotsChanged(nextLevelNum);
@@ -137,7 +135,6 @@ export default function ParkingLotView({
             חזור
           </button>
 
-          {/* Mobile Waze button (visible only on small screens) */}
           {!isAdmin && lotLocation?.lat && lotLocation?.lng && (
             <button
               onClick={() => {
@@ -216,7 +213,6 @@ export default function ParkingLotView({
         className="relative mt-6 flex min-h-[52px] w-full flex-col items-stretch justify-center gap-3 border-t border-outline-variant/20 pt-5 sm:mt-8 md:flex-row md:items-center md:gap-4 md:pt-6"
         dir="rtl"
       >
-        {/* Right side: Add Level Button */}
         {isAdmin && (
           <div className="flex items-center md:absolute md:right-0">
             <button
@@ -234,7 +230,6 @@ export default function ParkingLotView({
           </div>
         )}
 
-        {/* Center: LevelNavigation */}
           <div className="flex max-w-full justify-center overflow-hidden">
           <LevelNavigation
             currentLevel={currentLevel}
@@ -243,7 +238,6 @@ export default function ParkingLotView({
           />
         </div>
 
-        {/* Left side: Delete Level Button */}
         {isAdmin && totalLevels > 1 && (
           <div className="flex items-center md:absolute md:left-0">
             <button
@@ -272,7 +266,6 @@ export default function ParkingLotView({
         />
       )}
 
-      {/* Add Level Modal */}
       {isAddLevelModalOpen && (
         <div className="mobile-sheet-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" dir="rtl">
           <section className="mobile-sheet relative w-full max-w-md rounded-3xl border border-outline-variant/20 bg-surface-container-lowest p-5 shadow-2xl sm:p-8" role="dialog" aria-modal="true" aria-labelledby="add-level-title">
@@ -350,7 +343,6 @@ export default function ParkingLotView({
         </div>
       )}
 
-      {/* Delete Level Modal */}
       {isDeleteLevelModalOpen && (
         <div className="mobile-sheet-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" dir="rtl">
           <section className="mobile-sheet relative w-full max-w-md rounded-3xl border border-outline-variant/20 bg-surface-container-lowest p-5 text-center shadow-2xl sm:p-8" role="dialog" aria-modal="true" aria-labelledby="delete-level-title">

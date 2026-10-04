@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import bcrypt from 'bcryptjs';
 
 import User from '../models/User.js';
+import ParkingLot from '../models/ParkingLot.js';
+import ParkingSession from '../models/ParkingSession.js';
 import { sanitizeRegistrationData } from '../services/authService.js';
 import { requireCsrf } from '../middleware/csrf.js';
 import { requireLoraApiKey } from '../middleware/loraAuth.js';
@@ -35,6 +37,12 @@ test('public registration cannot assign authorized cities', () => {
 
 test('users do not have an application role field', () => {
   assert.equal(User.schema.path('role'), undefined);
+});
+
+test('sensitive fields are excluded from queries unless explicitly selected', () => {
+  assert.equal(User.schema.path('password').options.select, false);
+  assert.equal(ParkingLot.schema.path('authorizedVehicles').options.select, false);
+  assert.equal(ParkingSession.schema.path('checkoutTokenHash').options.select, false);
 });
 
 test('a user without assigned cities cannot perform parking administration', () => {
